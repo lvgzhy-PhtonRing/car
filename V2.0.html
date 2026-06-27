@@ -375,10 +375,10 @@
             </div>
         </nav>
         <div class="sidebar-footer space-y-2">
-            <button onclick="exportData()" class="w-full text-sm px-3 py-2 glass-light rounded-xl-apple hover:bg-white/60 btn-glass text-left flex items-center gap-2"><i data-lucide="file-up" class="w-4 h-4"></i> 导出JSON</button>
-            <label class="w-full text-sm px-3 py-2 glass-light rounded-xl-apple hover:bg-white/60 cursor-pointer btn-glass text-left block">
+            <button onclick="exportData()" class="w-full text-xs px-3 py-1.5 text-gray-400 hover:text-gray-600 transition-colors text-left">导出 JSON</button>
+            <label class="w-full text-xs px-3 py-1.5 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer text-left block">
                 <input type="file" class="hidden" accept=".json" onchange="importData(event)">
-                <span class="flex items-center gap-2"><i data-lucide="file-down" class="w-4 h-4"></i> 导入JSON</span>
+                导入 JSON
             </label>
             <div class="text-xs text-gray-400 text-center pt-2" id="appVersion">v2.0.0</div>
         </div>
