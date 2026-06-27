@@ -1119,7 +1119,7 @@
       const categoryLabels = {
         car_buy: '买车', car_sell: '卖车', allowance: '零花钱',
         loan_new: '新贷款', loan_repay: '还贷',
-        transfer_in: '转入', transfer_out: '转出', other: '其他'
+        transfer_in: '转入', transfer_out: '转出', daily: '日常消费', other: '其他'
       };
 
       return `
@@ -1330,10 +1330,10 @@
           </div>
         </div>`;
       showModal(html);
-      // 初始化类别下拉
+      // 初始化类别下拉（按账户定制）
       const initType = txn ? txn.type : 'expense';
       const initCat = txn ? txn.category : 'other';
-      populateCategoryDropdown(initType, initCat);
+      populateCategoryDropdown(initType, accountId, initCat);
     }
 
     function setTxnType(type) {
@@ -1344,11 +1344,25 @@
       document.getElementById('btnIncome').className = type === 'income'
         ? 'flex-1 py-2 rounded-xl text-sm font-bold bg-keep/10 text-keep'
         : 'flex-1 py-2 rounded-xl text-sm font-bold glass-light text-gray-500';
-      populateCategoryDropdown(type, document.getElementById('txnCategory').value);
+      const accountId = document.getElementById('txnAccountId').value;
+      populateCategoryDropdown(type, accountId, document.getElementById('txnCategory').value);
     }
 
     // 按收支类型过滤类别下拉
-    function getCategoriesByType(type) {
+    function getCategoriesByType(type, accountId) {
+      if (accountId === 'pocket') {
+        // 日常消费：只买小车/日常消费/其他
+        if (type === 'expense') return [
+          { value: 'car_buy', label: '买小车' },
+          { value: 'daily', label: '日常消费' },
+          { value: 'other', label: '其他' }
+        ];
+        return [
+          { value: 'car_sell', label: '卖小车' },
+          { value: 'other', label: '其他' }
+        ];
+      }
+      // 投资：买卖小车 + 贷款相关
       if (type === 'expense') return [
         { value: 'car_buy', label: '买车' },
         { value: 'loan_repay', label: '还贷' },
@@ -1356,15 +1370,14 @@
       ];
       return [
         { value: 'car_sell', label: '卖车' },
-        { value: 'allowance', label: '零花钱' },
         { value: 'loan_new', label: '新贷款' },
         { value: 'other', label: '其他' }
       ];
     }
 
-    function populateCategoryDropdown(type, selectedValue) {
+    function populateCategoryDropdown(type, accountId, selectedValue) {
       const sel = document.getElementById('txnCategory');
-      const cats = getCategoriesByType(type);
+      const cats = getCategoriesByType(type, accountId);
       sel.innerHTML = cats.map(c =>
         `<option value="${c.value}" ${c.value === selectedValue ? 'selected' : ''}>${c.label}</option>`
       ).join('');
