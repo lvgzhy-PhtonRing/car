@@ -678,6 +678,192 @@
       });
     }
 
+    // ==================== Dashboard 操作 ====================
+    function openNewLoanModal(loanId) {
+      let loan = null;
+      if (loanId) {
+        loan = carAppData.accounts.invest.loans.find(l => l.id === loanId);
+      }
+
+      const html = `
+        <div id="loanModal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-50">
+          <div class="glass-strong rounded-2xl-apple w-full max-w-sm p-6">
+            <h3 class="font-bold text-lg mb-4">${loan ? '编辑贷款' : '新增贷款'}</h3>
+            <div class="space-y-3">
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">贷款名称</label>
+                <input type="text" id="loanName" value="${esc(loan ? loan.name : '')}" placeholder="如：老爸借款" class="w-full glass-input p-2.5 text-sm">
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">贷款总额</label>
+                <input type="number" id="loanAmount" value="${loan ? loan.amount : ''}" step="0.01" class="w-full glass-input p-2.5 text-sm">
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1">借款日期</label>
+                  <input type="date" id="loanStartDate" value="${loan ? loan.startDate : getToday()}" class="w-full glass-input p-2.5 text-sm">
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1">到期日期</label>
+                  <input type="date" id="loanDueDate" value="${loan ? loan.dueDate : ''}" class="w-full glass-input p-2.5 text-sm">
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">备注</label>
+                <input type="text" id="loanNote" value="${esc(loan ? loan.note : '')}" class="w-full glass-input p-2.5 text-sm">
+              </div>
+              <input type="hidden" id="loanId" value="${loan ? loan.id : ''}">
+            </div>
+            <div class="mt-6 flex justify-end space-x-2">
+              <button onclick="hideModal()" class="px-4 py-2 glass-light rounded-xl-apple hover:bg-white/60 text-sm btn-glass">取消</button>
+              <button onclick="saveLoan()" class="px-4 py-2 bg-blue-600/90 backdrop-blur text-white rounded-xl-apple hover:bg-blue-700 text-sm btn-glass">保存</button>
+            </div>
+          </div>
+        </div>`;
+      showModal(html);
+    }
+
+    function saveLoan() {
+      const id = document.getElementById('loanId').value;
+      const name = document.getElementById('loanName').value.trim();
+      const amount = parseFloat(document.getElementById('loanAmount').value) || 0;
+      const startDate = document.getElementById('loanStartDate').value;
+      const dueDate = document.getElementById('loanDueDate').value;
+      const note = document.getElementById('loanNote').value.trim();
+
+      if (!name) return alert('请输入贷款名称');
+      if (!amount) return alert('请输入贷款金额');
+
+      const invest = carAppData.accounts.invest;
+
+      if (id) {
+        const loan = invest.loans.find(l => l.id === id);
+        loan.name = name; loan.amount = amount; loan.startDate = startDate;
+        loan.dueDate = dueDate; loan.note = note;
+      } else {
+        const newLoan = {
+          id: genId('loan'),
+          name, amount, remaining: amount,
+          startDate, dueDate,
+          status: 'active',
+          note
+        };
+        invest.loans.push(newLoan);
+        invest.transactions.push({
+          id: genId('txn'),
+          type: 'income',
+          category: 'loan_new',
+          amount: amount,
+          date: startDate,
+          carSid: null,
+          loanId: newLoan.id,
+          transferPairId: null,
+          note: '新增贷款: ' + name
+        });
+      }
+
+      hideModal();
+      saveData();
+    }
+
+    function openRepayLoanModal(loanId) {
+      const activeLoans = getActiveLoans();
+      if (activeLoans.length === 0) {
+        alert('无进行中的贷款');
+        return;
+      }
+
+      const options = activeLoans.map(l => `
+        <option value="${l.id}" ${loanId === l.id ? 'selected' : ''}>
+          ${esc(l.name)} — 剩余 ${fmt(l.remaining)}
+        </option>`).join('');
+
+      const selectedLoan = loanId ? activeLoans.find(l => l.id === loanId) : activeLoans[0];
+
+      const html = `
+        <div id="repayModal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-50">
+          <div class="glass-strong rounded-2xl-apple w-full max-w-sm p-6">
+            <h3 class="font-bold text-lg mb-4">归还贷款</h3>
+            <div class="space-y-3">
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">选择贷款</label>
+                <select id="repayLoanId" class="w-full glass-input p-2.5 text-sm">${options}</select>
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">归还金额 (剩余: ${fmt(selectedLoan ? selectedLoan.remaining : 0)})</label>
+                <input type="number" id="repayAmount" value="${selectedLoan ? selectedLoan.remaining : ''}" step="0.01" class="w-full glass-input p-2.5 text-sm">
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">归还日期</label>
+                <input type="date" id="repayDate" value="${getToday()}" class="w-full glass-input p-2.5 text-sm">
+              </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-2">
+              <button onclick="hideModal()" class="px-4 py-2 glass-light rounded-xl-apple hover:bg-white/60 text-sm btn-glass">取消</button>
+              <button onclick="confirmRepay()" class="px-4 py-2 bg-yellow-500/90 backdrop-blur text-white rounded-xl-apple hover:bg-yellow-600 text-sm font-bold btn-glass">确认归还</button>
+            </div>
+          </div>
+        </div>`;
+      showModal(html);
+    }
+
+    function confirmRepay() {
+      const loanId = document.getElementById('repayLoanId').value;
+      const amount = parseFloat(document.getElementById('repayAmount').value) || 0;
+      const date = document.getElementById('repayDate').value;
+
+      if (!amount) return alert('请输入归还金额');
+
+      const invest = carAppData.accounts.invest;
+      const loan = invest.loans.find(l => l.id === loanId);
+      if (!loan) return;
+
+      loan.remaining -= amount;
+      if (loan.remaining <= 0) {
+        loan.remaining = 0;
+        loan.status = 'repaid';
+      }
+
+      invest.transactions.push({
+        id: genId('txn'),
+        type: 'expense',
+        category: 'loan_repay',
+        amount: amount,
+        date: date,
+        carSid: null,
+        loanId: loan.id,
+        transferPairId: null,
+        note: '归还贷款: ' + loan.name
+      });
+
+      hideModal();
+      saveData();
+    }
+
+    function depositAllowance() {
+      const pocket = carAppData.accounts.pocket;
+      if (!pocket.monthlyAllowance) return alert('请先设置每月零花钱额度');
+
+      const now = new Date();
+      const monthKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+      const alreadyDeposited = pocket.transactions.some(t =>
+        t.category === 'allowance' && t.date.startsWith(monthKey)
+      );
+      if (alreadyDeposited) return alert('本月零花钱已存入');
+
+      pocket.transactions.push({
+        id: genId('txn'),
+        type: 'income',
+        category: 'allowance',
+        amount: pocket.monthlyAllowance,
+        date: getToday(),
+        carSid: null, loanId: null, transferPairId: null,
+        note: monthKey + ' 零花钱'
+      });
+
+      saveData();
+    }
+
     function renderDashboard() {
       const stats = getDashboardStats();
       const loans = getActiveLoans();
