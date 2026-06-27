@@ -1,0 +1,60 @@
+<h2>🎯 三种实施方案</h2>
+<p class="subtitle">基于已确认的数据模型，提出以下三条路径</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>进化重构 V1.1.html <span style="font-size:13px;color:#6b7280;">（推荐）</span></h3>
+      <p>保留现有玻璃拟态 UI 风格和 Tailwind 基础设施，将"账单组"结构重构为 4 模块侧边栏架构。提供旧数据自动迁移逻辑。</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul>
+          <li>保留已验证的 UI 风格和组件</li>
+          <li>现有数据可自动迁移</li>
+          <li>单文件、零依赖，部署简单</li>
+        </ul></div>
+        <div class="cons"><h4>Cons</h4><ul>
+          <li>V1 代码需要大幅重构</li>
+          <li>新旧逻辑过渡期代码可能混杂</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>全新建 V2.html</h3>
+      <p>从头编写全新的 V2.0.html，干净的数据模型和 4 模块架构。提供独立的数据迁移工具将 V1 数据转为新格式。</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul>
+          <li>代码干净，无历史包袱</li>
+          <li>数据模型从一开始就匹配需求</li>
+        </ul></div>
+        <div class="cons"><h4>Cons</h4><ul>
+          <li>UI 组件需要全部重写</li>
+          <li>需要额外的数据迁移步骤</li>
+          <li>维护两个 HTML 文件</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="option" data-choice="c" onclick="toggleSelect(this)">
+    <div class="letter">C</div>
+    <div class="content">
+      <h3>模块化拆分</h3>
+      <p>拆分为 index.html + app.js + data.js + styles.css 等多文件。更易维护，但失去单文件便利性。</p>
+      <div class="pros-cons">
+        <div class="pros"><h4>Pros</h4><ul>
+          <li>代码组织清晰，便于维护</li>
+          <li>各模块独立，便于测试</li>
+        </ul></div>
+        <div class="cons"><h4>Cons</h4><ul>
+          <li>失去"一个 HTML 就够"的简洁</li>
+          <li>需要本地服务器(browser-sync已有)</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+</div>

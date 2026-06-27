@@ -1,0 +1,106 @@
+<h2>📐 完整数据模型 — 属性定义</h2>
+<p class="subtitle">所有实体及其完整属性。预期价值已确认为手动输入。</p>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">🚗 小车 (Car)</div>
+    <div class="mockup-body" style="padding:20px; font-size:14px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="border-bottom:2px solid #e5e7eb; background:#fdf2f8;">
+            <th style="padding:8px 12px; text-align:left;">属性</th>
+            <th style="padding:8px 12px; text-align:left;">类型</th>
+            <th style="padding:8px 12px; text-align:left;">说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>sid</code></td><td style="padding:8px 12px;">string</td><td style="padding:8px 12px;">唯一标识，1车1号，自动生成</td></tr>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>brand</code></td><td style="padding:8px 12px;">string</td><td style="padding:8px 12px;">品牌（如 Hot Wheels, MINI GT, Tarmac）</td></tr>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>name</code></td><td style="padding:8px 12px;">string</td><td style="padding:8px 12px;">车型名称</td></tr>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>buyDate</code></td><td style="padding:8px 12px;">date</td><td style="padding:8px 12px;">购买日期</td></tr>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>buyPrice</code></td><td style="padding:8px 12px;">number</td><td style="padding:8px 12px;">购买价格 (¥)</td></tr>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>expectedValue</code></td><td style="padding:8px 12px;">number</td><td style="padding:8px 12px;">预期价值 (¥)，<strong>手动输入</strong></td></tr>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>category</code></td><td style="padding:8px 12px;">enum</td><td style="padding:8px 12px;"><span style="background:#fce7f3;color:#be185d;padding:2px 6px;border-radius:4px;">invest</span> 投资 ｜ <span style="background:#d1fae5;color:#059669;padding:2px 6px;border-radius:4px;">keep</span> 自留</td></tr>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>sellPrice</code></td><td style="padding:8px 12px;">number?</td><td style="padding:8px 12px;">卖出净价格，售出时填写</td></tr>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>soldDate</code></td><td style="padding:8px 12px;">date?</td><td style="padding:8px 12px;">售出日期</td></tr>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>isSold</code></td><td style="padding:8px 12px;">boolean</td><td style="padding:8px 12px;">是否已售出</td></tr>
+          <tr><td style="padding:8px 12px;"><code>note</code></td><td style="padding:8px 12px;">string</td><td style="padding:8px 12px;">备注</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">💰 账户 (Account)</div>
+    <div class="mockup-body" style="padding:20px; font-size:14px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="border-bottom:2px solid #e5e7eb; background:#dbeafe;">
+            <th style="padding:8px 12px; text-align:left;">属性</th><th style="padding:8px 12px; text-align:left;">类型</th><th style="padding:8px 12px; text-align:left;">说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>id</code></td><td style="padding:8px 12px;">string</td><td style="padding:8px 12px;"><code>pocket</code> 零花钱 | <code>invest</code> 投资账户</td></tr>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>name</code></td><td style="padding:8px 12px;">string</td><td style="padding:8px 12px;">账户名称</td></tr>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>balance</code></td><td style="padding:8px 12px;">number</td><td style="padding:8px 12px;">当前余额（由交易记录实时计算）</td></tr>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>monthlyAllowance</code></td><td style="padding:8px 12px;">number?</td><td style="padding:8px 12px;">仅零花钱账户：每月定额存入金额</td></tr>
+          <tr><td style="padding:8px 12px;"><code>allowanceDay</code></td><td style="padding:8px 12px;">number?</td><td style="padding:8px 12px;">仅零花钱账户：每月几号存入</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">📝 交易记录 (Transaction)</div>
+    <div class="mockup-body" style="padding:20px; font-size:14px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="border-bottom:2px solid #e5e7eb; background:#fef3c7;">
+            <th style="padding:8px 12px; text-align:left;">属性</th><th style="padding:8px 12px; text-align:left;">类型</th><th style="padding:8px 12px; text-align:left;">说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>id</code></td><td style="padding:8px 12px;">string</td><td style="padding:8px 12px;">唯一标识</td></tr>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>accountId</code></td><td style="padding:8px 12px;">string</td><td style="padding:8px 12px;">所属账户</td></tr>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>type</code></td><td style="padding:8px 12px;">enum</td><td style="padding:8px 12px;">income 收入 | expense 支出</td></tr>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>category</code></td><td style="padding:8px 12px;">enum</td><td style="padding:8px 12px;">car_buy 买车 | car_sell 卖车 | allowance 零花钱 | loan_new 新贷款 | loan_repay 还贷 | transfer_in 转入 | transfer_out 转出 | other 其他</td></tr>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>amount</code></td><td style="padding:8px 12px;">number</td><td style="padding:8px 12px;">金额 (¥)</td></tr>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>date</code></td><td style="padding:8px 12px;">date</td><td style="padding:8px 12px;">发生日期</td></tr>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>carSid</code></td><td style="padding:8px 12px;">string?</td><td style="padding:8px 12px;">关联小车 SID（买卖小车时）</td></tr>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>loanId</code></td><td style="padding:8px 12px;">string?</td><td style="padding:8px 12px;">关联贷款（借贷/还款时）</td></tr>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>transferPairId</code></td><td style="padding:8px 12px;">string?</td><td style="padding:8px 12px;">转账配对ID（账户互转时双方记录共享）</td></tr>
+          <tr><td style="padding:8px 12px;"><code>note</code></td><td style="padding:8px 12px;">string</td><td style="padding:8px 12px;">备注</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">🏦 贷款 (Loan)</div>
+    <div class="mockup-body" style="padding:20px; font-size:14px;">
+      <table style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="border-bottom:2px solid #e5e7eb; background:#e0e7ff;">
+            <th style="padding:8px 12px; text-align:left;">属性</th><th style="padding:8px 12px; text-align:left;">类型</th><th style="padding:8px 12px; text-align:left;">说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>id</code></td><td style="padding:8px 12px;">string</td><td style="padding:8px 12px;">唯一标识</td></tr>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>name</code></td><td style="padding:8px 12px;">string</td><td style="padding:8px 12px;">贷款名称</td></tr>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>amount</code></td><td style="padding:8px 12px;">number</td><td style="padding:8px 12px;">贷款总额 (¥)</td></tr>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>remaining</code></td><td style="padding:8px 12px;">number</td><td style="padding:8px 12px;">剩余未还金额</td></tr>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>startDate</code></td><td style="padding:8px 12px;">date</td><td style="padding:8px 12px;">借款日期</td></tr>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>dueDate</code></td><td style="padding:8px 12px;">date</td><td style="padding:8px 12px;">到期还款日期</td></tr>
+          <tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:8px 12px;"><code>status</code></td><td style="padding:8px 12px;">enum</td><td style="padding:8px 12px;">active 进行中 | repaid 已还清 | overdue 逾期</td></tr>
+          <tr><td style="padding:8px 12px;"><code>note</code></td><td style="padding:8px 12px;">string</td><td style="padding:8px 12px;">备注</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

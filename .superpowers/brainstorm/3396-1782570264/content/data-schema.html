@@ -1,0 +1,151 @@
+<h2>🗄️ localStorage 数据结构设计</h2>
+<p class="subtitle">单键 <code>carAppData</code> 存储完整应用状态，兼容 JSON 导入导出</p>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">📦 顶层结构</div>
+    <div class="mockup-body" style="padding:16px;">
+      <pre style="background:#1e293b; color:#e2e8f0; padding:16px; border-radius:10px; font-size:12px; line-height:1.7; overflow-x:auto;"><code>{
+  <span style="color:#94a3b8;">"version"</span>: <span style="color:#a5d6ff;">"2.0.0"</span>,
+  <span style="color:#94a3b8;">"accounts"</span>: { <span style="color:#94a3b8;">"pocket"</span>: {...}, <span style="color:#94a3b8;">"invest"</span>: {...} },
+  <span style="color:#94a3b8;">"cars"</span>: [ Car, Car, ... ],
+  <span style="color:#94a3b8;">"transferPairs"</span>: [ TransferPair, ... ]
+}</code></pre>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">💰 Account（账户）</div>
+    <div class="mockup-body" style="padding:16px;">
+      <pre style="background:#1e293b; color:#e2e8f0; padding:16px; border-radius:10px; font-size:12px; line-height:1.7; overflow-x:auto;"><code>{
+  <span style="color:#94a3b8;">"id"</span>: <span style="color:#a5d6ff;">"pocket"</span>,           <span style="color:#6b7280;">// "pocket" | "invest"</span>
+  <span style="color:#94a3b8;">"name"</span>: <span style="color:#a5d6ff;">"零花钱"</span>,
+  <span style="color:#94a3b8;">"monthlyAllowance"</span>: <span style="color:#fbbf24;">500</span>,     <span style="color:#6b7280;">// 仅 pocket; invest 为 null</span>
+  <span style="color:#94a3b8;">"allowanceDay"</span>: <span style="color:#fbbf24;">1</span>,          <span style="color:#6b7280;">// 每月几号; 仅 pocket</span>
+  <span style="color:#94a3b8;">"transactions"</span>: [ Transaction, ... ],
+  <span style="color:#94a3b8;">"loans"</span>: [ Loan, ... ]           <span style="color:#6b7280;">// 仅 invest; pocket 为 []</span>
+}</code></pre>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">📝 Transaction（交易记录）</div>
+    <div class="mockup-body" style="padding:16px;">
+      <pre style="background:#1e293b; color:#e2e8f0; padding:16px; border-radius:10px; font-size:12px; line-height:1.7; overflow-x:auto;"><code>{
+  <span style="color:#94a3b8;">"id"</span>: <span style="color:#a5d6ff;">"txn_1706000000_abc123"</span>,
+  <span style="color:#94a3b8;">"type"</span>: <span style="color:#a5d6ff;">"expense"</span>,          <span style="color:#6b7280;">// "income" | "expense"</span>
+  <span style="color:#94a3b8;">"category"</span>: <span style="color:#a5d6ff;">"car_buy"</span>,      <span style="color:#6b7280;">// car_buy | car_sell | allowance</span>
+                              <span style="color:#6b7280;">// loan_new | loan_repay</span>
+                              <span style="color:#6b7280;">// transfer_in | transfer_out | other</span>
+  <span style="color:#94a3b8;">"amount"</span>: <span style="color:#fbbf24;">120.00</span>,
+  <span style="color:#94a3b8;">"date"</span>: <span style="color:#a5d6ff;">"2026-06-15"</span>,
+  <span style="color:#94a3b8;">"carSid"</span>: <span style="color:#a5d6ff;">"a1b2c3d4-..."</span>,   <span style="color:#6b7280;">// null if not car-related</span>
+  <span style="color:#94a3b8;">"loanId"</span>: <span style="color:#6b7280;">null</span>,             <span style="color:#6b7280;">// null if not loan-related</span>
+  <span style="color:#94a3b8;">"transferPairId"</span>: <span style="color:#6b7280;">null</span>,      <span style="color:#6b7280;">// set for both sides of transfer</span>
+  <span style="color:#94a3b8;">"note"</span>: <span style="color:#a5d6ff;">"闲鱼购入"</span>
+}</code></pre>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+
+    <div class="mockup">
+      <div class="mockup-header">🚗 Car（小车）</div>
+      <div class="mockup-body" style="padding:12px;">
+        <pre style="background:#1e293b; color:#e2e8f0; padding:12px; border-radius:10px; font-size:11px; line-height:1.6; overflow-x:auto;"><code>{
+  <span style="color:#94a3b8;">"sid"</span>: <span style="color:#a5d6ff;">"a1b2c3d4-..."</span>,
+  <span style="color:#94a3b8;">"brand"</span>: <span style="color:#a5d6ff;">"Hot Wheels"</span>,
+  <span style="color:#94a3b8;">"name"</span>: <span style="color:#a5d6ff;">"法拉利 F40"</span>,
+  <span style="color:#94a3b8;">"buyDate"</span>: <span style="color:#a5d6ff;">"2024-03-15"</span>,
+  <span style="color:#94a3b8;">"buyPrice"</span>: <span style="color:#fbbf24;">700</span>,
+  <span style="color:#94a3b8;">"expectedValue"</span>: <span style="color:#fbbf24;">1200</span>,
+  <span style="color:#94a3b8;">"category"</span>: <span style="color:#a5d6ff;">"invest"</span>,
+  <span style="color:#94a3b8;">"sellPrice"</span>: <span style="color:#6b7280;">null</span>,
+  <span style="color:#94a3b8;">"soldDate"</span>: <span style="color:#6b7280;">null</span>,
+  <span style="color:#94a3b8;">"isSold"</span>: <span style="color:#fb923c;">false</span>,
+  <span style="color:#94a3b8;">"note"</span>: <span style="color:#a5d6ff;">"限量版"</span>
+}</code></pre>
+      </div>
+    </div>
+
+    <div class="mockup">
+      <div class="mockup-header">🏦 Loan（贷款）</div>
+      <div class="mockup-body" style="padding:12px;">
+        <pre style="background:#1e293b; color:#e2e8f0; padding:12px; border-radius:10px; font-size:11px; line-height:1.6; overflow-x:auto;"><code>{
+  <span style="color:#94a3b8;">"id"</span>: <span style="color:#a5d6ff;">"loan_abc123"</span>,
+  <span style="color:#94a3b8;">"name"</span>: <span style="color:#a5d6ff;">"购车贷款A"</span>,
+  <span style="color:#94a3b8;">"amount"</span>: <span style="color:#fbbf24;">5000</span>,
+  <span style="color:#94a3b8;">"remaining"</span>: <span style="color:#fbbf24;">3500</span>,
+  <span style="color:#94a3b8;">"startDate"</span>: <span style="color:#a5d6ff;">"2026-06-10"</span>,
+  <span style="color:#94a3b8;">"dueDate"</span>: <span style="color:#a5d6ff;">"2026-12-10"</span>,
+  <span style="color:#94a3b8;">"status"</span>: <span style="color:#a5d6ff;">"active"</span>,
+  <span style="color:#94a3b8;">"note"</span>: <span style="color:#a5d6ff;">""</span>
+}</code></pre>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">🔄 TransferPair（转账配对）</div>
+    <div class="mockup-body" style="padding:16px;">
+      <pre style="background:#1e293b; color:#e2e8f0; padding:16px; border-radius:10px; font-size:12px; line-height:1.7; overflow-x:auto;"><code>{
+  <span style="color:#94a3b8;">"id"</span>: <span style="color:#a5d6ff;">"xf_1706000000"</span>,
+  <span style="color:#94a3b8;">"fromAccount"</span>: <span style="color:#a5d6ff;">"invest"</span>,    <span style="color:#6b7280;">// 转出账户</span>
+  <span style="color:#94a3b8;">"toAccount"</span>: <span style="color:#a5d6ff;">"pocket"</span>,      <span style="color:#6b7280;">// 转入账户</span>
+  <span style="color:#94a3b8;">"amount"</span>: <span style="color:#fbbf24;">1000.00</span>,
+  <span style="color:#94a3b8;">"date"</span>: <span style="color:#a5d6ff;">"2026-06-20"</span>,
+  <span style="color:#94a3b8;">"note"</span>: <span style="color:#a5d6ff;">"投资盈利转回零花钱"</span>
+}</code></pre>
+      <div style="margin-top:12px; padding:10px; background:rgba(219,234,254,0.5); border-radius:8px; font-size:12px;">
+        💡 每次转账在双方账户各生成一条 Transaction（type 相反），共享同一个 <code>transferPairId</code>。TransferPair 作为独立记录保存转账详情。
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>📊 余额计算规则（实时计算，不存储）</h3>
+  <table style="width:100%; border-collapse:collapse; font-size:13px; margin-top:8px;">
+    <thead>
+      <tr style="border-bottom:2px solid #e5e7eb; background:#f9fafb;">
+        <th style="padding:8px 12px; text-align:left;">指标</th>
+        <th style="padding:8px 12px; text-align:left;">计算方式</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid #f3f4f6;">
+        <td style="padding:8px 12px; font-weight:600;">账户余额</td>
+        <td style="padding:8px 12px;"><code>sum(income) - sum(expense)</code> 该账户所有交易</td>
+      </tr>
+      <tr style="border-bottom:1px solid #f3f4f6;">
+        <td style="padding:8px 12px; font-weight:600;">零花钱余量</td>
+        <td style="padding:8px 12px;">pocket 账户余额</td>
+      </tr>
+      <tr style="border-bottom:1px solid #f3f4f6;">
+        <td style="padding:8px 12px; font-weight:600;">投资款余额</td>
+        <td style="padding:8px 12px;">invest 账户余额</td>
+      </tr>
+      <tr style="border-bottom:1px solid #f3f4f6;">
+        <td style="padding:8px 12px; font-weight:600;">已投资小车总额</td>
+        <td style="padding:8px 12px;"><code>sum(buyPrice)</code> 所有 category=invest 且未售出的小车</td>
+      </tr>
+      <tr style="border-bottom:1px solid #f3f4f6;">
+        <td style="padding:8px 12px; font-weight:600;">库存小车预期价值</td>
+        <td style="padding:8px 12px;"><code>sum(expectedValue)</code> 所有未售出小车</td>
+      </tr>
+      <tr>
+        <td style="padding:8px 12px; font-weight:600;">近三月零花钱消费</td>
+        <td style="padding:8px 12px;">pocket 账户按月份 groupBy → sum(expense)</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

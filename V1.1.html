@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>记账管理系统 v1.1.1</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* ===== Apple Glass Morphism Base ===== */
+        body {
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+            font-size: 15.5px;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #e8ecf1 0%, #dce3ea 25%, #e3e8f0 50%, #dde4ee 75%, #e6ebf3 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+        /* 背景装饰光斑 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -20%; left: -10%;
+            width: 60%; height: 60%;
+            background: radial-gradient(ellipse, rgba(147,197,253,0.25) 0%, transparent 70%);
+            pointer-events: none; z-index: 0;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -15%; right: -10%;
+            width: 55%; height: 55%;
+            background: radial-gradient(ellipse, rgba(196,167,231,0.18) 0%, transparent 70%);
+            pointer-events: none; z-index: 0;
+        }
+
+        /* ===== Glass Panel ===== */
+        .glass {
+            background: rgba(255,255,255,0.62);
+            backdrop-filter: blur(20px) saturate(140%);
+            -webkit-backdrop-filter: blur(20px) saturate(140%);
+            border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
+        }
+        .glass-strong {
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: blur(24px) saturate(160%);
+            -webkit-backdrop-filter: blur(24px) saturate(160%);
+            border: 1px solid rgba(255,255,255,0.6);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03), 0 12px 32px rgba(0,0,0,0.07);
+        }
+        .glass-light {
+            background: rgba(255,255,255,0.45);
+            backdrop-filter: blur(12px) saturate(120%);
+            -webkit-backdrop-filter: blur(12px) saturate(120%);
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+        .glass-header {
+            background: rgba(255,255,255,0.55);
+            backdrop-filter: blur(10px) saturate(130%);
+            -webkit-backdrop-filter: blur(10px) saturate(130%);
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+        }
+        .glass-input {
+            background: rgba(255,255,255,0.5);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+        .glass-input:focus {
+            background: rgba(255,255,255,0.75);
+            border-color: rgba(59,130,246,0.4);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.08);
+            outline: none;
+        }
+        .glass-input::placeholder { color: #b0b8c1; }
+
+        /* ===== Rounded Corners ===== */
+        .rounded-xl-apple { border-radius: 14px; }
+        .rounded-2xl-apple { border-radius: 18px; }
+
+        /* ===== Buttons ===== */
+        .btn-glass {
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+        }
+        .btn-glass:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .btn-glass:active { transform: translateY(0); }
+
+        /* ===== Text Colors ===== */
+        .text-positive { color: #dc2626; }
+        .text-negative { color: #059669; }
+
+        /* ===== Category Colors (softened for glass) ===== */
+        .text-invest { color: #dc2626; }
+        .text-keep { color: #059669; }
+        .text-transfer { color: #b88a00; }
+        .badge-invest {
+            background: rgba(254,226,226,0.7); color: #dc2626;
+            border: 1px solid rgba(239,68,68,0.2); border-radius: 8px;
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+        }
+        .badge-keep {
+            background: rgba(209,250,229,0.7); color: #059669;
+            border: 1px solid rgba(16,185,129,0.2); border-radius: 8px;
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+        }
+        .badge-transfer {
+            background: rgba(254,243,199,0.7); color: #b88a00;
+            border: 1px solid rgba(234,179,8,0.2); border-radius: 8px;
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+        }
+
+        /* ===== Brand Dropdown ===== */
+        .brand-wrap { position: relative; }
+        .brand-dropdown {
+            position: absolute; top: 100%; left: 0; right: 0;
+            max-height: 200px; overflow-y: auto;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(0,0,0,0.06); border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            z-index: 20; display: none; list-style: none; padding: 4px; margin: 4px 0;
+        }
+        .brand-dropdown.show { display: block; }
+        .brand-dropdown li {
+            padding: 8px 12px; cursor: pointer; font-size: 14px;
+            border-radius: 8px; transition: background 0.15s;
+        }
+        .brand-dropdown li:hover { background: rgba(59,130,246,0.08); }
+
+        /* ===== Search ===== */
+        mark.search-hit { background-color: rgba(251,191,36,0.3); padding: 0 2px; border-radius: 3px; }
+
+        /* ===== View Tabs ===== */
+        .view-tab {
+            padding: 10px 20px; font-size: 14px; font-weight: 500;
+            border-bottom: 2px solid transparent; cursor: pointer;
+            color: #8e8e93; transition: all 0.2s ease;
+            background: none; border-radius: 0;
+        }
+        .view-tab.active { color: #0071e3; border-bottom-color: #0071e3; }
+        .view-tab:hover:not(.active) { color: #1d1d1f; border-bottom-color: rgba(0,0,0,0.1); }
+
+        /* ===== Convert Buttons ===== */
+        .btn-convert {
+            font-size: 12px; padding: 3px 10px; border-radius: 10px;
+            cursor: pointer; border: 1px solid; transition: all 0.2s ease;
+            white-space: nowrap; backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+        .btn-convert:hover { transform: translateY(-1px); }
+        .btn-to-keep { color: #059669; border-color: rgba(16,185,129,0.3); background: rgba(209,250,229,0.6); }
+        .btn-to-keep:hover { background: rgba(167,243,208,0.7); box-shadow: 0 2px 8px rgba(16,185,129,0.12); }
+        .btn-to-invest { color: #dc2626; border-color: rgba(239,68,68,0.3); background: rgba(254,226,226,0.6); }
+        .btn-to-invest:hover { background: rgba(254,202,202,0.7); box-shadow: 0 2px 8px rgba(239,68,68,0.12); }
+        .btn-sell {
+            font-size: 12px; padding: 3px 12px; border-radius: 10px;
+            cursor: pointer; border: 1px solid rgba(234,179,8,0.3);
+            background: rgba(254,243,199,0.6); color: #a16207;
+            font-weight: 500; white-space: nowrap;
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+            transition: all 0.2s ease;
+        }
+        .btn-sell:hover { background: rgba(253,230,138,0.7); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(234,179,8,0.15); }
+
+        /* ===== Category View ===== */
+        .category-section { margin-bottom: 28px; }
+        .category-header {
+            font-size: 17px; font-weight: 700; padding: 12px 20px;
+            border-radius: 16px 16px 0 0; display: flex;
+            justify-content: space-between; align-items: center;
+        }
+        .category-header.invest {
+            background: rgba(254,226,226,0.6); color: #dc2626;
+            border: 1px solid rgba(239,68,68,0.15); border-bottom: none;
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        }
+        .category-header.keep {
+            background: rgba(209,250,229,0.6); color: #059669;
+            border: 1px solid rgba(16,185,129,0.15); border-bottom: none;
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        }
+        .category-header.transfer {
+            background: rgba(254,243,199,0.6); color: #a16207;
+            border: 1px solid rgba(234,179,8,0.15); border-bottom: none;
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        }
+        .category-body {
+            border: 1px solid rgba(0,0,0,0.04); border-top: none;
+            border-radius: 0 0 16px 16px; padding: 0;
+            background: rgba(255,255,255,0.4);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        }
+
+        /* ===== Table ===== */
+        table thead tr { background: rgba(0,0,0,0.02); }
+        table tbody tr:hover { background: rgba(255,255,255,0.5); }
+
+        /* ===== Modal Backdrop ===== */
+        .modal-backdrop {
+            background: rgba(0,0,0,0.25);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+    </style>
+</head>
+<body class="text-gray-800 antialiased min-h-screen relative z-10">
+
+    <!-- 顶部导航 -->
+    <header class="glass-header sticky top-0 z-40">
+        <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+            <h1 class="text-2xl font-bold flex items-center">
+                <svg class="w-6 h-6 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                记账管理系统
+            </h1>
+            <div class="flex items-center space-x-3">
+                <span id="appVersion" class="text-xs text-gray-400 font-medium">v1.1.1</span>
+                <button onclick="exportData()" class="text-sm px-3 py-1.5 glass-light rounded-xl-apple hover:bg-white/60 btn-glass">导出JSON</button>
+                <label class="text-sm px-3 py-1.5 glass-light rounded-xl-apple hover:bg-white/60 cursor-pointer btn-glass">
+                    导入JSON <input type="file" class="hidden" accept=".json" onchange="importData(event)">
+                </label>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-6">
+        <!-- 全局统计数据看板 -->
+        <div class="glass-strong rounded-2xl-apple p-4 mb-6 grid grid-cols-2 gap-4">
+            <div class="text-center border-r border-gray-100">
+                <div class="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">总余额</div>
+                <div id="globalTotalBalance" class="text-xl font-bold text-gray-900">¥0.00</div>
+            </div>
+            <div class="text-center">
+                <div class="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">总库存金额</div>
+                <div id="globalTotalInventory" class="text-xl font-bold text-gray-800">¥0.00</div>
+            </div>
+        </div>
+
+        <!-- 搜索框 -->
+        <div class="relative mb-4">
+            <svg class="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <input id="searchBox" type="text" placeholder="搜索账单名称..." oninput="onSearch()"
+                   class="w-full glass-input p-3 pl-10 text-sm">
+        </div>
+
+        <!-- 首页头部与新建按钮 -->
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-lg font-bold">账单组列表</h2>
+            <button onclick="openGroupModal()" class="bg-blue-600/90 backdrop-blur text-white px-5 py-2.5 rounded-xl-apple shadow-sm hover:bg-blue-700 hover:shadow-md font-medium btn-glass">+ 新建账单组</button>
+        </div>
+
+        <!-- 账单组容器 -->
+        <div id="appContainer" class="space-y-6"></div>
+    </main>
+
+    <!-- 弹窗：新建/编辑账单组 -->
+    <div id="groupModal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-50">
+        <div class="glass-strong rounded-2xl-apple w-full max-w-sm p-6">
+            <h3 class="font-bold text-lg mb-4" id="groupModalTitle">新建账单组</h3>
+            <input type="hidden" id="groupId">
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">账单组名称</label>
+                    <input type="text" id="groupName" placeholder="如：第一季度闲鱼小车" class="w-full glass-input p-2.5 text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">限额</label>
+                    <input type="number" id="groupQuota" placeholder="0" class="w-full glass-input p-2.5 text-sm">
+                </div>
+                <div id="groupDateWrap" class="hidden">
+                    <label class="block text-sm text-gray-600 mb-1">新建日期</label>
+                    <input type="date" id="groupDate" class="w-full glass-input p-2.5 text-sm">
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-2">
+                <button onclick="closeModal('groupModal')" class="px-4 py-2 glass-light rounded-xl-apple hover:bg-white/60 text-sm btn-glass">取消</button>
+                <button onclick="saveGroup()" class="px-4 py-2 bg-blue-600/90 backdrop-blur text-white rounded-xl-apple hover:bg-blue-700 text-sm btn-glass">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 弹窗：添加/编辑账单 -->
+    <div id="billModal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-50">
+        <div class="glass-strong rounded-2xl-apple w-full max-w-md p-0 overflow-hidden">
+            <div class="px-6 py-4 border-b border-black/5 glass-light flex justify-between items-center">
+                <h3 class="font-bold text-lg" id="billModalTitle">添加账单</h3>
+                <button onclick="closeModal('billModal')" class="text-gray-400 hover:text-gray-800">✕</button>
+            </div>
+
+            <div class="flex border-b" id="billTypeTabs">
+                <button onclick="setBillType('投资')" id="tabInvest" class="flex-1 py-3 text-sm font-bold text-red-600 border-b-2 border-red-600">投资</button>
+                <button onclick="setBillType('自留')" id="tabKeep" class="flex-1 py-3 text-sm font-bold text-gray-500 border-b-2 border-transparent hover:text-green-600">自留</button>
+                <button onclick="setBillType('转账')" id="tabTransfer" class="flex-1 py-3 text-sm font-bold text-gray-500 border-b-2 border-transparent hover:text-yellow-600">转账</button>
+            </div>
+
+            <div class="p-6 space-y-4">
+                <input type="hidden" id="billGroupId">
+                <input type="hidden" id="billId">
+                <input type="hidden" id="billType" value="投资">
+
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">名称</label>
+                    <input type="text" id="billName" placeholder="如：MINI GT / 热火" class="w-full glass-input p-2.5 text-sm">
+                </div>
+
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">品牌</label>
+                    <div class="brand-wrap">
+                        <input type="text" id="billBrand" placeholder="如：MINI GT / Hot Wheels" autocomplete="off"
+                               oninput="filterBrands()" onfocus="filterBrands()" onblur="hideBrandDropdown()"
+                               class="w-full glass-input p-2.5 text-sm">
+                        <ul id="brandDropdown" class="brand-dropdown"></ul>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">日期 (默认今天)</label>
+                    <input type="date" id="billDate" class="w-full glass-input p-2.5 text-sm">
+                </div>
+
+                <div id="buyFields">
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold text-green-600 mb-1" id="labelPrice">买入价格</label>
+                        <input type="number" id="billPrice" step="0.01" class="w-full glass-input p-2.5 text-sm focus:border-green-400">
+                    </div>
+                    <div>
+                        <label class="block text-sm text-gray-600 mb-1">预期价值</label>
+                        <input type="number" id="billExpected" step="0.01" class="w-full glass-input p-2.5 text-sm">
+                    </div>
+                </div>
+
+                <div id="transferFields" class="hidden">
+                    <div>
+                        <label class="block text-sm font-bold text-red-600 mb-1">转账金额</label>
+                        <input type="number" id="billAmount" step="0.01" class="w-full glass-input p-2.5 text-sm focus:border-red-400">
+                    </div>
+                </div>
+            </div>
+            <div class="px-6 py-4 glass-light flex justify-end space-x-2 border-t border-black/5">
+                <button onclick="closeModal('billModal')" class="px-4 py-2 glass rounded-xl-apple hover:bg-white/70 text-sm btn-glass">取消</button>
+                <button onclick="saveBill()" class="px-4 py-2 bg-blue-600/90 backdrop-blur text-white rounded-xl-apple hover:bg-blue-700 text-sm btn-glass">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 弹窗：卖出确认 -->
+    <div id="sellModal" class="hidden fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-50">
+        <div class="glass-strong rounded-2xl-apple w-full max-w-sm p-6 border-t-4 border-yellow-400/60">
+            <h3 class="font-bold text-lg mb-4 text-gray-800">登记卖出</h3>
+            <input type="hidden" id="sellGroupId">
+            <input type="hidden" id="sellBillId">
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">买家</label>
+                    <input type="text" id="sellBuyer" placeholder="如：闲鱼用户xxx" class="w-full glass-input p-2.5 text-sm">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">卖出金额</label>
+                    <input type="number" id="sellPrice" step="0.01" class="w-full glass-input p-2.5 text-sm focus:border-yellow-400">
+                </div>
+                <div>
+                    <label class="block text-sm text-gray-600 mb-1">卖出日期 (默认今天)</label>
+                    <input type="date" id="sellDate" class="w-full glass-input p-2.5 text-sm">
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-2">
+                <button onclick="closeModal('sellModal')" class="px-4 py-2 glass-light rounded-xl-apple hover:bg-white/60 text-sm btn-glass">取消</button>
+                <button onclick="confirmSell()" class="px-4 py-2 bg-yellow-500/90 backdrop-blur text-white rounded-xl-apple hover:bg-yellow-600 text-sm font-bold btn-glass">确认卖出</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 核心数据结构
+        let appData = JSON.parse(localStorage.getItem('accountingData')) || [];
+        let searchText = '';
+
+        // 辅助获取今天日期
+        const getToday = () => new Date().toISOString().split('T')[0];
+
+        // 页面初始化
+        window.onload = () => {
+            migrateData();
+            render();
+        };
+
+        // 数据迁移：旧格式 → 新格式
+        function migrateData() {
+            let changed = false;
+            appData.forEach(g => g.bills.forEach(b => {
+                if (b.type === 'buy') { b.type = '投资'; changed = true; }
+                if (b.type === 'transfer') { b.type = '转账'; changed = true; }
+                if (b.brand === undefined) { b.brand = ''; changed = true; }
+            }));
+            if (changed) localStorage.setItem('accountingData', JSON.stringify(appData));
+        }
+
+        // 数据保存并触发渲染
+        function saveData() {
+            localStorage.setItem('accountingData', JSON.stringify(appData));
+            render();
+        }
+
+        // ========================
+        // 品牌联想
+        // ========================
+        function getAllBrands() {
+            const brands = new Set();
+            appData.forEach(g => g.bills.forEach(b => {
+                if (b.brand && b.brand.trim()) brands.add(b.brand.trim());
+            }));
+            return Array.from(brands).sort();
+        }
+
+        function filterBrands() {
+            const input = document.getElementById('billBrand');
+            const dropdown = document.getElementById('brandDropdown');
+            const val = input.value.trim().toLowerCase();
+            const all = getAllBrands();
+
+            if (!val || all.length === 0) {
+                dropdown.classList.remove('show');
+                dropdown.innerHTML = '';
+                return;
+            }
+
+            const filtered = all.filter(b => b.toLowerCase().includes(val)).slice(0, 8);
+            if (filtered.length === 0) {
+                dropdown.classList.remove('show');
+                dropdown.innerHTML = '';
+                return;
+            }
+
+            dropdown.innerHTML = filtered.map(b => `<li onmousedown="selectBrand('${escapeHTML(b)}')">${escapeHTML(b)}</li>`).join('');
+            dropdown.classList.add('show');
+        }
+
+        function selectBrand(brand) {
+            document.getElementById('billBrand').value = brand;
+            document.getElementById('brandDropdown').classList.remove('show');
+            document.getElementById('brandDropdown').innerHTML = '';
+        }
+
+        function hideBrandDropdown() {
+            setTimeout(() => {
+                document.getElementById('brandDropdown').classList.remove('show');
+                document.getElementById('brandDropdown').innerHTML = '';
+            }, 150);
+        }
+
+        // ========================
+        // 搜索 & 视图切换
+        // ========================
+        function onSearch() {
+            searchText = document.getElementById('searchBox').value.trim().toLowerCase();
+            render();
+        }
+
+        // ========================
+        // 核心渲染逻辑
+        // ========================
+        function render() {
+            const container = document.getElementById('appContainer');
+            let globalTotalBalance = 0;
+            let globalTotalInventory = 0;
+
+            if (appData.length === 0) {
+                container.innerHTML = `<div class="text-center py-10 text-gray-400 glass rounded-2xl-apple">暂无账单组，点击右上角新建。</div>`;
+                document.getElementById('globalTotalBalance').innerText = '¥0.00';
+                document.getElementById('globalTotalBalance').className = 'text-xl font-bold text-gray-900';
+                document.getElementById('globalTotalInventory').innerText = '¥0.00';
+                return;
+            }
+
+            renderGroupView(container);
+
+            // 重新计算全局统计
+            globalTotalBalance = 0; globalTotalInventory = 0;
+            appData.forEach(group => {
+                let sumBuy = 0, sumSell = 0, sumTransfer = 0;
+                group.bills.forEach(b => {
+                    if (b.type === '投资' || b.type === '自留') {
+                        sumBuy += parseFloat(b.price || 0);
+                        if (b.isSold) {
+                            sumSell += parseFloat(b.sellPrice || 0);
+                        } else {
+                            globalTotalInventory += parseFloat(b.price || 0);
+                        }
+                    } else if (b.type === '转账') {
+                        sumTransfer += parseFloat(b.amount || 0);
+                    }
+                });
+                globalTotalBalance += (parseFloat(group.quota || 0) - sumBuy + sumSell + sumTransfer);
+            });
+
+            const globalBalSign = globalTotalBalance >= 0 ? '+' : '';
+            const globalBalClass = globalTotalBalance >= 0 ? 'text-xl font-bold text-positive' : 'text-xl font-bold text-negative';
+            const gtbEl = document.getElementById('globalTotalBalance');
+            if (gtbEl) { gtbEl.innerText = `¥${globalBalSign}${globalTotalBalance.toFixed(2)}`; gtbEl.className = globalBalClass; }
+            const gtiEl = document.getElementById('globalTotalInventory');
+            if (gtiEl) { gtiEl.innerText = `¥${globalTotalInventory.toFixed(2)}`; }
+        }
+
+        // 视图1: 按账单组（原视图 + 搜索过滤）
+        function renderGroupView(container) {
+            let hasVisible = false;
+
+            container.innerHTML = appData.map(group => {
+                let sumBuy = 0, sumSell = 0, sumTransfer = 0, groupInventory = 0;
+
+                // 按搜索词过滤账单
+                let visibleBills = group.bills;
+                if (searchText) {
+                    visibleBills = group.bills.filter(b => b.name.toLowerCase().includes(searchText));
+                }
+                if (visibleBills.length === 0 && searchText) return ''; // 搜索时隐藏无匹配组
+
+                group.bills.forEach(b => {
+                    if (b.type === '投资' || b.type === '自留') {
+                        sumBuy += parseFloat(b.price || 0);
+                        if (b.isSold) { sumSell += parseFloat(b.sellPrice || 0); }
+                        else { groupInventory += parseFloat(b.price || 0); }
+                    } else if (b.type === '转账') {
+                        sumTransfer += parseFloat(b.amount || 0);
+                    }
+                });
+
+                const balance = parseFloat(group.quota || 0) - sumBuy + sumSell + sumTransfer;
+                const isPositive = balance >= 0;
+                const balClass = isPositive ? 'text-positive' : 'text-negative';
+                const balSign = isPositive ? '+' : '';
+                hasVisible = true;
+
+                const billsToRender = searchText ? visibleBills : group.bills;
+
+                return `
+                <div class="glass rounded-2xl-apple overflow-hidden">
+                    <div class="glass-light p-4 border-b border-black/5 flex flex-col md:flex-row justify-between md:items-center gap-3">
+                        <div>
+                            <h3 class="font-bold text-lg">${escapeHTML(group.name)}</h3>
+                            <div class="text-sm text-gray-500 mt-1 flex flex-wrap gap-3">
+                                <span>新建: ${group.createDate}</span>
+                                <span>限额: ¥${parseFloat(group.quota).toFixed(2)}</span>
+                                <span class="font-bold border-l pl-3">
+                                    余额: <span class="${balClass}">¥${balSign}${balance.toFixed(2)}</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="openBillModal('${group.id}')" class="bg-blue-600/10 text-blue-700 px-3 py-1.5 rounded-xl-apple text-sm hover:bg-blue-600/20 font-medium btn-glass">添加账单</button>
+                            <button onclick="openGroupModal('${group.id}')" class="glass-light rounded-xl-apple px-3 py-1.5 text-sm hover:bg-white/60 btn-glass">编辑</button>
+                            <button onclick="deleteGroup('${group.id}')" class="glass-light rounded-xl-apple text-red-500 px-3 py-1.5 text-sm hover:bg-red-50 btn-glass">删除</button>
+                        </div>
+                    </div>
+                    <div class="p-0">
+                        <table class="w-full text-left text-sm whitespace-nowrap">
+                            <thead class="bg-black/[0.015] text-gray-500 border-b border-black/5">
+                                <tr>
+                                    <th class="px-4 py-2 w-1/4">名称/品牌/类型</th>
+                                    <th class="px-4 py-2">明细</th>
+                                    <th class="px-4 py-2">日期</th>
+                                    <th class="px-4 py-2 text-right">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100">
+                                ${billsToRender.length === 0 ? `<tr><td colspan="4" class="px-4 py-4 text-center text-gray-400">尚未添加账单</td></tr>` :
+                                billsToRender.map(bill => renderBillRow(group.id, bill)).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>`;
+            }).join('');
+
+            if (!hasVisible && searchText) {
+                container.innerHTML = `<div class="text-center py-10 text-gray-400 glass rounded-2xl-apple">没有匹配"${escapeHTML(searchText)}"的账单</div>`;
+            }
+        }
+
+        // 渲染单条账单行（共用）
+        function renderBillRow(groupId, bill) {
+            let badge = '', details = '', btns = '';
+            let nameDisplay = searchText ? highlightMatch(bill.name, searchText) : escapeHTML(bill.name);
+            let brandDisplay = bill.brand ? (searchText ? highlightMatch(bill.brand, searchText) : escapeHTML(bill.brand)) : '<span class="text-gray-300">-</span>';
+
+            if (bill.type === '投资') {
+                badge = `<span class="badge-invest px-2 py-0.5 rounded text-xs">投资</span>`;
+                if (bill.isSold) {
+                    details = `
+                        <div class="font-medium text-gray-800">买入: <span class="text-red-600">¥${parseFloat(bill.price).toFixed(2)}</span></div>
+                        <div class="text-xs text-gray-500 mt-1">
+                            <span class="bg-yellow-100 text-yellow-800 px-1 rounded">已卖出</span>
+                            买家: ${escapeHTML(bill.buyer)} | 卖出价: <span class="text-red-500 font-bold">¥${parseFloat(bill.sellPrice).toFixed(2)}</span>
+                            <br/>卖出日: ${bill.sellDate}
+                        </div>`;
+                    btns = `
+                        <button onclick="undoSell('${groupId}', '${bill.id}')" class="text-yellow-600 hover:underline mx-1 text-xs">撤回卖出</button>
+                        <button onclick="openBillModal('${groupId}', '${bill.id}')" class="text-blue-500 hover:underline mx-1 text-xs">编辑</button>
+                        <button onclick="deleteBill('${groupId}', '${bill.id}')" class="text-red-500 hover:underline mx-1 text-xs">删除</button>`;
+                } else {
+                    details = `
+                        <div class="font-bold text-red-600">¥${parseFloat(bill.price).toFixed(2)}</div>
+                        <div class="text-xs text-gray-500">预期价值: ¥${parseFloat(bill.expectedValue||0).toFixed(2)}</div>`;
+                    btns = `
+                        <button onclick="openSellModal('${groupId}', '${bill.id}')" class="btn-sell mx-0.5">卖出</button>
+                        <button onclick="convertType('${groupId}', '${bill.id}')" class="btn-convert btn-to-keep mx-0.5">→ 自留</button>
+                        <button onclick="openBillModal('${groupId}', '${bill.id}')" class="text-blue-500 hover:underline mx-0.5 text-xs">编辑</button>
+                        <button onclick="deleteBill('${groupId}', '${bill.id}')" class="text-red-500 hover:underline mx-0.5 text-xs">删除</button>`;
+                }
+            } else if (bill.type === '自留') {
+                badge = `<span class="badge-keep px-2 py-0.5 rounded text-xs">自留</span>`;
+                if (bill.isSold) {
+                    details = `
+                        <div class="font-medium text-gray-800">买入: <span class="text-green-600">¥${parseFloat(bill.price).toFixed(2)}</span></div>
+                        <div class="text-xs text-gray-500 mt-1">
+                            <span class="bg-yellow-100 text-yellow-800 px-1 rounded">已卖出</span>
+                            买家: ${escapeHTML(bill.buyer)} | 卖出价: <span class="text-red-500 font-bold">¥${parseFloat(bill.sellPrice).toFixed(2)}</span>
+                            <br/>卖出日: ${bill.sellDate}
+                        </div>`;
+                    btns = `
+                        <button onclick="undoSell('${groupId}', '${bill.id}')" class="text-yellow-600 hover:underline mx-1 text-xs">撤回卖出</button>
+                        <button onclick="openBillModal('${groupId}', '${bill.id}')" class="text-blue-500 hover:underline mx-1 text-xs">编辑</button>
+                        <button onclick="deleteBill('${groupId}', '${bill.id}')" class="text-red-500 hover:underline mx-1 text-xs">删除</button>`;
+                } else {
+                    details = `
+                        <div class="font-bold text-green-600">¥${parseFloat(bill.price).toFixed(2)}</div>
+                        <div class="text-xs text-gray-500">预期价值: ¥${parseFloat(bill.expectedValue||0).toFixed(2)}</div>`;
+                    btns = `
+                        <button onclick="openSellModal('${groupId}', '${bill.id}')" class="btn-sell mx-0.5">卖出</button>
+                        <button onclick="convertType('${groupId}', '${bill.id}')" class="btn-convert btn-to-invest mx-0.5">→ 投资</button>
+                        <button onclick="openBillModal('${groupId}', '${bill.id}')" class="text-blue-500 hover:underline mx-0.5 text-xs">编辑</button>
+                        <button onclick="deleteBill('${groupId}', '${bill.id}')" class="text-red-500 hover:underline mx-0.5 text-xs">删除</button>`;
+                }
+            } else {
+                badge = `<span class="badge-transfer px-2 py-0.5 rounded text-xs">转账</span>`;
+                details = `<div class="font-bold text-yellow-600">¥${parseFloat(bill.amount).toFixed(2)}</div>`;
+                if (bill.isSold) {
+                    details += `<div class="text-xs text-gray-500 mt-1">
+                        <span class="bg-yellow-100 text-yellow-800 px-1 rounded">已卖出</span>
+                        买家: ${escapeHTML(bill.buyer)} | 卖出价: <span class="text-red-500 font-bold">¥${parseFloat(bill.sellPrice).toFixed(2)}</span>
+                        <br/>卖出日: ${bill.sellDate}
+                    </div>`;
+                    btns = `
+                        <button onclick="undoSell('${groupId}', '${bill.id}')" class="text-yellow-600 hover:underline mx-1 text-xs">撤回卖出</button>
+                        <button onclick="openBillModal('${groupId}', '${bill.id}')" class="text-blue-500 hover:underline mx-1 text-xs">编辑</button>
+                        <button onclick="deleteBill('${groupId}', '${bill.id}')" class="text-red-500 hover:underline mx-1 text-xs">删除</button>`;
+                } else {
+                    btns = `
+                        <button onclick="openSellModal('${groupId}', '${bill.id}')" class="btn-sell mx-0.5">卖出</button>
+                        <button onclick="openBillModal('${groupId}', '${bill.id}')" class="text-blue-500 hover:underline mx-0.5 text-xs">编辑</button>
+                        <button onclick="deleteBill('${groupId}', '${bill.id}')" class="text-red-500 hover:underline mx-0.5 text-xs">删除</button>`;
+                }
+            }
+
+            return `<tr class="hover:bg-white/50">
+                <td class="px-4 py-3">
+                    <div class="font-medium text-gray-800">${nameDisplay}</div>
+                    <div class="text-xs text-gray-500 mt-0.5">${brandDisplay}</div>
+                    <div class="mt-1">${badge}</div>
+                </td>
+                <td class="px-4 py-3">${details}</td>
+                <td class="px-4 py-3 text-gray-500">${bill.date}</td>
+                <td class="px-4 py-3 text-right">${btns}</td>
+            </tr>`;
+        }
+
+        // 搜索高亮
+        function highlightMatch(text, keyword) {
+            if (!keyword) return escapeHTML(text);
+            const escaped = escapeHTML(text);
+            const keywordEscaped = escapeHTML(keyword);
+            const regex = new RegExp(`(${keywordEscaped.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            return escaped.replace(regex, '<mark class="search-hit">$1</mark>');
+        }
+
+        // ========================
+        // 投资 ↔ 自留 转换
+        // ========================
+        function convertType(groupId, billId) {
+            const group = appData.find(g => g.id === groupId);
+            const bill = group.bills.find(b => b.id === billId);
+            if (bill.type === '投资') {
+                bill.type = '自留';
+            } else if (bill.type === '自留') {
+                bill.type = '投资';
+            }
+            saveData();
+        }
+
+        // ========================
+        // 账单组操作
+        // ========================
+        function openGroupModal(id = null) {
+            document.getElementById('groupModal').classList.remove('hidden');
+            if (id) {
+                document.getElementById('groupModalTitle').innerText = "编辑账单组";
+                const g = appData.find(x => x.id === id);
+                document.getElementById('groupId').value = g.id;
+                document.getElementById('groupName').value = g.name;
+                document.getElementById('groupQuota').value = g.quota;
+                document.getElementById('groupDate').value = g.createDate;
+                document.getElementById('groupDateWrap').classList.remove('hidden');
+            } else {
+                document.getElementById('groupModalTitle').innerText = "新建账单组";
+                document.getElementById('groupId').value = "";
+                document.getElementById('groupName').value = "";
+                document.getElementById('groupQuota').value = "";
+                document.getElementById('groupDateWrap').classList.add('hidden');
+            }
+        }
+
+        function saveGroup() {
+            const id = document.getElementById('groupId').value;
+            const name = document.getElementById('groupName').value.trim();
+            const quota = parseFloat(document.getElementById('groupQuota').value) || 0;
+            const date = document.getElementById('groupDate').value || getToday();
+
+            if (!name) return alert("请输入名称");
+
+            if (id) {
+                const g = appData.find(x => x.id === id);
+                g.name = name;
+                g.quota = quota;
+                g.createDate = date;
+            } else {
+                appData.push({
+                    id: 'g_' + Date.now(),
+                    name,
+                    quota,
+                    createDate: getToday(),
+                    bills: []
+                });
+            }
+            saveData();
+            closeModal('groupModal');
+        }
+
+        function deleteGroup(id) {
+            if(confirm("确定删除整个账单组及其内所有账单吗？")) {
+                appData = appData.filter(x => x.id !== id);
+                saveData();
+            }
+        }
+
+        // ========================
+        // 账单操作
+        // ========================
+        function openBillModal(groupId, billId = null) {
+            document.getElementById('billModal').classList.remove('hidden');
+            document.getElementById('billGroupId').value = groupId;
+
+            document.getElementById('billName').value = "";
+            document.getElementById('billBrand').value = "";
+            document.getElementById('billDate').value = getToday();
+            document.getElementById('billPrice').value = "";
+            document.getElementById('billExpected').value = "";
+            document.getElementById('billAmount').value = "";
+            document.getElementById('billTypeTabs').classList.remove('pointer-events-none', 'opacity-50');
+
+            if (billId) {
+                document.getElementById('billModalTitle').innerText = "编辑账单";
+                document.getElementById('billId').value = billId;
+                const group = appData.find(g => g.id === groupId);
+                const bill = group.bills.find(b => b.id === billId);
+
+                document.getElementById('billName').value = bill.name;
+                document.getElementById('billBrand').value = bill.brand || '';
+                document.getElementById('billDate').value = bill.date;
+
+                document.getElementById('billTypeTabs').classList.add('pointer-events-none', 'opacity-50');
+
+                setBillType(bill.type);
+                if (bill.type === '投资' || bill.type === '自留') {
+                    document.getElementById('billPrice').value = bill.price;
+                    document.getElementById('billExpected').value = bill.expectedValue;
+                } else {
+                    document.getElementById('billAmount').value = bill.amount;
+                }
+            } else {
+                document.getElementById('billModalTitle').innerText = "添加账单";
+                document.getElementById('billId').value = "";
+                setBillType('投资');
+            }
+        }
+
+        function setBillType(type) {
+            document.getElementById('billType').value = type;
+            const isBuy = type === '投资' || type === '自留';
+            const isInvest = type === '投资';
+            const isKeep = type === '自留';
+
+            // 更新标签样式
+            const tabInvest = document.getElementById('tabInvest');
+            const tabKeep = document.getElementById('tabKeep');
+            const tabTransfer = document.getElementById('tabTransfer');
+
+            tabInvest.className = isInvest ? "flex-1 py-3 text-sm font-bold text-red-600 border-b-2 border-red-600" : "flex-1 py-3 text-sm font-bold text-gray-500 border-b-2 border-transparent hover:text-red-600 cursor-pointer";
+            tabKeep.className = isKeep ? "flex-1 py-3 text-sm font-bold text-green-600 border-b-2 border-green-600" : "flex-1 py-3 text-sm font-bold text-gray-500 border-b-2 border-transparent hover:text-green-600 cursor-pointer";
+            tabTransfer.className = (!isBuy) ? "flex-1 py-3 text-sm font-bold text-yellow-600 border-b-2 border-yellow-600" : "flex-1 py-3 text-sm font-bold text-gray-500 border-b-2 border-transparent hover:text-yellow-600 cursor-pointer";
+
+            // 更新字段区域
+            const buyFields = document.getElementById('buyFields');
+            const transferFields = document.getElementById('transferFields');
+            const labelPrice = document.getElementById('labelPrice');
+
+            buyFields.className = isBuy ? "block" : "hidden";
+            transferFields.className = !isBuy ? "block" : "hidden";
+
+            if (isInvest) {
+                labelPrice.innerText = '投资价格';
+                labelPrice.className = 'block text-sm font-bold text-red-600 mb-1';
+                document.getElementById('billPrice').className = 'w-full glass-input p-2.5 text-sm focus:border-red-400';
+            } else if (isKeep) {
+                labelPrice.innerText = '自留价格';
+                labelPrice.className = 'block text-sm font-bold text-green-600 mb-1';
+                document.getElementById('billPrice').className = 'w-full glass-input p-2.5 text-sm focus:border-green-400';
+            }
+        }
+
+        function saveBill() {
+            const groupId = document.getElementById('billGroupId').value;
+            const billId = document.getElementById('billId').value;
+            const type = document.getElementById('billType').value;
+            const name = document.getElementById('billName').value.trim();
+            const brand = document.getElementById('billBrand').value.trim();
+            const date = document.getElementById('billDate').value || getToday();
+
+            if(!name) return alert("填写名称");
+
+            const group = appData.find(g => g.id === groupId);
+
+            let billData = { name, brand, date, type };
+
+            if (type === '投资' || type === '自留') {
+                billData.price = parseFloat(document.getElementById('billPrice').value) || 0;
+                billData.expectedValue = parseFloat(document.getElementById('billExpected').value) || 0;
+            } else {
+                billData.amount = parseFloat(document.getElementById('billAmount').value) || 0;
+            }
+
+            if (billId) {
+                const oldBill = group.bills.find(b => b.id === billId);
+                billData.id = billId;
+                if ((type === '投资' || type === '自留') && (oldBill.type === '投资' || oldBill.type === '自留')) {
+                    billData.isSold = oldBill.isSold;
+                    billData.buyer = oldBill.buyer;
+                    billData.sellPrice = oldBill.sellPrice;
+                    billData.sellDate = oldBill.sellDate;
+                }
+                if (type === '转账' && oldBill.type === '转账') {
+                    billData.isSold = oldBill.isSold;
+                    billData.buyer = oldBill.buyer;
+                    billData.sellPrice = oldBill.sellPrice;
+                    billData.sellDate = oldBill.sellDate;
+                }
+                group.bills = group.bills.map(b => b.id === billId ? billData : b);
+            } else {
+                billData.id = 'b_' + Date.now();
+                if (type === '投资' || type === '自留' || type === '转账') billData.isSold = false;
+                group.bills.push(billData);
+            }
+
+            saveData();
+            closeModal('billModal');
+        }
+
+        function deleteBill(groupId, billId) {
+            if(confirm("确定删除此账单吗？")) {
+                const group = appData.find(g => g.id === groupId);
+                group.bills = group.bills.filter(b => b.id !== billId);
+                saveData();
+            }
+        }
+
+        // ========================
+        // 卖出操作
+        // ========================
+        function openSellModal(groupId, billId) {
+            document.getElementById('sellModal').classList.remove('hidden');
+            document.getElementById('sellGroupId').value = groupId;
+            document.getElementById('sellBillId').value = billId;
+            document.getElementById('sellBuyer').value = "";
+            document.getElementById('sellDate').value = getToday();
+
+            const group = appData.find(g => g.id === groupId);
+            const bill = group.bills.find(b => b.id === billId);
+            if(bill && bill.expectedValue) {
+                document.getElementById('sellPrice').value = bill.expectedValue;
+            } else {
+                document.getElementById('sellPrice').value = "";
+            }
+        }
+
+        function confirmSell() {
+            const groupId = document.getElementById('sellGroupId').value;
+            const billId = document.getElementById('sellBillId').value;
+            const buyer = document.getElementById('sellBuyer').value.trim();
+            const sellPrice = parseFloat(document.getElementById('sellPrice').value) || 0;
+            const sellDate = document.getElementById('sellDate').value || getToday();
+
+            const group = appData.find(g => g.id === groupId);
+            const bill = group.bills.find(b => b.id === billId);
+
+            bill.isSold = true;
+            bill.buyer = buyer;
+            bill.sellPrice = sellPrice;
+            bill.sellDate = sellDate;
+
+            saveData();
+            closeModal('sellModal');
+        }
+
+        function undoSell(groupId, billId) {
+            if(confirm("确定撤回卖出状态吗？该账单将恢复为未卖出状态。")) {
+                const group = appData.find(g => g.id === groupId);
+                const bill = group.bills.find(b => b.id === billId);
+                if(bill) {
+                    bill.isSold = false;
+                    bill.buyer = "";
+                    bill.sellPrice = 0;
+                    bill.sellDate = "";
+                    saveData();
+                }
+            }
+        }
+
+        // ========================
+        // JSON 导入导出
+        // ========================
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appData, null, 2));
+            const node = document.createElement('a');
+            node.setAttribute("href", dataStr);
+            node.setAttribute("download", `账单备份_${getToday()}.json`);
+            document.body.appendChild(node);
+            node.click();
+            node.remove();
+        }
+
+        function importData(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    const parsed = JSON.parse(ev.target.result);
+                    if (Array.isArray(parsed) && confirm("导入将覆盖当前所有账单，确认继续？")) {
+                        appData = parsed;
+                        migrateData(); // 导入后也执行迁移
+                        saveData();
+                        alert("导入成功！");
+                    }
+                } catch(err) { alert("JSON解析失败"); }
+            };
+            reader.readAsText(file);
+            e.target.value = '';
+        }
+
+        // ========================
+        // 工具
+        // ========================
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        function escapeHTML(str) {
+            return str ? str.replace(/[&<>'"]/g, tag => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+            }[tag] || tag)) : '';
+        }
+    </script>
+</body>
+</html>
