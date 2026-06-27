@@ -960,6 +960,110 @@
       document.getElementById('moduleDashboard').innerHTML = html;
     }
 
+    // ==================== 日常消费 ====================
+    function renderTransactionTable(transactions, accountId) {
+      if (transactions.length === 0) {
+        return '<div class="text-center py-6 text-gray-400">暂无交易记录</div>';
+      }
+
+      const categoryLabels = {
+        car_buy: '买车', car_sell: '卖车', allowance: '零花钱',
+        loan_new: '新贷款', loan_repay: '还贷',
+        transfer_in: '转入', transfer_out: '转出', other: '其他'
+      };
+
+      return `
+        <table class="w-full text-left text-sm whitespace-nowrap">
+          <thead class="bg-black/[0.015] text-gray-500 border-b border-black/5">
+            <tr>
+              <th class="px-3 py-2 w-24">日期</th>
+              <th class="px-3 py-2">类别</th>
+              <th class="px-3 py-2">金额</th>
+              <th class="px-3 py-2">备注</th>
+              <th class="px-3 py-2 text-right w-20">操作</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            ${transactions.slice().sort((a, b) => b.date.localeCompare(a.date)).map(t => `
+              <tr class="hover:bg-white/50">
+                <td class="px-3 py-2 text-gray-500 text-xs">${t.date}</td>
+                <td class="px-3 py-2">
+                  <span class="${t.type === 'income' ? 'badge-income' : 'badge-expense'}">${categoryLabels[t.category] || t.category}</span>
+                </td>
+                <td class="px-3 py-2 font-semibold ${t.type === 'income' ? 'text-negative' : 'text-positive'}">${fmt(t.amount)}</td>
+                <td class="px-3 py-2 text-xs text-gray-600 max-w-[200px] truncate">${esc(t.note || '')}</td>
+                <td class="px-3 py-2 text-right">
+                  <button onclick="editTransaction('${accountId}', '${t.id}')" class="text-blue-500 hover:underline text-xs mr-1">✏️</button>
+                  <button onclick="deleteTransaction('${accountId}', '${t.id}')" class="text-red-500 hover:underline text-xs">🗑</button>
+                </td>
+              </tr>`).join('')}
+          </tbody>
+        </table>`;
+    }
+
+    function renderCarCards(cars, accountType) {
+      const filtered = cars.filter(c => c.category === accountType && !c.isSold);
+      if (filtered.length === 0) {
+        return '<div class="text-center py-6 text-gray-400 text-sm">暂无小车</div>';
+      }
+
+      return filtered.map(car => `
+        <div class="car-card mb-2">
+          <div class="flex justify-between items-start">
+            <div>
+              <div class="font-semibold text-sm">${esc(car.brand ? car.brand + ' ' : '')}${esc(car.name)}</div>
+              <div class="text-xs text-gray-500 mt-1">
+                买入: ${fmt(car.buyPrice)} · ${car.buyDate}
+              </div>
+              <div class="text-xs text-gray-500">
+                预期: ${fmt(car.expectedValue || car.buyPrice)}
+              </div>
+              <div class="text-xs text-gray-400 font-mono mt-0.5">SID: ${car.sid.slice(0, 8)}...</div>
+            </div>
+            <div class="flex gap-1 flex-shrink-0">
+              <button onclick="sellCar('${car.sid}')" class="btn-sell">售出</button>
+              <button onclick="convertCar('${car.sid}')" class="btn-convert ${accountType === 'invest' ? 'btn-to-keep' : 'btn-to-invest'}">
+                → ${accountType === 'invest' ? '自留' : '投资'}
+              </button>
+            </div>
+          </div>
+        </div>`).join('');
+    }
+
+    function renderDaily() {
+      const pocket = carAppData.accounts.pocket;
+      const balance = calcBalance(pocket);
+
+      const html = `
+        <div class="max-w-6xl mx-auto space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold">💰 日常消费</h2>
+            <button onclick="openTransactionModal('pocket')" class="bg-blue-600/90 backdrop-blur text-white px-4 py-2 rounded-xl-apple text-sm hover:bg-blue-700 btn-glass">+ 新增记录</button>
+          </div>
+
+          <div class="glass rounded-2xl-apple p-4 flex gap-6 text-sm">
+            <div>账户: <span class="font-bold">${esc(pocket.name)}</span></div>
+            <div>余额: <span class="font-bold ${balance >= 0 ? 'text-negative' : 'text-positive'}">${fmt(balance)}</span></div>
+            <div>月额: ¥${pocket.monthlyAllowance || 0}</div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="glass rounded-2xl-apple overflow-hidden">
+              <div class="glass-light p-3 border-b border-black/5 font-semibold text-sm">📋 收支明细</div>
+              ${renderTransactionTable(pocket.transactions, 'pocket')}
+            </div>
+
+            <div class="glass rounded-2xl-apple overflow-hidden">
+              <div class="glass-light p-3 border-b border-black/5 font-semibold text-sm">🚗 自留车库</div>
+              <div class="p-3">
+                ${renderCarCards(carAppData.cars, 'keep')}
+              </div>
+            </div>
+          </div>
+        </div>`;
+      document.getElementById('moduleDaily').innerHTML = html;
+    }
+
     function renderCurrentModule() {
       switch (currentModule) {
         case 'dashboard': if (typeof renderDashboard === 'function') renderDashboard(); break;
