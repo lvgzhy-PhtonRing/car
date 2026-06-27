@@ -632,6 +632,148 @@
       renderCurrentModule();
     }
 
+    // ==================== Dashboard ====================
+    function getDashboardStats() {
+      const pocket = carAppData.accounts.pocket;
+      const invest = carAppData.accounts.invest;
+      const allCars = carAppData.cars;
+
+      const pocketBalance = calcBalance(pocket);
+      const investBalance = calcBalance(invest);
+
+      const investCars = allCars.filter(c => c.category === 'invest' && !c.isSold);
+      const investTotal = investCars.reduce((s, c) => s + c.buyPrice, 0);
+      const investCount = investCars.length;
+
+      const unsoldCars = allCars.filter(c => !c.isSold);
+      const expectedTotal = unsoldCars.reduce((s, c) => s + (c.expectedValue || c.buyPrice), 0);
+
+      return { pocketBalance, investBalance, investTotal, investCount, expectedTotal, unsoldCount: unsoldCars.length };
+    }
+
+    function getActiveLoans() {
+      return carAppData.accounts.invest.loans
+        .filter(l => l.status === 'active' || l.status === 'overdue')
+        .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+    }
+
+    function getMonthlySpending() {
+      const now = new Date();
+      const months = [];
+      for (let i = 2; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        months.push({
+          label: (d.getMonth() + 1) + '月',
+          key: d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
+        });
+      }
+
+      return months.map(m => {
+        const txns = carAppData.accounts.pocket.transactions.filter(t => {
+          return t.date.startsWith(m.key + '-') || t.date.startsWith(m.key);
+        });
+        const income = txns.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+        const expense = txns.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+        return { label: m.label, key: m.key, income, expense };
+      });
+    }
+
+    function renderDashboard() {
+      const stats = getDashboardStats();
+      const loans = getActiveLoans();
+      const monthly = getMonthlySpending();
+      const maxBarVal = Math.max(...monthly.flatMap(m => [m.income, m.expense]), 1);
+
+      const html = `
+        <div class="max-w-6xl mx-auto space-y-6">
+
+          <!-- Header -->
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold">📊 Payton's 数据</h2>
+            <span class="text-xs text-gray-400">v${esc(carAppData.version)}</span>
+          </div>
+
+          <!-- 指标卡片 2x2 -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="stat-card">
+              <div class="stat-label">💰 零花钱余量</div>
+              <div class="stat-value text-positive">${fmt(stats.pocketBalance)}</div>
+              <div class="stat-sub">月额 ¥${carAppData.accounts.pocket.monthlyAllowance || 0}</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">📈 投资款余额</div>
+              <div class="stat-value text-negative">${fmt(stats.investBalance)}</div>
+              <div class="stat-sub">含贷款融资</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">🚗 已投资小车</div>
+              <div class="stat-value text-gray-800">${fmt(stats.investTotal)}</div>
+              <div class="stat-sub">共 ${stats.investCount} 辆</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">💎 库存预期价值</div>
+              <div class="stat-value text-gray-800">${fmt(stats.expectedTotal)}</div>
+              <div class="stat-sub">共 ${stats.unsoldCount} 辆未售</div>
+            </div>
+          </div>
+
+          <!-- 贷款倒计时 -->
+          <div class="glass rounded-2xl-apple p-5">
+            <h3 class="font-bold text-base mb-3">⏳ 贷款倒计时</h3>
+            ${loans.length === 0 ? '<p class="text-gray-400 text-sm">无进行中的贷款</p>' : loans.map(loan => {
+              const daysLeft = Math.ceil((new Date(loan.dueDate) - new Date()) / (1000 * 60 * 60 * 24));
+              const isOverdue = daysLeft < 0;
+              const isSoon = daysLeft >= 0 && daysLeft <= 7;
+              return `
+                <div class="loan-card ${isOverdue ? 'overdue' : ''} ${isSoon ? 'due-soon' : ''} mb-2 flex justify-between items-center">
+                  <div>
+                    <div class="font-semibold text-sm">${esc(loan.name)}</div>
+                    <div class="text-xs text-gray-500">剩余 ${fmt(loan.remaining)} / 总额 ${fmt(loan.amount)}</div>
+                    <div class="text-xs ${isOverdue ? 'text-red-600 font-bold' : isSoon ? 'text-yellow-600 font-semibold' : 'text-gray-400'}">
+                      ${isOverdue ? '⚠ 已逾期 ' + Math.abs(daysLeft) + ' 天' : '到期: ' + loan.dueDate + ' (' + daysLeft + ' 天)'}
+                    </div>
+                  </div>
+                  <button onclick="openRepayLoanModal('${loan.id}')" class="btn-glass text-xs px-3 py-1.5 bg-yellow-100/80 text-yellow-700 hover:bg-yellow-200/80">归还</button>
+                </div>`;
+            }).join('')}
+          </div>
+
+          <!-- 近三月柱状图 -->
+          <div class="glass rounded-2xl-apple p-5">
+            <h3 class="font-bold text-base mb-3">📊 近三月零花钱消费</h3>
+            <div class="bar-chart">
+              ${monthly.map(m => `
+                <div class="bar-item">
+                  <div class="text-xs text-gray-500">${fmt(m.expense)}</div>
+                  <div class="bar-fill expense" style="height: ${(m.expense / maxBarVal) * 100}%"></div>
+                  <div class="bar-label">${m.label} 支出</div>
+                </div>
+                <div class="bar-item">
+                  <div class="text-xs text-gray-500">${fmt(m.income)}</div>
+                  <div class="bar-fill income" style="height: ${(m.income / maxBarVal) * 100}%"></div>
+                  <div class="bar-label">${m.label} 收入</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- 操作按钮 -->
+          <div class="flex gap-3 flex-wrap">
+            <button onclick="openNewLoanModal()" class="btn-glass bg-blue-600/10 text-blue-700 px-4 py-2 rounded-xl-apple text-sm hover:bg-blue-600/20 font-medium">
+              ➕ 新增贷款
+            </button>
+            <button onclick="openRepayLoanModal()" class="btn-glass bg-yellow-100/80 text-yellow-700 px-4 py-2 rounded-xl-apple text-sm hover:bg-yellow-200/80 font-medium">
+              💸 归还贷款
+            </button>
+            <button onclick="depositAllowance()" class="btn-glass bg-green-100/80 text-green-700 px-4 py-2 rounded-xl-apple text-sm hover:bg-green-200/80 font-medium">
+              💰 存入本月零花钱
+            </button>
+          </div>
+        </div>`;
+
+      document.getElementById('moduleDashboard').innerHTML = html;
+    }
+
     function renderCurrentModule() {
       switch (currentModule) {
         case 'dashboard': if (typeof renderDashboard === 'function') renderDashboard(); break;
