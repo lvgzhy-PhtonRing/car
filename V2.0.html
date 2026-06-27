@@ -613,14 +613,53 @@
       e.target.value = '';
     }
 
-    // ==================== 初始化占位 ====================
+    // ==================== 模块路由 ====================
+    let currentModule = 'dashboard';
+
+    function switchModule(moduleName) {
+      currentModule = moduleName;
+
+      // 更新侧边栏 active 状态
+      document.querySelectorAll('.sidebar-nav-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.module === moduleName);
+      });
+
+      // 切换主内容区
+      document.querySelectorAll('.module-panel').forEach(el => {
+        el.classList.toggle('active', el.id === 'module' + moduleName.charAt(0).toUpperCase() + moduleName.slice(1));
+      });
+
+      renderCurrentModule();
+    }
+
+    function renderCurrentModule() {
+      switch (currentModule) {
+        case 'dashboard': if (typeof renderDashboard === 'function') renderDashboard(); break;
+        case 'daily': if (typeof renderDaily === 'function') renderDaily(); break;
+        case 'invest': if (typeof renderInvest === 'function') renderInvest(); break;
+        case 'inventory': if (typeof renderInventory === 'function') renderInventory(); break;
+      }
+    }
+
+    // ==================== 弹窗容器 ====================
+    function showModal(html) {
+      document.getElementById('modalContainer').innerHTML = html;
+    }
+
+    function hideModal() {
+      document.getElementById('modalContainer').innerHTML = '';
+    }
+
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('hidden');
+    }
+
+    // ==================== 初始化 ====================
     window.onload = () => {
       loadData();
-      if (typeof renderCurrentModule === 'function') renderCurrentModule();
+      renderCurrentModule();
     };
-
-    // 模块切换占位（会被 Task 3 覆盖）
-    function switchModule(name) { console.log('Module:', name); }
     </script>
 </body>
 </html>
