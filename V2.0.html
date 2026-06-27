@@ -349,11 +349,278 @@
     <div id="modalContainer"></div>
 
     <script>
-    // === JS will be added in subsequent tasks ===
-    // Placeholder: prevent errors on sidebar click
-    function switchModule(name) { console.log('Module switch:', name); }
-    function exportData() { alert('导出功能即将实现'); }
-    function importData(e) { alert('导入功能即将实现'); }
+    // ==================== 数据层 ====================
+    let carAppData = getDefaultData();
+
+    // 默认空数据结构
+    function getDefaultData() {
+      return {
+        version: '2.0.0',
+        accounts: {
+          pocket: {
+            id: 'pocket', name: '零花钱账户', monthlyAllowance: 200, allowanceDay: 1,
+            transactions: [], loans: []
+          },
+          invest: {
+            id: 'invest', name: '投资账户', monthlyAllowance: null, allowanceDay: null,
+            transactions: [], loans: []
+          }
+        },
+        cars: [],
+        transferPairs: []
+      };
+    }
+
+    // ID 生成
+    function genId(prefix) {
+      return prefix + '_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    }
+
+    // UUID 生成 (v4)
+    function genUUID() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = Math.random() * 16 | 0;
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+      });
+    }
+
+    // 日期工具
+    const getToday = () => new Date().toISOString().split('T')[0];
+
+    // 账户余额计算
+    function calcBalance(account) {
+      return account.transactions.reduce((sum, t) => {
+        return sum + (t.type === 'income' ? t.amount : -t.amount);
+      }, 0);
+    }
+
+    // HTML 转义
+    function esc(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+      }[tag] || tag));
+    }
+
+    // 金额格式化
+    function fmt(amount) {
+      const n = parseFloat(amount) || 0;
+      const sign = n >= 0 ? '' : '-';
+      return sign + '¥' + Math.abs(n).toFixed(2);
+    }
+
+    // 加载数据（含迁移检测）
+    function loadData() {
+      const raw = localStorage.getItem('carAppData');
+      if (raw) {
+        try {
+          carAppData = JSON.parse(raw);
+          if (!carAppData.version) carAppData.version = '2.0.0';
+          return true;
+        } catch (e) {
+          console.error('数据解析失败，使用默认数据', e);
+        }
+      }
+      // 检查旧格式
+      const oldData = localStorage.getItem('accountingData');
+      if (oldData) {
+        try {
+          const parsed = JSON.parse(oldData);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            carAppData = migrateV1toV2(parsed);
+            saveData();
+            return true;
+          }
+        } catch (e) { console.error('旧数据迁移失败', e); }
+      }
+      carAppData = getDefaultData();
+      return false;
+    }
+
+    function saveData() {
+      localStorage.setItem('carAppData', JSON.stringify(carAppData));
+      if (typeof renderCurrentModule === 'function') renderCurrentModule();
+    }
+
+    // V1 → V2 数据迁移
+    function migrateV1toV2(oldAppData) {
+      const data = getDefaultData();
+
+      oldAppData.forEach(group => {
+        group.bills.forEach(bill => {
+          // 解析 bill name: [收入/支出][类别] 描述
+          const nameMatch = bill.name.match(/^\[(收入|支出)\]\[(.+?)\]\s*(.+)/);
+          const direction = nameMatch ? nameMatch[1] : null;
+          const categoryRaw = nameMatch ? nameMatch[2] : '';
+          const carName = nameMatch ? nameMatch[3] : bill.name;
+
+          let targetAccount = data.accounts.pocket;
+          let txnType = 'expense';
+          let txnCategory = 'other';
+          let carCategory = 'keep';
+
+          if (direction === '收入') {
+            txnType = 'income';
+          }
+
+          // 分类映射
+          if (categoryRaw.includes('零花钱')) {
+            txnCategory = 'allowance';
+          } else if (categoryRaw.includes('卖小车')) {
+            txnCategory = 'car_sell';
+          } else if (categoryRaw.includes('买小车')) {
+            txnCategory = 'car_buy';
+          } else {
+            txnCategory = 'other';
+          }
+
+          // 提取品牌（从旧 brand 字段）
+          const brand = bill.brand || '';
+
+          // 投资/自留判断
+          if (bill.type === '投资') {
+            carCategory = 'invest';
+            targetAccount = data.accounts.invest;
+          } else if (bill.type === '自留') {
+            carCategory = 'keep';
+            targetAccount = data.accounts.pocket;
+          } else if (bill.type === '转账') {
+            targetAccount = data.accounts.pocket;
+          }
+
+          // 小车买入 → 创建 Car + Transaction
+          if (txnCategory === 'car_buy') {
+            const sid = genUUID();
+            const car = {
+              sid: sid,
+              brand: brand,
+              name: carName,
+              buyDate: bill.date,
+              buyPrice: bill.price || bill.amount || 0,
+              expectedValue: bill.expectedValue || bill.price || 0,
+              category: carCategory,
+              sellPrice: null,
+              soldDate: null,
+              isSold: bill.isSold || false,
+              note: ''
+            };
+            data.cars.push(car);
+
+            const txn = {
+              id: genId('txn'),
+              type: 'expense',
+              category: 'car_buy',
+              amount: bill.price || bill.amount || 0,
+              date: bill.date,
+              carSid: sid,
+              loanId: null,
+              transferPairId: null,
+              note: carName
+            };
+            targetAccount.transactions.push(txn);
+          }
+
+          // 小车卖出
+          else if (txnCategory === 'car_sell') {
+            const sellName = carName.replace(/^卖/, '').replace(/ x\d+$/, '');
+            const existingCar = data.cars.find(c =>
+              c.name === sellName && !c.isSold
+            );
+            if (existingCar) {
+              existingCar.isSold = true;
+              existingCar.sellPrice = bill.amount || bill.sellPrice || 0;
+              existingCar.soldDate = bill.date;
+            }
+
+            const txn = {
+              id: genId('txn'),
+              type: 'income',
+              category: 'car_sell',
+              amount: bill.amount || bill.sellPrice || 0,
+              date: bill.date,
+              carSid: existingCar ? existingCar.sid : null,
+              loanId: null,
+              transferPairId: null,
+              note: carName
+            };
+            const targetAcct = existingCar && existingCar.category === 'invest'
+              ? data.accounts.invest : data.accounts.pocket;
+            targetAcct.transactions.push(txn);
+          }
+
+          // 零花钱
+          else if (txnCategory === 'allowance') {
+            const txn = {
+              id: genId('txn'),
+              type: 'income',
+              category: 'allowance',
+              amount: bill.amount || 0,
+              date: bill.date,
+              carSid: null, loanId: null, transferPairId: null,
+              note: carName
+            };
+            data.accounts.pocket.transactions.push(txn);
+          }
+
+          // 其他（生活消费等）
+          else {
+            const txn = {
+              id: genId('txn'),
+              type: txnType,
+              category: 'other',
+              amount: bill.amount || 0,
+              date: bill.date,
+              carSid: null, loanId: null, transferPairId: null,
+              note: carName
+            };
+            targetAccount.transactions.push(txn);
+          }
+        });
+      });
+
+      return data;
+    }
+
+    // 导出
+    function exportData() {
+      const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(carAppData, null, 2));
+      const a = document.createElement('a');
+      a.setAttribute('href', dataStr);
+      a.setAttribute('download', 'car_backup_' + getToday() + '.json');
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+    // 导入
+    function importData(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const parsed = JSON.parse(ev.target.result);
+          if (parsed.version && parsed.accounts && parsed.cars && confirm('导入将覆盖当前所有数据，确认继续？')) {
+            carAppData = parsed;
+            saveData();
+            alert('导入成功！');
+          } else {
+            alert('无效的 v2.0 数据格式');
+          }
+        } catch (err) { alert('JSON 解析失败: ' + err.message); }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    }
+
+    // ==================== 初始化占位 ====================
+    window.onload = () => {
+      loadData();
+      if (typeof renderCurrentModule === 'function') renderCurrentModule();
+    };
+
+    // 模块切换占位（会被 Task 3 覆盖）
+    function switchModule(name) { console.log('Module:', name); }
     </script>
 </body>
 </html>
