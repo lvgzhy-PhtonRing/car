@@ -1064,6 +1064,77 @@
       document.getElementById('moduleDaily').innerHTML = html;
     }
 
+    // ==================== 投资小车 ====================
+    function renderLoanCards() {
+      const loans = carAppData.accounts.invest.loans.filter(l => l.status === 'active');
+      if (loans.length === 0) {
+        return '<div class="text-center py-4 text-gray-400 text-sm">无进行中的贷款</div>';
+      }
+
+      return loans.map(loan => {
+        const daysLeft = Math.ceil((new Date(loan.dueDate) - new Date()) / (1000 * 60 * 60 * 24));
+        const isOverdue = daysLeft < 0;
+        const isSoon = daysLeft >= 0 && daysLeft <= 7;
+        return `
+          <div class="loan-card ${isOverdue ? 'overdue' : ''} ${isSoon ? 'due-soon' : ''} mb-2">
+            <div class="flex justify-between items-center">
+              <div>
+                <div class="font-semibold text-sm">${esc(loan.name)}</div>
+                <div class="text-xs text-gray-500">剩余 ${fmt(loan.remaining)} / 总额 ${fmt(loan.amount)}</div>
+                <div class="text-xs ${isOverdue ? 'text-red-600 font-bold' : 'text-gray-400'}">
+                  ${isOverdue ? '⚠ 已逾期 ' + Math.abs(daysLeft) + ' 天' : '到期: ' + loan.dueDate}
+                </div>
+              </div>
+              <button onclick="openRepayLoanModal('${loan.id}')" class="btn-glass text-xs px-3 py-1.5 bg-yellow-100/80 text-yellow-700">归还</button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function renderInvest() {
+      const invest = carAppData.accounts.invest;
+      const balance = calcBalance(invest);
+
+      const html = `
+        <div class="max-w-6xl mx-auto space-y-4">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-bold">📈 投资小车</h2>
+            <div class="flex gap-2">
+              <button onclick="openTransactionModal('invest')" class="bg-blue-600/90 backdrop-blur text-white px-4 py-2 rounded-xl-apple text-sm hover:bg-blue-700 btn-glass">+ 新增记录</button>
+              <button onclick="openNewLoanModal()" class="bg-red-100/80 text-red-700 px-4 py-2 rounded-xl-apple text-sm hover:bg-red-200/80 btn-glass">+ 新增贷款</button>
+            </div>
+          </div>
+
+          <div class="glass rounded-2xl-apple p-4 flex gap-6 text-sm">
+            <div>账户: <span class="font-bold">${esc(invest.name)}</span></div>
+            <div>余额: <span class="font-bold ${balance >= 0 ? 'text-negative' : 'text-positive'}">${fmt(balance)}</span></div>
+            <div>贷款数: ${invest.loans.filter(l => l.status === 'active').length} 笔</div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div class="glass rounded-2xl-apple overflow-hidden">
+              <div class="glass-light p-3 border-b border-black/5 font-semibold text-sm">📋 投资明细</div>
+              ${renderTransactionTable(invest.transactions, 'invest')}
+            </div>
+
+            <div class="glass rounded-2xl-apple overflow-hidden">
+              <div class="glass-light p-3 border-b border-black/5 font-semibold text-sm">🚗 投资车库</div>
+              <div class="p-3">
+                ${renderCarCards(carAppData.cars, 'invest')}
+              </div>
+            </div>
+
+            <div class="lg:col-span-2 glass rounded-2xl-apple overflow-hidden">
+              <div class="glass-light p-3 border-b border-black/5 font-semibold text-sm">💳 贷款管理</div>
+              <div class="p-3">
+                ${renderLoanCards()}
+              </div>
+            </div>
+          </div>
+        </div>`;
+      document.getElementById('moduleInvest').innerHTML = html;
+    }
+
     function renderCurrentModule() {
       switch (currentModule) {
         case 'dashboard': if (typeof renderDashboard === 'function') renderDashboard(); break;
