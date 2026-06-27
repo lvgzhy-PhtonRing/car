@@ -1188,7 +1188,10 @@
         <div class="max-w-6xl mx-auto space-y-4">
           <div class="flex items-center justify-between">
             <h2 class="text-xl font-bold"><i data-lucide="wallet" class="w-5 h-5 inline-block align-middle mr-1"></i> 日常消费</h2>
-            <button onclick="openTransactionModal('pocket')" class="bg-accent/85 backdrop-blur text-white px-4 py-2 rounded-xl-apple text-sm hover:bg-accent/90 btn-glass"><i data-lucide="plus" class="w-4 h-4 inline-block align-middle mr-1"></i> 新增记录</button>
+            <div class="flex gap-2">
+              <button onclick="openTransactionModal('pocket', null, 'car_buy')" class="bg-invest/10 text-invest px-3 py-2 rounded-xl-apple text-sm hover:bg-invest/20 btn-glass"><i data-lucide="car" class="w-4 h-4 inline-block align-middle mr-1"></i> 新车</button>
+              <button onclick="openTransactionModal('pocket')" class="bg-accent/85 backdrop-blur text-white px-3 py-2 rounded-xl-apple text-sm hover:bg-accent/90 btn-glass"><i data-lucide="plus" class="w-4 h-4 inline-block align-middle mr-1"></i> 新增记录</button>
+            </div>
           </div>
 
           <div class="glass rounded-2xl-apple p-4 flex gap-6 text-sm">
@@ -1250,8 +1253,9 @@
           <div class="flex items-center justify-between">
             <h2 class="text-xl font-bold"><i data-lucide="trending-up" class="w-5 h-5 inline-block align-middle mr-1"></i> 投资小车</h2>
             <div class="flex gap-2">
-              <button onclick="openTransactionModal('invest')" class="bg-accent/85 backdrop-blur text-white px-4 py-2 rounded-xl-apple text-sm hover:bg-accent/90 btn-glass"><i data-lucide="plus" class="w-4 h-4 inline-block align-middle mr-1"></i> 新增记录</button>
-              <button onclick="openNewLoanModal()" class="bg-invest/10 text-invest px-4 py-2 rounded-xl-apple text-sm hover:bg-invest/20 btn-glass"><i data-lucide="plus-circle" class="w-4 h-4 inline-block align-middle mr-1"></i> 新增贷款</button>
+              <button onclick="openTransactionModal('invest', null, 'car_buy')" class="bg-invest/10 text-invest px-3 py-2 rounded-xl-apple text-sm hover:bg-invest/20 btn-glass"><i data-lucide="car" class="w-4 h-4 inline-block align-middle mr-1"></i> 新车</button>
+              <button onclick="openTransactionModal('invest')" class="bg-accent/85 backdrop-blur text-white px-3 py-2 rounded-xl-apple text-sm hover:bg-accent/90 btn-glass"><i data-lucide="plus" class="w-4 h-4 inline-block align-middle mr-1"></i> 新增记录</button>
+              <button onclick="openNewLoanModal()" class="bg-invest/10 text-invest px-3 py-2 rounded-xl-apple text-sm hover:bg-invest/20 btn-glass"><i data-lucide="plus-circle" class="w-4 h-4 inline-block align-middle mr-1"></i> 新增贷款</button>
             </div>
           </div>
 
@@ -1286,7 +1290,7 @@
     }
 
     // ==================== 通用弹窗 ====================
-    function openTransactionModal(accountId, txnId) {
+    function openTransactionModal(accountId, txnId, presetCategory) {
       const account = carAppData.accounts[accountId];
       let txn = null;
       let car = null;
@@ -1401,13 +1405,18 @@
         </div>`;
       showModal(html);
 
-      // 初始化类别下拉
-      const initType = txn ? txn.type : 'expense';
-      const initCat = txn ? txn.category : 'other';
-      populateCategoryDropdown(initType, accountId, initCat);
+      // 初始化类别下拉：优先用预设类别，其次编辑中的交易类别，最后默认
+      let initType = 'expense';
+      let initCat = 'other';
+      if (presetCategory === 'car_buy') { initType = 'expense'; initCat = 'car_buy'; }
+      else if (presetCategory === 'car_sell') { initType = 'income'; initCat = 'car_sell'; }
+      else if (txn) { initType = txn.type; initCat = txn.category; }
 
-      // 如果编辑已有小车交易，展开小车字段
-      if (txn && (txn.category === 'car_buy' || txn.category === 'car_sell')) {
+      populateCategoryDropdown(initType, accountId, initCat);
+      // 预设买卖 → 展开小车属性
+      if (presetCategory === 'car_buy' || presetCategory === 'car_sell') {
+        onTxnCategoryChange();
+      } else if (txn && (txn.category === 'car_buy' || txn.category === 'car_sell')) {
         onTxnCategoryChange();
       }
     }
