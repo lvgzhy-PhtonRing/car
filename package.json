@@ -1,11 +1,12 @@
 {
   "name": "car-accounting",
-  "version": "1.1.1",
+  "version": "2.0.0",
   "private": true,
-  "description": "记账管理系统 - 热更新开发服务器",
+  "description": "记账管理系统 v2.0 — 双账户+小车库存",
   "scripts": {
-    "dev": "browser-sync start --server . --index V1.1.html --files \"*.html,*.json,*.css,*.js\" --no-notify --no-ghost-mode --port 3000",
-    "dev:reload": "browser-sync start --server . --index V1.1.html --files \"*.html,*.json\" --no-notify --port 3000"
+    "dev": "browser-sync start --server . --index V2.0.html --files \"*.html,*.json,*.css,*.js\" --no-notify --no-ghost-mode --port 3000",
+    "dev:reload": "browser-sync start --server . --index V2.0.html --files \"*.html,*.json\" --no-notify --port 3000",
+    "dev:v1": "browser-sync start --server . --index V1.1.html --files \"*.html,*.json\" --no-notify --port 3000"
   },
   "devDependencies": {
     "browser-sync": "^3.0.3"
