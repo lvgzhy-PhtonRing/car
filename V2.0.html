@@ -1198,21 +1198,13 @@
             <input type="hidden" id="txnId" value="${txn ? txn.id : ''}">
             <div class="space-y-3">
               <div class="flex gap-2">
+                <button onclick="setTxnType('expense')" id="btnExpense" class="flex-1 py-2 rounded-xl text-sm font-bold ${(!txn || txn.type === 'expense') ? 'bg-invest/10 text-invest' : 'glass-light text-gray-500'}">支出</button>
                 <button onclick="setTxnType('income')" id="btnIncome" class="flex-1 py-2 rounded-xl text-sm font-bold ${txn && txn.type === 'income' ? 'bg-keep/10 text-keep' : 'glass-light text-gray-500'}">收入</button>
-                <button onclick="setTxnType('expense')" id="btnExpense" class="flex-1 py-2 rounded-xl text-sm font-bold ${txn && txn.type === 'expense' ? 'bg-invest/10 text-invest' : 'glass-light text-gray-500'}">支出</button>
               </div>
               <input type="hidden" id="txnType" value="${txn ? txn.type : 'expense'}">
               <div>
                 <label class="block text-sm text-gray-600 mb-1">类别</label>
-                <select id="txnCategory" class="w-full glass-input p-2.5 text-sm">
-                  <option value="other" ${txn && txn.category === 'other' ? 'selected' : ''}>其他</option>
-                  <option value="car_buy" ${txn && txn.category === 'car_buy' ? 'selected' : ''}>买车</option>
-                  <option value="car_sell" ${txn && txn.category === 'car_sell' ? 'selected' : ''}>卖车</option>
-                  <option value="allowance" ${txn && txn.category === 'allowance' ? 'selected' : ''}>零花钱</option>
-                  <option value="loan_new" ${txn && txn.category === 'loan_new' ? 'selected' : ''}>新贷款</option>
-                  <option value="loan_repay" ${txn && txn.category === 'loan_repay' ? 'selected' : ''}>还贷</option>
-                  <option value="transfer_in" ${txn && txn.category === 'transfer_in' ? 'selected' : ''}>转入</option>
-                  <option value="transfer_out" ${txn && txn.category === 'transfer_out' ? 'selected' : ''}>转出</option>
+                <select id="txnCategory" onchange="onTxnCategoryChange()" class="w-full glass-input p-2.5 text-sm">
                 </select>
               </div>
               <div>
@@ -1235,16 +1227,50 @@
           </div>
         </div>`;
       showModal(html);
+      // 初始化类别下拉
+      const initType = txn ? txn.type : 'expense';
+      const initCat = txn ? txn.category : 'other';
+      populateCategoryDropdown(initType, initCat);
     }
 
     function setTxnType(type) {
       document.getElementById('txnType').value = type;
-      document.getElementById('btnIncome').className = type === 'income'
-        ? 'flex-1 py-2 rounded-xl text-sm font-bold bg-keep/10 text-keep'
-        : 'flex-1 py-2 rounded-xl text-sm font-bold glass-light text-gray-500';
       document.getElementById('btnExpense').className = type === 'expense'
         ? 'flex-1 py-2 rounded-xl text-sm font-bold bg-invest/10 text-invest'
         : 'flex-1 py-2 rounded-xl text-sm font-bold glass-light text-gray-500';
+      document.getElementById('btnIncome').className = type === 'income'
+        ? 'flex-1 py-2 rounded-xl text-sm font-bold bg-keep/10 text-keep'
+        : 'flex-1 py-2 rounded-xl text-sm font-bold glass-light text-gray-500';
+      populateCategoryDropdown(type, document.getElementById('txnCategory').value);
+    }
+
+    // 按收支类型过滤类别下拉
+    function getCategoriesByType(type) {
+      if (type === 'expense') return [
+        { value: 'car_buy', label: '买车' },
+        { value: 'loan_repay', label: '还贷' },
+        { value: 'transfer_out', label: '转出' },
+        { value: 'other', label: '其他' }
+      ];
+      return [
+        { value: 'car_sell', label: '卖车' },
+        { value: 'allowance', label: '零花钱' },
+        { value: 'loan_new', label: '新贷款' },
+        { value: 'transfer_in', label: '转入' },
+        { value: 'other', label: '其他' }
+      ];
+    }
+
+    function populateCategoryDropdown(type, selectedValue) {
+      const sel = document.getElementById('txnCategory');
+      const cats = getCategoriesByType(type);
+      sel.innerHTML = cats.map(c =>
+        `<option value="${c.value}" ${c.value === selectedValue ? 'selected' : ''}>${c.label}</option>`
+      ).join('');
+    }
+
+    function onTxnCategoryChange() {
+      // placeholder for future category-specific logic
     }
 
     function saveTransaction() {
