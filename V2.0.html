@@ -887,6 +887,109 @@
       saveData();
     }
 
+    // ==================== 账户互转 ====================
+    function openTransferModal() {
+      const pocket = carAppData.accounts.pocket;
+      const invest = carAppData.accounts.invest;
+      const pocketBal = calcBalance(pocket);
+      const investBal = calcBalance(invest);
+
+      const html = `
+        <div id="transferModal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-50">
+          <div class="glass-strong rounded-2xl-apple w-full max-w-sm p-6">
+            <h3 class="font-bold text-lg mb-4"><i data-lucide="arrow-left-right" class="w-5 h-5 inline-block align-middle mr-1"></i> 账户互转</h3>
+            <div class="space-y-3">
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">转出账户</label>
+                <select id="transferFrom" onchange="updateTransferToOptions()" class="w-full glass-input p-2.5 text-sm">
+                  <option value="pocket">零花钱账户 (余额 ${fmt(pocketBal)})</option>
+                  <option value="invest">投资账户 (余额 ${fmt(investBal)})</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">转入账户</label>
+                <select id="transferTo" class="w-full glass-input p-2.5 text-sm">
+                  <option value="invest">投资账户 (余额 ${fmt(investBal)})</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">转账金额</label>
+                <input type="number" id="transferAmount" step="0.01" placeholder="0.00" class="w-full glass-input p-2.5 text-sm">
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">转账日期</label>
+                <input type="date" id="transferDate" value="${getToday()}" class="w-full glass-input p-2.5 text-sm">
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">备注（可选）</label>
+                <input type="text" id="transferNote" placeholder="转账说明" class="w-full glass-input p-2.5 text-sm">
+              </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-2">
+              <button onclick="hideModal()" class="px-4 py-2 glass-light rounded-xl-apple hover:bg-white/60 text-sm btn-glass">取消</button>
+              <button onclick="confirmTransfer()" class="px-4 py-2 bg-accent/85 text-white rounded-xl-apple hover:bg-accent/90 text-sm btn-glass">确认转账</button>
+            </div>
+          </div>
+        </div>`;
+      showModal(html);
+    }
+
+    function updateTransferToOptions() {
+      const from = document.getElementById('transferFrom').value;
+      const to = document.getElementById('transferTo');
+      const pocketBal = calcBalance(carAppData.accounts.pocket);
+      const investBal = calcBalance(carAppData.accounts.invest);
+      if (from === 'pocket') {
+        to.innerHTML = `<option value="invest">投资账户 (余额 ${fmt(investBal)})</option>`;
+      } else {
+        to.innerHTML = `<option value="pocket">零花钱账户 (余额 ${fmt(pocketBal)})</option>`;
+      }
+    }
+
+    function confirmTransfer() {
+      const from = document.getElementById('transferFrom').value;
+      const to = document.getElementById('transferTo').value;
+      const amount = parseFloat(document.getElementById('transferAmount').value) || 0;
+      const date = document.getElementById('transferDate').value || getToday();
+      const note = document.getElementById('transferNote').value.trim();
+
+      if (!amount || amount <= 0) return alert('请输入有效的转账金额');
+      if (from === to) return alert('转出和转入账户不能相同');
+
+      const fromBal = calcBalance(carAppData.accounts[from]);
+      if (amount > fromBal) return alert('转出账户余额不足');
+
+      const pairId = genId('tp');
+
+      // 转出
+      carAppData.accounts[from].transactions.push({
+        id: genId('txn'), type: 'expense', category: 'transfer_out',
+        amount, date, carSid: null, loanId: null,
+        transferPairId: pairId,
+        note: note || '转出至' + (to === 'pocket' ? '零花钱' : '投资')
+      });
+
+      // 转入
+      carAppData.accounts[to].transactions.push({
+        id: genId('txn'), type: 'income', category: 'transfer_in',
+        amount, date, carSid: null, loanId: null,
+        transferPairId: pairId,
+        note: note || '从' + (from === 'pocket' ? '零花钱' : '投资') + '转入'
+      });
+
+      // 记录配对
+      carAppData.transferPairs.push({
+        id: pairId,
+        fromAccount: from,
+        toAccount: to,
+        amount, date,
+        note: note || (from === 'pocket' ? '零花钱→投资' : '投资→零花钱')
+      });
+
+      hideModal();
+      saveData();
+    }
+
     function depositAllowance() {
       const pocket = carAppData.accounts.pocket;
       if (!pocket.monthlyAllowance) return alert('请先设置每月零花钱额度');
@@ -998,8 +1101,8 @@
             <button onclick="openRepayLoanModal()" class="btn-glass bg-sell/10 text-sell px-4 py-2 rounded-xl-apple text-sm hover:bg-sell/20 font-medium">
               <i data-lucide="banknote" class="w-4 h-4 inline-block align-middle mr-1"></i> 归还贷款
             </button>
-            <button onclick="depositAllowance()" class="btn-glass bg-keep/10 text-keep px-4 py-2 rounded-xl-apple text-sm hover:bg-keep/20 font-medium">
-              <i data-lucide="piggy-bank" class="w-4 h-4 inline-block align-middle mr-1"></i> 存入本月零花钱
+            <button onclick="openTransferModal()" class="btn-glass bg-accent/10 text-accent px-4 py-2 rounded-xl-apple text-sm hover:bg-accent/20 font-medium">
+              <i data-lucide="arrow-left-right" class="w-4 h-4 inline-block align-middle mr-1"></i> 账户互转
             </button>
           </div>
         </div>`;
@@ -1249,14 +1352,12 @@
       if (type === 'expense') return [
         { value: 'car_buy', label: '买车' },
         { value: 'loan_repay', label: '还贷' },
-        { value: 'transfer_out', label: '转出' },
         { value: 'other', label: '其他' }
       ];
       return [
         { value: 'car_sell', label: '卖车' },
         { value: 'allowance', label: '零花钱' },
         { value: 'loan_new', label: '新贷款' },
-        { value: 'transfer_in', label: '转入' },
         { value: 'other', label: '其他' }
       ];
     }
