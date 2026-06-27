@@ -1492,9 +1492,76 @@
       if (el) el.classList.add('hidden');
     }
 
+    // ==================== 示例数据 ====================
+    function seedDemoData() {
+      const pocket = carAppData.accounts.pocket;
+      const invest = carAppData.accounts.invest;
+
+      // 示例零花钱交易
+      pocket.transactions.push(
+        { id: genId('txn'), type: 'income', category: 'allowance', amount: 200, date: '2026-06-01', carSid: null, loanId: null, transferPairId: null, note: '6月零花钱' },
+        { id: genId('txn'), type: 'expense', category: 'other', amount: 35, date: '2026-06-05', carSid: null, loanId: null, transferPairId: null, note: '午餐外卖' },
+        { id: genId('txn'), type: 'expense', category: 'other', amount: 18.5, date: '2026-06-10', carSid: null, loanId: null, transferPairId: null, note: '奶茶' }
+      );
+
+      // 示例投资账户交易
+      invest.transactions.push(
+        { id: genId('txn'), type: 'expense', category: 'car_buy', amount: 19.9, date: '2026-06-08', carSid: null, loanId: null, transferPairId: null, note: '示例: 普卡F1' }
+      );
+
+      // 示例小车 1: 投资类
+      const demoCar1 = {
+        sid: genUUID(),
+        brand: 'Hotwheels', name: '普卡F1迈凯伦',
+        buyDate: '2026-06-08', buyPrice: 19.9, expectedValue: 39,
+        category: 'invest', sellPrice: null, soldDate: null, isSold: false, note: ''
+      };
+      invest.transactions[invest.transactions.length - 1].carSid = demoCar1.sid;
+
+      // 示例小车 2: 自留类
+      const demoCar2 = {
+        sid: genUUID(),
+        brand: 'MINI GT', name: '保时捷911GT3',
+        buyDate: '2026-06-15', buyPrice: 69, expectedValue: 120,
+        category: 'keep', sellPrice: null, soldDate: null, isSold: false, note: ''
+      };
+      pocket.transactions.push({
+        id: genId('txn'),
+        type: 'expense', category: 'car_buy', amount: 69, date: '2026-06-15',
+        carSid: demoCar2.sid, loanId: null, transferPairId: null, note: 'MINI GT 保时捷911GT3'
+      });
+
+      carAppData.cars.push(demoCar1, demoCar2);
+
+      // 示例贷款
+      invest.loans.push({
+        id: genId('loan'),
+        name: '老爸借款', amount: 500, remaining: 300,
+        startDate: '2026-06-01', dueDate: '2026-07-15',
+        status: 'active', note: '用于购买小车'
+      });
+      invest.transactions.push({
+        id: genId('txn'),
+        type: 'income', category: 'loan_new', amount: 500,
+        date: '2026-06-01', carSid: null,
+        loanId: invest.loans[0].id, transferPairId: null,
+        note: '新增贷款: 老爸借款'
+      });
+
+      saveData();
+    }
+
     // ==================== 初始化 ====================
     window.onload = () => {
       loadData();
+
+      // 如果无数据，注入默认示例数据
+      if (carAppData.cars.length === 0 &&
+          carAppData.accounts.pocket.transactions.length === 0 &&
+          carAppData.accounts.invest.transactions.length === 0) {
+        seedDemoData();
+      }
+
       renderCurrentModule();
     };
     </script>
