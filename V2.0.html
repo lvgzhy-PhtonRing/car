@@ -5,32 +5,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>记账管理系统 v2.0.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script>
         tailwind.config = {
             theme: {
                 fontFamily: {
                     sans: ['system-ui', '-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', '"Helvetica Neue"', '"PingFang SC"', '"Microsoft YaHei"', 'sans-serif'],
+                },
+                extend: {
+                    // Tailwind semantic color tokens
+                    colors: {
+                        invest: '#c44b3d',
+                        keep: '#5b8c5a',
+                        sell: '#d4943a',
+                        allowance: '#7a9cc6',
+                        accent: '#4f6d7a',
+                    }
                 }
             }
         }
     </script>
     <style>
+        /* ===== Design System Tokens ===== */
+        :root {
+            --c-bg: #f5f0ea;
+            --c-surface: #ece5db;
+            --c-surface-glass: rgba(245, 240, 234, 0.62);
+            --c-surface-glass-strong: rgba(245, 240, 234, 0.78);
+            --c-surface-glass-light: rgba(245, 240, 234, 0.4);
+            --c-border: rgba(0,0,0,0.06);
+            --c-text-primary: #2c2420;
+            --c-text-secondary: #8c8279;
+            --c-text-tertiary: #b5aba0;
+            --c-invest: #c44b3d;
+            --c-invest-bg: rgba(196, 75, 61, 0.12);
+            --c-invest-border: rgba(196, 75, 61, 0.2);
+            --c-keep: #5b8c5a;
+            --c-keep-bg: rgba(91, 140, 90, 0.12);
+            --c-keep-border: rgba(91, 140, 90, 0.2);
+            --c-sell: #d4943a;
+            --c-sell-bg: rgba(212, 148, 58, 0.12);
+            --c-sell-border: rgba(212, 148, 58, 0.2);
+            --c-allowance: #7a9cc6;
+            --c-allowance-bg: rgba(122, 156, 198, 0.12);
+            --c-accent: #4f6d7a;
+            --c-accent-bg: rgba(79, 109, 122, 0.12);
+            --c-danger: #c44b3d;
+            --c-warning: #d4943a;
+            --c-success: #5b8c5a;
+        }
+
         /* ===== Apple Glass Morphism Base ===== */
         body {
             font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
             font-size: 15.5px;
             line-height: 1.6;
-            background: linear-gradient(135deg, #e8ecf1 0%, #dce3ea 25%, #e3e8f0 50%, #dde4ee 75%, #e6ebf3 100%);
+            background: linear-gradient(135deg, #f0ebe3 0%, #e8e0d4 25%, #e3dcd0 50%, #eae3d8 75%, #f2ede5 100%);
             background-attachment: fixed;
             min-height: 100vh;
         }
-        /* 背景装饰光斑 */
+        /* 背景装饰光斑（暖调） */
         body::before {
             content: '';
             position: fixed;
             top: -20%; left: -10%;
             width: 60%; height: 60%;
-            background: radial-gradient(ellipse, rgba(147,197,253,0.25) 0%, transparent 70%);
+            background: radial-gradient(ellipse, rgba(212, 178, 140, 0.18) 0%, transparent 70%);
             pointer-events: none; z-index: 0;
         }
         body::after {
@@ -38,27 +78,27 @@
             position: fixed;
             bottom: -15%; right: -10%;
             width: 55%; height: 55%;
-            background: radial-gradient(ellipse, rgba(196,167,231,0.18) 0%, transparent 70%);
+            background: radial-gradient(ellipse, rgba(196, 167, 180, 0.12) 0%, transparent 70%);
             pointer-events: none; z-index: 0;
         }
 
-        /* ===== Glass Panel ===== */
+        /* ===== Glass Panel (暖白色基) ===== */
         .glass {
-            background: rgba(255,255,255,0.62);
+            background: var(--c-surface-glass);
             backdrop-filter: blur(20px) saturate(140%);
             -webkit-backdrop-filter: blur(20px) saturate(140%);
             border: 1px solid rgba(255,255,255,0.5);
             box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
         }
         .glass-strong {
-            background: rgba(255,255,255,0.75);
+            background: var(--c-surface-glass-strong);
             backdrop-filter: blur(24px) saturate(160%);
             -webkit-backdrop-filter: blur(24px) saturate(160%);
             border: 1px solid rgba(255,255,255,0.6);
             box-shadow: 0 1px 2px rgba(0,0,0,0.03), 0 12px 32px rgba(0,0,0,0.07);
         }
         .glass-light {
-            background: rgba(255,255,255,0.45);
+            background: var(--c-surface-glass-light);
             backdrop-filter: blur(12px) saturate(120%);
             -webkit-backdrop-filter: blur(12px) saturate(120%);
             border: 1px solid rgba(255,255,255,0.4);
@@ -67,7 +107,7 @@
             background: rgba(255,255,255,0.55);
             backdrop-filter: blur(10px) saturate(130%);
             -webkit-backdrop-filter: blur(10px) saturate(130%);
-            border-bottom: 1px solid rgba(0,0,0,0.06);
+            border-bottom: 1px solid var(--c-border);
         }
         .glass-input {
             background: rgba(255,255,255,0.5);
@@ -79,11 +119,11 @@
         }
         .glass-input:focus {
             background: rgba(255,255,255,0.75);
-            border-color: rgba(59,130,246,0.4);
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.08);
+            border-color: var(--c-accent);
+            box-shadow: 0 0 0 3px var(--c-accent-bg);
             outline: none;
         }
-        .glass-input::placeholder { color: #b0b8c1; }
+        .glass-input::placeholder { color: var(--c-text-tertiary); }
 
         /* ===== Rounded Corners ===== */
         .rounded-xl-apple { border-radius: 14px; }
@@ -104,27 +144,27 @@
         }
         .btn-glass:active { transform: translateY(0); }
 
-        /* ===== Text Colors ===== */
-        .text-positive { color: #dc2626; }
-        .text-negative { color: #059669; }
+        /* ===== Semantic Text Colors ===== */
+        .text-positive { color: var(--c-invest); }
+        .text-negative { color: var(--c-keep); }
 
-        /* ===== Category Colors (softened for glass) ===== */
-        .text-invest { color: #dc2626; }
-        .text-keep { color: #059669; }
-        .text-transfer { color: #b88a00; }
+        /* ===== Category Colors ===== */
+        .text-invest { color: var(--c-invest); }
+        .text-keep { color: var(--c-keep); }
+        .text-transfer { color: var(--c-sell); }
         .badge-invest {
-            background: rgba(254,226,226,0.7); color: #dc2626;
-            border: 1px solid rgba(239,68,68,0.2); border-radius: 8px;
+            background: var(--c-invest-bg); color: var(--c-invest);
+            border: 1px solid var(--c-invest-border); border-radius: 8px;
             backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
         }
         .badge-keep {
-            background: rgba(209,250,229,0.7); color: #059669;
-            border: 1px solid rgba(16,185,129,0.2); border-radius: 8px;
+            background: var(--c-keep-bg); color: var(--c-keep);
+            border: 1px solid var(--c-keep-border); border-radius: 8px;
             backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
         }
         .badge-transfer {
-            background: rgba(254,243,199,0.7); color: #b88a00;
-            border: 1px solid rgba(234,179,8,0.2); border-radius: 8px;
+            background: var(--c-sell-bg); color: var(--c-sell);
+            border: 1px solid var(--c-sell-border); border-radius: 8px;
             backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
         }
 
@@ -135,7 +175,7 @@
             max-height: 200px; overflow-y: auto;
             background: rgba(255,255,255,0.9);
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(0,0,0,0.06); border-radius: 12px;
+            border: 1px solid var(--c-border); border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             z-index: 20; display: none; list-style: none; padding: 4px; margin: 4px 0;
         }
@@ -144,20 +184,20 @@
             padding: 8px 12px; cursor: pointer; font-size: 14px;
             border-radius: 8px; transition: background 0.15s;
         }
-        .brand-dropdown li:hover { background: rgba(59,130,246,0.08); }
+        .brand-dropdown li:hover { background: var(--c-accent-bg); }
 
         /* ===== Search ===== */
-        mark.search-hit { background-color: rgba(251,191,36,0.3); padding: 0 2px; border-radius: 3px; }
+        mark.search-hit { background-color: rgba(212, 148, 58, 0.25); padding: 0 2px; border-radius: 3px; }
 
         /* ===== View Tabs ===== */
         .view-tab {
             padding: 10px 20px; font-size: 14px; font-weight: 500;
             border-bottom: 2px solid transparent; cursor: pointer;
-            color: #8e8e93; transition: all 0.2s ease;
+            color: var(--c-text-secondary); transition: all 0.2s ease;
             background: none; border-radius: 0;
         }
-        .view-tab.active { color: #0071e3; border-bottom-color: #0071e3; }
-        .view-tab:hover:not(.active) { color: #1d1d1f; border-bottom-color: rgba(0,0,0,0.1); }
+        .view-tab.active { color: var(--c-accent); border-bottom-color: var(--c-accent); }
+        .view-tab:hover:not(.active) { color: var(--c-text-primary); border-bottom-color: rgba(0,0,0,0.1); }
 
         /* ===== Convert Buttons ===== */
         .btn-convert {
@@ -167,19 +207,19 @@
             -webkit-backdrop-filter: blur(6px);
         }
         .btn-convert:hover { transform: translateY(-1px); }
-        .btn-to-keep { color: #059669; border-color: rgba(16,185,129,0.3); background: rgba(209,250,229,0.6); }
-        .btn-to-keep:hover { background: rgba(167,243,208,0.7); box-shadow: 0 2px 8px rgba(16,185,129,0.12); }
-        .btn-to-invest { color: #dc2626; border-color: rgba(239,68,68,0.3); background: rgba(254,226,226,0.6); }
-        .btn-to-invest:hover { background: rgba(254,202,202,0.7); box-shadow: 0 2px 8px rgba(239,68,68,0.12); }
+        .btn-to-keep { color: var(--c-keep); border-color: var(--c-keep-border); background: var(--c-keep-bg); }
+        .btn-to-keep:hover { background: rgba(91, 140, 90, 0.18); box-shadow: 0 2px 8px rgba(91, 140, 90, 0.12); }
+        .btn-to-invest { color: var(--c-invest); border-color: var(--c-invest-border); background: var(--c-invest-bg); }
+        .btn-to-invest:hover { background: rgba(196, 75, 61, 0.18); box-shadow: 0 2px 8px rgba(196, 75, 61, 0.12); }
         .btn-sell {
             font-size: 12px; padding: 3px 12px; border-radius: 10px;
-            cursor: pointer; border: 1px solid rgba(234,179,8,0.3);
-            background: rgba(254,243,199,0.6); color: #a16207;
+            cursor: pointer; border: 1px solid var(--c-sell-border);
+            background: var(--c-sell-bg); color: var(--c-sell);
             font-weight: 500; white-space: nowrap;
             backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
             transition: all 0.2s ease;
         }
-        .btn-sell:hover { background: rgba(253,230,138,0.7); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(234,179,8,0.15); }
+        .btn-sell:hover { background: rgba(212, 148, 58, 0.18); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(212, 148, 58, 0.15); }
 
         /* ===== Category View ===== */
         .category-section { margin-bottom: 28px; }
@@ -189,18 +229,18 @@
             justify-content: space-between; align-items: center;
         }
         .category-header.invest {
-            background: rgba(254,226,226,0.6); color: #dc2626;
-            border: 1px solid rgba(239,68,68,0.15); border-bottom: none;
+            background: var(--c-invest-bg); color: var(--c-invest);
+            border: 1px solid var(--c-invest-border); border-bottom: none;
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
         }
         .category-header.keep {
-            background: rgba(209,250,229,0.6); color: #059669;
-            border: 1px solid rgba(16,185,129,0.15); border-bottom: none;
+            background: var(--c-keep-bg); color: var(--c-keep);
+            border: 1px solid var(--c-keep-border); border-bottom: none;
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
         }
         .category-header.transfer {
-            background: rgba(254,243,199,0.6); color: #a16207;
-            border: 1px solid rgba(234,179,8,0.15); border-bottom: none;
+            background: var(--c-sell-bg); color: var(--c-sell);
+            border: 1px solid var(--c-sell-border); border-bottom: none;
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
         }
         .category-body {
@@ -227,7 +267,7 @@
             background: rgba(255,255,255,0.55);
             backdrop-filter: blur(20px) saturate(140%);
             -webkit-backdrop-filter: blur(20px) saturate(140%);
-            border-right: 1px solid rgba(0,0,0,0.06);
+            border-right: 1px solid var(--c-border);
             position: fixed; left: 0; top: 0; z-index: 30;
             display: flex; flex-direction: column;
         }
@@ -236,47 +276,47 @@
             display: flex; align-items: center; gap: 8px;
             padding: 10px 12px; margin-bottom: 4px;
             border-radius: 12px; font-size: 14px; font-weight: 500;
-            color: #636366; cursor: pointer;
+            color: var(--c-text-secondary); cursor: pointer;
             transition: all 0.15s ease;
         }
-        .sidebar-nav-item:hover { background: rgba(0,0,0,0.04); color: #1d1d1f; }
+        .sidebar-nav-item:hover { background: rgba(0,0,0,0.04); color: var(--c-text-primary); }
         .sidebar-nav-item.active {
-            background: rgba(0,113,227,0.1); color: #0071e3;
+            background: var(--c-accent-bg); color: var(--c-accent);
             font-weight: 600;
         }
-        .sidebar-footer { padding: 12px; border-top: 1px solid rgba(0,0,0,0.05); }
+        .sidebar-footer { padding: 12px; border-top: 1px solid var(--c-border); }
         .main-content { margin-left: 200px; min-height: 100vh; }
         .module-panel { display: none; }
         .module-panel.active { display: block; }
 
         /* ===== Dashboard Cards ===== */
         .stat-card {
-            background: rgba(255,255,255,0.62);
+            background: var(--c-surface-glass);
             backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255,255,255,0.5);
             border-radius: 18px; padding: 20px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.05);
         }
-        .stat-card .stat-label { font-size: 12px; color: #8e8e93; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-card .stat-label { font-size: 12px; color: var(--c-text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
         .stat-card .stat-value { font-size: 24px; font-weight: 700; margin-top: 4px; }
-        .stat-card .stat-sub { font-size: 12px; color: #8e8e93; margin-top: 2px; }
+        .stat-card .stat-sub { font-size: 12px; color: var(--c-text-secondary); margin-top: 2px; }
 
         /* ===== Loan Card ===== */
         .loan-card {
             background: rgba(255,255,255,0.55);
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(0,0,0,0.06); border-radius: 14px;
+            border: 1px solid var(--c-border); border-radius: 14px;
             padding: 14px; transition: all 0.2s ease;
         }
         .loan-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
-        .loan-card.overdue { border-left: 3px solid #ef4444; }
-        .loan-card.due-soon { border-left: 3px solid #f59e0b; }
+        .loan-card.overdue { border-left: 3px solid var(--c-danger); }
+        .loan-card.due-soon { border-left: 3px solid var(--c-warning); }
 
         /* ===== Car Card ===== */
         .car-card {
             background: rgba(255,255,255,0.55);
             backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(0,0,0,0.06); border-radius: 14px;
+            border: 1px solid var(--c-border); border-radius: 14px;
             padding: 14px; transition: all 0.2s ease;
         }
         .car-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
@@ -289,9 +329,9 @@
             width: 100%; max-width: 48px; border-radius: 8px 8px 0 0;
             transition: height 0.4s ease;
         }
-        .bar-fill.income { background: rgba(5,150,105,0.6); }
-        .bar-fill.expense { background: rgba(220,38,38,0.5); }
-        .bar-label { font-size: 11px; color: #8e8e93; }
+        .bar-fill.income { background: var(--c-keep-bg); }
+        .bar-fill.expense { background: var(--c-invest-bg); }
+        .bar-label { font-size: 11px; color: var(--c-text-secondary); }
 
         /* ===== Accordion ===== */
         .accordion-toggle { cursor: pointer; user-select: none; }
@@ -300,8 +340,8 @@
         .accordion-body.expanded { max-height: 2000px; }
 
         /* ===== Transaction type badges ===== */
-        .badge-income { background: rgba(209,250,229,0.7); color: #059669; border-radius: 8px; padding: 2px 8px; font-size: 11px; }
-        .badge-expense { background: rgba(254,226,226,0.7); color: #dc2626; border-radius: 8px; padding: 2px 8px; font-size: 11px; }
+        .badge-income { background: var(--c-keep-bg); color: var(--c-keep); border-radius: 8px; padding: 2px 8px; font-size: 11px; }
+        .badge-expense { background: var(--c-invest-bg); color: var(--c-invest); border-radius: 8px; padding: 2px 8px; font-size: 11px; }
 
         /* ===== Modal ===== */
         .modal-backdrop {
@@ -316,28 +356,29 @@
     <aside class="sidebar">
         <div class="px-4 py-5 border-b border-black/5">
             <h1 class="text-lg font-bold flex items-center gap-2">
-                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                 记账管理
             </h1>
         </div>
         <nav class="sidebar-nav">
             <div class="sidebar-nav-item active" data-module="dashboard" onclick="switchModule('dashboard')">
-                <span>📊</span> Payton's 数据
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Payton's 数据
             </div>
             <div class="sidebar-nav-item" data-module="daily" onclick="switchModule('daily')">
-                <span>💰</span> 日常消费
+                <i data-lucide="wallet" class="w-5 h-5"></i> 日常消费
             </div>
             <div class="sidebar-nav-item" data-module="invest" onclick="switchModule('invest')">
-                <span>📈</span> 投资小车
+                <i data-lucide="trending-up" class="w-5 h-5"></i> 投资小车
             </div>
             <div class="sidebar-nav-item" data-module="inventory" onclick="switchModule('inventory')">
-                <span>🏪</span> 小车库存
+                <i data-lucide="warehouse" class="w-5 h-5"></i> 小车库存
             </div>
         </nav>
         <div class="sidebar-footer space-y-2">
-            <button onclick="exportData()" class="w-full text-sm px-3 py-2 glass-light rounded-xl-apple hover:bg-white/60 btn-glass text-left">📤 导出JSON</button>
+            <button onclick="exportData()" class="w-full text-sm px-3 py-2 glass-light rounded-xl-apple hover:bg-white/60 btn-glass text-left flex items-center gap-2"><i data-lucide="file-up" class="w-4 h-4"></i> 导出JSON</button>
             <label class="w-full text-sm px-3 py-2 glass-light rounded-xl-apple hover:bg-white/60 cursor-pointer btn-glass text-left block">
-                📥 导入JSON <input type="file" class="hidden" accept=".json" onchange="importData(event)">
+                <input type="file" class="hidden" accept=".json" onchange="importData(event)">
+                <span class="flex items-center gap-2"><i data-lucide="file-down" class="w-4 h-4"></i> 导入JSON</span>
             </label>
             <div class="text-xs text-gray-400 text-center pt-2" id="appVersion">v2.0.0</div>
         </div>
@@ -722,7 +763,7 @@
             </div>
             <div class="mt-6 flex justify-end space-x-2">
               <button onclick="hideModal()" class="px-4 py-2 glass-light rounded-xl-apple hover:bg-white/60 text-sm btn-glass">取消</button>
-              <button onclick="saveLoan()" class="px-4 py-2 bg-blue-600/90 backdrop-blur text-white rounded-xl-apple hover:bg-blue-700 text-sm btn-glass">保存</button>
+              <button onclick="saveLoan()" class="px-4 py-2 bg-accent/85 backdrop-blur text-white rounded-xl-apple hover:bg-accent/90 text-sm btn-glass">保存</button>
             </div>
           </div>
         </div>`;
@@ -806,7 +847,7 @@
             </div>
             <div class="mt-6 flex justify-end space-x-2">
               <button onclick="hideModal()" class="px-4 py-2 glass-light rounded-xl-apple hover:bg-white/60 text-sm btn-glass">取消</button>
-              <button onclick="confirmRepay()" class="px-4 py-2 bg-yellow-500/90 backdrop-blur text-white rounded-xl-apple hover:bg-yellow-600 text-sm font-bold btn-glass">确认归还</button>
+              <button onclick="confirmRepay()" class="px-4 py-2 bg-sell/85 backdrop-blur text-white rounded-xl-apple hover:bg-sell/90 text-sm font-bold btn-glass">确认归还</button>
             </div>
           </div>
         </div>`;
@@ -881,29 +922,29 @@
 
           <!-- Header -->
           <div class="flex items-center justify-between">
-            <h2 class="text-xl font-bold">📊 Payton's 数据</h2>
+            <h2 class="text-xl font-bold"><i data-lucide="layout-dashboard" class="w-5 h-5 inline-block align-middle mr-1"></i> Payton's 数据</h2>
             <span class="text-xs text-gray-400">v${esc(carAppData.version)}</span>
           </div>
 
           <!-- 指标卡片 2x2 -->
           <div class="grid grid-cols-2 gap-4">
             <div class="stat-card">
-              <div class="stat-label">💰 零花钱余量</div>
+              <div class="stat-label"><i data-lucide="wallet" class="w-4 h-4 inline-block align-middle mr-1"></i> 零花钱余量</div>
               <div class="stat-value text-positive">${fmt(stats.pocketBalance)}</div>
               <div class="stat-sub">月额 ¥${carAppData.accounts.pocket.monthlyAllowance || 0}</div>
             </div>
             <div class="stat-card">
-              <div class="stat-label">📈 投资款余额</div>
+              <div class="stat-label"><i data-lucide="trending-up" class="w-4 h-4 inline-block align-middle mr-1"></i> 投资款余额</div>
               <div class="stat-value text-negative">${fmt(stats.investBalance)}</div>
               <div class="stat-sub">含贷款融资</div>
             </div>
             <div class="stat-card">
-              <div class="stat-label">🚗 已投资小车</div>
+              <div class="stat-label"><i data-lucide="car" class="w-4 h-4 inline-block align-middle mr-1"></i> 已投资小车</div>
               <div class="stat-value text-gray-800">${fmt(stats.investTotal)}</div>
               <div class="stat-sub">共 ${stats.investCount} 辆</div>
             </div>
             <div class="stat-card">
-              <div class="stat-label">💎 库存预期价值</div>
+              <div class="stat-label"><i data-lucide="diamond" class="w-4 h-4 inline-block align-middle mr-1"></i> 库存预期价值</div>
               <div class="stat-value text-gray-800">${fmt(stats.expectedTotal)}</div>
               <div class="stat-sub">共 ${stats.unsoldCount} 辆未售</div>
             </div>
@@ -911,7 +952,7 @@
 
           <!-- 贷款倒计时 -->
           <div class="glass rounded-2xl-apple p-5">
-            <h3 class="font-bold text-base mb-3">⏳ 贷款倒计时</h3>
+            <h3 class="font-bold text-base mb-3"><i data-lucide="hourglass" class="w-4 h-4 inline-block align-middle mr-1"></i> 贷款倒计时</h3>
             ${loans.length === 0 ? '<p class="text-gray-400 text-sm">无进行中的贷款</p>' : loans.map(loan => {
               const daysLeft = Math.ceil((new Date(loan.dueDate) - new Date()) / (1000 * 60 * 60 * 24));
               const isOverdue = daysLeft < 0;
@@ -921,18 +962,18 @@
                   <div>
                     <div class="font-semibold text-sm">${esc(loan.name)}</div>
                     <div class="text-xs text-gray-500">剩余 ${fmt(loan.remaining)} / 总额 ${fmt(loan.amount)}</div>
-                    <div class="text-xs ${isOverdue ? 'text-red-600 font-bold' : isSoon ? 'text-yellow-600 font-semibold' : 'text-gray-400'}">
+                    <div class="text-xs ${isOverdue ? 'text-invest font-bold' : isSoon ? 'text-sell font-semibold' : 'text-gray-400'}">
                       ${isOverdue ? '⚠ 已逾期 ' + Math.abs(daysLeft) + ' 天' : '到期: ' + loan.dueDate + ' (' + daysLeft + ' 天)'}
                     </div>
                   </div>
-                  <button onclick="openRepayLoanModal('${loan.id}')" class="btn-glass text-xs px-3 py-1.5 bg-yellow-100/80 text-yellow-700 hover:bg-yellow-200/80">归还</button>
+                  <button onclick="openRepayLoanModal('${loan.id}')" class="btn-glass text-xs px-3 py-1.5 bg-sell/10 text-sell hover:bg-sell/20">归还</button>
                 </div>`;
             }).join('')}
           </div>
 
           <!-- 近三月柱状图 -->
           <div class="glass rounded-2xl-apple p-5">
-            <h3 class="font-bold text-base mb-3">📊 近三月零花钱消费</h3>
+            <h3 class="font-bold text-base mb-3"><i data-lucide="bar-chart-3" class="w-4 h-4 inline-block align-middle mr-1"></i> 近三月零花钱消费</h3>
             <div class="bar-chart">
               ${monthly.map(m => `
                 <div class="bar-item">
@@ -951,14 +992,14 @@
 
           <!-- 操作按钮 -->
           <div class="flex gap-3 flex-wrap">
-            <button onclick="openNewLoanModal()" class="btn-glass bg-blue-600/10 text-blue-700 px-4 py-2 rounded-xl-apple text-sm hover:bg-blue-600/20 font-medium">
-              ➕ 新增贷款
+            <button onclick="openNewLoanModal()" class="btn-glass bg-accent/10 text-accent px-4 py-2 rounded-xl-apple text-sm hover:bg-accent/20 font-medium">
+              <i data-lucide="plus-circle" class="w-4 h-4 inline-block align-middle mr-1"></i> 新增贷款
             </button>
-            <button onclick="openRepayLoanModal()" class="btn-glass bg-yellow-100/80 text-yellow-700 px-4 py-2 rounded-xl-apple text-sm hover:bg-yellow-200/80 font-medium">
-              💸 归还贷款
+            <button onclick="openRepayLoanModal()" class="btn-glass bg-sell/10 text-sell px-4 py-2 rounded-xl-apple text-sm hover:bg-sell/20 font-medium">
+              <i data-lucide="banknote" class="w-4 h-4 inline-block align-middle mr-1"></i> 归还贷款
             </button>
-            <button onclick="depositAllowance()" class="btn-glass bg-green-100/80 text-green-700 px-4 py-2 rounded-xl-apple text-sm hover:bg-green-200/80 font-medium">
-              💰 存入本月零花钱
+            <button onclick="depositAllowance()" class="btn-glass bg-keep/10 text-keep px-4 py-2 rounded-xl-apple text-sm hover:bg-keep/20 font-medium">
+              <i data-lucide="piggy-bank" class="w-4 h-4 inline-block align-middle mr-1"></i> 存入本月零花钱
             </button>
           </div>
         </div>`;
@@ -999,8 +1040,8 @@
                 <td class="px-3 py-2 font-semibold ${t.type === 'income' ? 'text-negative' : 'text-positive'}">${fmt(t.amount)}</td>
                 <td class="px-3 py-2 text-xs text-gray-600 max-w-[200px] truncate">${esc(t.note || '')}</td>
                 <td class="px-3 py-2 text-right">
-                  <button onclick="editTransaction('${accountId}', '${t.id}')" class="text-blue-500 hover:underline text-xs mr-1">✏️</button>
-                  <button onclick="deleteTransaction('${accountId}', '${t.id}')" class="text-red-500 hover:underline text-xs">🗑</button>
+                  <button onclick="editTransaction('${accountId}', '${t.id}')" class="text-accent hover:underline text-xs mr-1"><i data-lucide="pencil-line" class="w-3.5 h-3.5 inline-block"></i></button>
+                  <button onclick="deleteTransaction('${accountId}', '${t.id}')" class="text-invest hover:underline text-xs"><i data-lucide="trash-2" class="w-3.5 h-3.5 inline-block"></i></button>
                 </td>
               </tr>`).join('')}
           </tbody>
@@ -1043,8 +1084,8 @@
       const html = `
         <div class="max-w-6xl mx-auto space-y-4">
           <div class="flex items-center justify-between">
-            <h2 class="text-xl font-bold">💰 日常消费</h2>
-            <button onclick="openTransactionModal('pocket')" class="bg-blue-600/90 backdrop-blur text-white px-4 py-2 rounded-xl-apple text-sm hover:bg-blue-700 btn-glass">+ 新增记录</button>
+            <h2 class="text-xl font-bold"><i data-lucide="wallet" class="w-5 h-5 inline-block align-middle mr-1"></i> 日常消费</h2>
+            <button onclick="openTransactionModal('pocket')" class="bg-accent/85 backdrop-blur text-white px-4 py-2 rounded-xl-apple text-sm hover:bg-accent/90 btn-glass"><i data-lucide="plus" class="w-4 h-4 inline-block align-middle mr-1"></i> 新增记录</button>
           </div>
 
           <div class="glass rounded-2xl-apple p-4 flex gap-6 text-sm">
@@ -1055,12 +1096,12 @@
 
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div class="glass rounded-2xl-apple overflow-hidden">
-              <div class="glass-light p-3 border-b border-black/5 font-semibold text-sm">📋 收支明细</div>
+              <div class="glass-light p-3 border-b border-black/5 font-semibold text-sm"><i data-lucide="list" class="w-4 h-4 inline-block align-middle mr-1"></i> 收支明细</div>
               ${renderTransactionTable(pocket.transactions, 'pocket')}
             </div>
 
             <div class="glass rounded-2xl-apple overflow-hidden">
-              <div class="glass-light p-3 border-b border-black/5 font-semibold text-sm">🚗 自留车库</div>
+              <div class="glass-light p-3 border-b border-black/5 font-semibold text-sm"><i data-lucide="car" class="w-4 h-4 inline-block align-middle mr-1"></i> 自留车库</div>
               <div class="p-3">
                 ${renderCarCards(carAppData.cars, 'keep')}
               </div>
@@ -1087,11 +1128,11 @@
               <div>
                 <div class="font-semibold text-sm">${esc(loan.name)}</div>
                 <div class="text-xs text-gray-500">剩余 ${fmt(loan.remaining)} / 总额 ${fmt(loan.amount)}</div>
-                <div class="text-xs ${isOverdue ? 'text-red-600 font-bold' : 'text-gray-400'}">
+                <div class="text-xs ${isOverdue ? 'text-invest font-bold' : 'text-gray-400'}">
                   ${isOverdue ? '⚠ 已逾期 ' + Math.abs(daysLeft) + ' 天' : '到期: ' + loan.dueDate}
                 </div>
               </div>
-              <button onclick="openRepayLoanModal('${loan.id}')" class="btn-glass text-xs px-3 py-1.5 bg-yellow-100/80 text-yellow-700">归还</button>
+              <button onclick="openRepayLoanModal('${loan.id}')" class="btn-glass text-xs px-3 py-1.5 bg-sell/10 text-sell">归还</button>
             </div>
           </div>`;
       }).join('');
@@ -1104,10 +1145,10 @@
       const html = `
         <div class="max-w-6xl mx-auto space-y-4">
           <div class="flex items-center justify-between">
-            <h2 class="text-xl font-bold">📈 投资小车</h2>
+            <h2 class="text-xl font-bold"><i data-lucide="trending-up" class="w-5 h-5 inline-block align-middle mr-1"></i> 投资小车</h2>
             <div class="flex gap-2">
-              <button onclick="openTransactionModal('invest')" class="bg-blue-600/90 backdrop-blur text-white px-4 py-2 rounded-xl-apple text-sm hover:bg-blue-700 btn-glass">+ 新增记录</button>
-              <button onclick="openNewLoanModal()" class="bg-red-100/80 text-red-700 px-4 py-2 rounded-xl-apple text-sm hover:bg-red-200/80 btn-glass">+ 新增贷款</button>
+              <button onclick="openTransactionModal('invest')" class="bg-accent/85 backdrop-blur text-white px-4 py-2 rounded-xl-apple text-sm hover:bg-accent/90 btn-glass"><i data-lucide="plus" class="w-4 h-4 inline-block align-middle mr-1"></i> 新增记录</button>
+              <button onclick="openNewLoanModal()" class="bg-invest/10 text-invest px-4 py-2 rounded-xl-apple text-sm hover:bg-invest/20 btn-glass"><i data-lucide="plus-circle" class="w-4 h-4 inline-block align-middle mr-1"></i> 新增贷款</button>
             </div>
           </div>
 
@@ -1119,19 +1160,19 @@
 
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div class="glass rounded-2xl-apple overflow-hidden">
-              <div class="glass-light p-3 border-b border-black/5 font-semibold text-sm">📋 投资明细</div>
+              <div class="glass-light p-3 border-b border-black/5 font-semibold text-sm"><i data-lucide="list" class="w-4 h-4 inline-block align-middle mr-1"></i> 投资明细</div>
               ${renderTransactionTable(invest.transactions, 'invest')}
             </div>
 
             <div class="glass rounded-2xl-apple overflow-hidden">
-              <div class="glass-light p-3 border-b border-black/5 font-semibold text-sm">🚗 投资车库</div>
+              <div class="glass-light p-3 border-b border-black/5 font-semibold text-sm"><i data-lucide="car" class="w-4 h-4 inline-block align-middle mr-1"></i> 投资车库</div>
               <div class="p-3">
                 ${renderCarCards(carAppData.cars, 'invest')}
               </div>
             </div>
 
             <div class="lg:col-span-2 glass rounded-2xl-apple overflow-hidden">
-              <div class="glass-light p-3 border-b border-black/5 font-semibold text-sm">💳 贷款管理</div>
+              <div class="glass-light p-3 border-b border-black/5 font-semibold text-sm"><i data-lucide="banknote" class="w-4 h-4 inline-block align-middle mr-1"></i> 贷款管理</div>
               <div class="p-3">
                 ${renderLoanCards()}
               </div>
@@ -1157,8 +1198,8 @@
             <input type="hidden" id="txnId" value="${txn ? txn.id : ''}">
             <div class="space-y-3">
               <div class="flex gap-2">
-                <button onclick="setTxnType('income')" id="btnIncome" class="flex-1 py-2 rounded-xl text-sm font-bold ${txn && txn.type === 'income' ? 'bg-green-100 text-green-700' : 'glass-light text-gray-500'}">收入</button>
-                <button onclick="setTxnType('expense')" id="btnExpense" class="flex-1 py-2 rounded-xl text-sm font-bold ${txn && txn.type === 'expense' ? 'bg-red-100 text-red-700' : 'glass-light text-gray-500'}">支出</button>
+                <button onclick="setTxnType('income')" id="btnIncome" class="flex-1 py-2 rounded-xl text-sm font-bold ${txn && txn.type === 'income' ? 'bg-keep/10 text-keep' : 'glass-light text-gray-500'}">收入</button>
+                <button onclick="setTxnType('expense')" id="btnExpense" class="flex-1 py-2 rounded-xl text-sm font-bold ${txn && txn.type === 'expense' ? 'bg-invest/10 text-invest' : 'glass-light text-gray-500'}">支出</button>
               </div>
               <input type="hidden" id="txnType" value="${txn ? txn.type : 'expense'}">
               <div>
@@ -1189,7 +1230,7 @@
             </div>
             <div class="mt-6 flex justify-end space-x-2">
               <button onclick="hideModal()" class="px-4 py-2 glass-light rounded-xl-apple hover:bg-white/60 text-sm btn-glass">取消</button>
-              <button onclick="saveTransaction()" class="px-4 py-2 bg-blue-600/90 text-white rounded-xl-apple hover:bg-blue-700 text-sm btn-glass">保存</button>
+              <button onclick="saveTransaction()" class="px-4 py-2 bg-accent/85 text-white rounded-xl-apple hover:bg-accent/90 text-sm btn-glass">保存</button>
             </div>
           </div>
         </div>`;
@@ -1199,10 +1240,10 @@
     function setTxnType(type) {
       document.getElementById('txnType').value = type;
       document.getElementById('btnIncome').className = type === 'income'
-        ? 'flex-1 py-2 rounded-xl text-sm font-bold bg-green-100 text-green-700'
+        ? 'flex-1 py-2 rounded-xl text-sm font-bold bg-keep/10 text-keep'
         : 'flex-1 py-2 rounded-xl text-sm font-bold glass-light text-gray-500';
       document.getElementById('btnExpense').className = type === 'expense'
-        ? 'flex-1 py-2 rounded-xl text-sm font-bold bg-red-100 text-red-700'
+        ? 'flex-1 py-2 rounded-xl text-sm font-bold bg-invest/10 text-invest'
         : 'flex-1 py-2 rounded-xl text-sm font-bold glass-light text-gray-500';
     }
 
@@ -1251,7 +1292,7 @@
 
       const html = `
         <div id="sellCarModal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-50">
-          <div class="glass-strong rounded-2xl-apple w-full max-w-sm p-6 border-t-4 border-yellow-400/60">
+          <div class="glass-strong rounded-2xl-apple w-full max-w-sm p-6 border-t-4 border-sell/60">
             <h3 class="font-bold text-lg mb-4">登记卖出</h3>
             <p class="text-sm text-gray-500 mb-3">${esc(car.brand)} ${esc(car.name)} · 买入价 ${fmt(car.buyPrice)}</p>
             <input type="hidden" id="sellCarSid" value="${car.sid}">
@@ -1267,7 +1308,7 @@
             </div>
             <div class="mt-6 flex justify-end space-x-2">
               <button onclick="hideModal()" class="px-4 py-2 glass-light rounded-xl-apple hover:bg-white/60 text-sm btn-glass">取消</button>
-              <button onclick="confirmSellCar()" class="px-4 py-2 bg-yellow-500/90 text-white rounded-xl-apple hover:bg-yellow-600 text-sm font-bold btn-glass">确认卖出</button>
+              <button onclick="confirmSellCar()" class="px-4 py-2 bg-sell/85 text-white rounded-xl-apple hover:bg-sell/90 text-sm font-bold btn-glass">确认卖出</button>
             </div>
           </div>
         </div>`;
@@ -1384,12 +1425,12 @@
 
       const html = `
         <div class="max-w-6xl mx-auto space-y-4">
-          <h2 class="text-xl font-bold">🏪 小车库存</h2>
+          <h2 class="text-xl font-bold"><i data-lucide="warehouse" class="w-5 h-5 inline-block align-middle mr-1"></i> 小车库存</h2>
 
           <div class="glass rounded-2xl-apple p-3 flex flex-wrap gap-3 items-center">
             <div class="flex gap-1">
-              <button onclick="setInvSort('brand')" class="px-3 py-1.5 rounded-lg text-xs font-medium ${invSortMode === 'brand' ? 'bg-blue-100 text-blue-700' : 'glass-light'} btn-glass">按品牌</button>
-              <button onclick="setInvSort('month')" class="px-3 py-1.5 rounded-lg text-xs font-medium ${invSortMode === 'month' ? 'bg-blue-100 text-blue-700' : 'glass-light'} btn-glass">按月</button>
+              <button onclick="setInvSort('brand')" class="px-3 py-1.5 rounded-lg text-xs font-medium ${invSortMode === 'brand' ? 'bg-blue-100 text-accent' : 'glass-light'} btn-glass">按品牌</button>
+              <button onclick="setInvSort('month')" class="px-3 py-1.5 rounded-lg text-xs font-medium ${invSortMode === 'month' ? 'bg-blue-100 text-accent' : 'glass-light'} btn-glass">按月</button>
             </div>
             <input type="text" id="invSearch" placeholder="搜索品牌/名称/SID..." value="${esc(invSearchText)}"
                    oninput="onInvSearch()" class="flex-1 glass-input p-2 text-sm max-w-xs">
@@ -1482,15 +1523,24 @@
         case 'invest': if (typeof renderInvest === 'function') renderInvest(); break;
         case 'inventory': if (typeof renderInventory === 'function') renderInventory(); break;
       }
+      initIcons();
     }
 
     // ==================== 弹窗容器 ====================
     function showModal(html) {
       document.getElementById('modalContainer').innerHTML = html;
+      initIcons();
     }
 
     function hideModal() {
       document.getElementById('modalContainer').innerHTML = '';
+    }
+
+    // ==================== Lucide图标初始化 ====================
+    function initIcons() {
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
     }
 
     function closeModal(id) {
