@@ -1363,15 +1363,13 @@
           { value: 'other', label: '其他' }
         ];
       }
-      // 投资：买卖小车 + 贷款相关
+      // 投资：只买卖小车
       if (type === 'expense') return [
-        { value: 'car_buy', label: '买车' },
-        { value: 'loan_repay', label: '还贷' },
+        { value: 'car_buy', label: '买小车' },
         { value: 'other', label: '其他' }
       ];
       return [
-        { value: 'car_sell', label: '卖车' },
-        { value: 'loan_new', label: '新贷款' },
+        { value: 'car_sell', label: '卖小车' },
         { value: 'other', label: '其他' }
       ];
     }
