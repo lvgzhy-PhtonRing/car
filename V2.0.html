@@ -1349,6 +1349,126 @@
       saveData();
     }
 
+    // ==================== 小车库存 ====================
+    let invSortMode = 'brand';
+    let invSearchText = '';
+
+    function renderInventory() {
+      const unsoldCars = carAppData.cars.filter(c => !c.isSold);
+
+      let filtered = unsoldCars;
+      if (invSearchText) {
+        const q = invSearchText.toLowerCase();
+        filtered = unsoldCars.filter(c =>
+          c.name.toLowerCase().includes(q) ||
+          c.brand.toLowerCase().includes(q) ||
+          c.sid.toLowerCase().includes(q)
+        );
+      }
+
+      let groups;
+      if (invSortMode === 'brand') {
+        groups = groupBy(filtered, c => (c.brand || '未知品牌') + '|' + c.name);
+      } else {
+        groups = groupBy(filtered, c => c.buyDate.slice(0, 7));
+      }
+
+      const investCount = unsoldCars.filter(c => c.category === 'invest').length;
+      const keepCount = unsoldCars.filter(c => c.category === 'keep').length;
+
+      const html = `
+        <div class="max-w-6xl mx-auto space-y-4">
+          <h2 class="text-xl font-bold">🏪 小车库存</h2>
+
+          <div class="glass rounded-2xl-apple p-3 flex flex-wrap gap-3 items-center">
+            <div class="flex gap-1">
+              <button onclick="setInvSort('brand')" class="px-3 py-1.5 rounded-lg text-xs font-medium ${invSortMode === 'brand' ? 'bg-blue-100 text-blue-700' : 'glass-light'} btn-glass">按品牌</button>
+              <button onclick="setInvSort('month')" class="px-3 py-1.5 rounded-lg text-xs font-medium ${invSortMode === 'month' ? 'bg-blue-100 text-blue-700' : 'glass-light'} btn-glass">按月</button>
+            </div>
+            <input type="text" id="invSearch" placeholder="搜索品牌/名称/SID..." value="${esc(invSearchText)}"
+                   oninput="onInvSearch()" class="flex-1 glass-input p-2 text-sm max-w-xs">
+            <div class="text-xs text-gray-500 ml-auto">
+              总投资 ${investCount} + 自留 ${keepCount} = 共 ${unsoldCars.length} 辆
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            ${Object.entries(groups).map(([key, cars]) => {
+              const label = invSortMode === 'brand'
+                ? (cars[0].brand || '未知品牌') + ' ' + cars[0].name
+                : key;
+              const avgPrice = cars.reduce((s, c) => s + c.buyPrice, 0) / cars.length;
+              const groupId = 'group_' + key.replace(/[^a-zA-Z0-9\\u4e00-\\u9fff]/g, '_');
+
+              return `
+                <div class="glass rounded-2xl-apple overflow-hidden">
+                  <div class="glass-light p-4 flex justify-between items-center accordion-toggle" onclick="toggleAccordion('${groupId}')">
+                    <div>
+                      <span class="font-bold">${esc(label)}</span>
+                      <span class="text-sm text-gray-500 ml-2">${cars.length} 辆 · 均价 ${fmt(avgPrice)}</span>
+                      <span class="text-xs ml-2 ${cars[0].category === 'invest' ? 'text-invest' : 'text-keep'}">
+                        ${cars[0].category === 'invest' ? '投资' : '自留'}
+                      </span>
+                    </div>
+                    <span class="text-gray-400 text-sm" id="${groupId}_icon">▶</span>
+                  </div>
+                  <div id="${groupId}_body" class="accordion-body collapsed">
+                    <div class="p-3 space-y-2 border-t border-black/5">
+                      ${cars.map(c => `
+                        <div class="flex justify-between items-center p-2 glass-light rounded-xl">
+                          <div class="text-xs">
+                            <span class="font-mono text-gray-400 mr-2">${c.sid.slice(0, 8)}</span>
+                            <span>${c.buyDate}</span>
+                            <span class="ml-2 font-semibold">${fmt(c.buyPrice)}</span>
+                            <span class="text-gray-400 ml-1">预期 ${fmt(c.expectedValue || c.buyPrice)}</span>
+                          </div>
+                          <div class="flex gap-1">
+                            <button onclick="sellCar('${c.sid}')" class="btn-sell text-xs">售出</button>
+                            <button onclick="convertCar('${c.sid}')" class="btn-convert ${c.category === 'invest' ? 'btn-to-keep' : 'btn-to-invest'} text-xs">
+                              → ${c.category === 'invest' ? '自留' : '投资'}
+                            </button>
+                          </div>
+                        </div>`).join('')}
+                    </div>
+                  </div>
+                </div>`;
+            }).join('')}
+            ${Object.keys(groups).length === 0 ? '<div class="text-center py-10 text-gray-400">无匹配的小车</div>' : ''}
+          </div>
+        </div>`;
+      document.getElementById('moduleInventory').innerHTML = html;
+    }
+
+    function groupBy(arr, fn) {
+      const map = {};
+      arr.forEach(item => {
+        const key = typeof fn === 'function' ? fn(item) : item[fn];
+        if (!map[key]) map[key] = [];
+        map[key].push(item);
+      });
+      return map;
+    }
+
+    function toggleAccordion(groupId) {
+      const body = document.getElementById(groupId + '_body');
+      const icon = document.getElementById(groupId + '_icon');
+      if (!body || !icon) return;
+      const isCollapsed = body.classList.contains('collapsed');
+      body.classList.toggle('collapsed', !isCollapsed);
+      body.classList.toggle('expanded', isCollapsed);
+      icon.textContent = isCollapsed ? '▼' : '▶';
+    }
+
+    function setInvSort(mode) {
+      invSortMode = mode;
+      renderCurrentModule();
+    }
+
+    function onInvSearch() {
+      invSearchText = document.getElementById('invSearch') ? document.getElementById('invSearch').value.trim().toLowerCase() : '';
+      renderCurrentModule();
+    }
+
     function renderCurrentModule() {
       switch (currentModule) {
         case 'dashboard': if (typeof renderDashboard === 'function') renderDashboard(); break;
