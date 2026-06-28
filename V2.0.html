@@ -1305,26 +1305,36 @@
       const defaultCarCat = accountId === 'invest' ? 'invest' : 'keep';
       const carCatLabel = defaultCarCat === 'invest' ? '投资' : '自留';
       const newSid = genUUID();
+      const isCarBuy = presetCategory === 'car_buy' || (txn && txn.category === 'car_buy');
+      const isCarSell = presetCategory === 'car_sell' || (txn && txn.category === 'car_sell');
+      const isPresetType = presetType === 'expense' || presetType === 'income';
+      const hideToggle = isCarBuy || isCarSell || isPresetType;
+      const modalTitle = isCarBuy ? '买小车' : isCarSell ? '卖小车' : (txn ? '编辑交易' : '新增记录');
 
       const html = `
         <div id="txnModal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-50">
           <div class="glass-strong rounded-2xl-apple w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
-            <h3 class="font-bold text-lg mb-4">${txn ? '编辑' : '新增'}交易记录</h3>
+            <h3 class="font-bold text-lg mb-4">${modalTitle}</h3>
             <input type="hidden" id="txnAccountId" value="${accountId}">
             <input type="hidden" id="txnId" value="${txn ? txn.id : ''}">
             <input type="hidden" id="carSid" value="${car ? car.sid : newSid}">
             <input type="hidden" id="carCategory" value="${car ? car.category : defaultCarCat}">
             <div class="space-y-3">
+              ${hideToggle ? '' : `
               <div class="flex gap-2">
                 <button onclick="setTxnType('expense')" id="btnExpense" class="flex-1 py-2 rounded-xl text-sm font-bold ${(!txn || txn.type === 'expense') ? 'bg-invest/10 text-invest' : 'glass-light text-gray-500'}">支出</button>
                 <button onclick="setTxnType('income')" id="btnIncome" class="flex-1 py-2 rounded-xl text-sm font-bold ${txn && txn.type === 'income' ? 'bg-keep/10 text-keep' : 'glass-light text-gray-500'}">收入</button>
               </div>
-              <input type="hidden" id="txnType" value="${txn ? txn.type : 'expense'}">
+              `}
+              <input type="hidden" id="txnType" value="${txn ? txn.type : (presetType || 'expense')}">
+              ${isCarBuy || isCarSell ? '' : `
               <div>
                 <label class="block text-sm text-gray-600 mb-1">类别</label>
                 <select id="txnCategory" onchange="onTxnCategoryChange()" class="w-full glass-input p-2.5 text-sm">
                 </select>
               </div>
+              `}
+              ${isCarBuy || isCarSell ? `<input type="hidden" id="txnCategory" value="${isCarBuy ? 'car_buy' : 'car_sell'}">` : ''}
               <div>
                 <label class="block text-sm text-gray-600 mb-1">金额</label>
                 <input type="number" id="txnAmount" oninput="onTxnAmountChange()" value="${txn ? txn.amount : ''}" step="0.01" class="w-full glass-input p-2.5 text-sm">
@@ -1407,21 +1417,26 @@
         </div>`;
       showModal(html);
 
-      // 初始化类别下拉：优先用预设类别，其次编辑中的交易类别，最后默认
-      let initType = 'expense';
-      let initCat = 'other';
-      if (presetType === 'income') { initType = 'income'; initCat = 'other'; }
-      else if (presetType === 'expense') { initType = 'expense'; initCat = 'other'; }
-      if (presetCategory === 'car_buy') { initType = 'expense'; initCat = 'car_buy'; }
-      else if (presetCategory === 'car_sell') { initType = 'income'; initCat = 'car_sell'; }
-      else if (txn) { initType = txn.type; initCat = txn.category; }
-
-      populateCategoryDropdown(initType, accountId, initCat);
-      // 预设买卖 → 展开小车属性
-      if (presetCategory === 'car_buy' || presetCategory === 'car_sell') {
-        onTxnCategoryChange();
-      } else if (txn && (txn.category === 'car_buy' || txn.category === 'car_sell')) {
-        onTxnCategoryChange();
+      // 初始化
+      if (isCarBuy || isCarSell) {
+        // 买卖小车：直接展开小车属性，无需填充下拉
+        const carFields = document.getElementById('carFields');
+        const carBuyFields = document.getElementById('carBuyFields');
+        const carSellFields = document.getElementById('carSellFields');
+        if (carFields) carFields.classList.remove('hidden');
+        if (isCarBuy && carBuyFields) carBuyFields.classList.remove('hidden');
+        if (isCarSell && carSellFields) {
+          carSellFields.classList.remove('hidden');
+          populateSellCarDropdown();
+        }
+      } else {
+        // 普通交易：填充类别下拉
+        let initType = 'expense';
+        let initCat = 'other';
+        if (presetType === 'income') { initType = 'income'; initCat = 'other'; }
+        else if (presetType === 'expense') { initType = 'expense'; initCat = 'other'; }
+        else if (txn) { initType = txn.type; initCat = txn.category; }
+        populateCategoryDropdown(initType, accountId, initCat);
       }
     }
 
@@ -1438,7 +1453,9 @@
     }
 
     function onTxnCategoryChange() {
-      const cat = document.getElementById('txnCategory').value;
+      const catEl = document.getElementById('txnCategory');
+      if (!catEl) return;
+      const cat = catEl.value;
       const carFields = document.getElementById('carFields');
       const carBuyFields = document.getElementById('carBuyFields');
       const carSellFields = document.getElementById('carSellFields');
