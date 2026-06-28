@@ -1404,7 +1404,7 @@
                   </div>
                 </div>
               </div>
-
+              ` : ''}
               ${isCarBuy || isCarSell ? '' : `
               <div class="mt-3">
                 <label class="block text-sm text-gray-600 mb-1">备注</label>
@@ -1417,7 +1417,7 @@
               <button onclick="saveTransaction()" class="px-4 py-2 bg-accent/85 text-white rounded-xl-apple hover:bg-accent/90 text-sm btn-glass">保存</button>
             </div>
           </div>
-        </div>` : ''}`;
+        </div>`;
       showModal(html);
 
       // 初始化
