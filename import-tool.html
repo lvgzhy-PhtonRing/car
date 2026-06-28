@@ -49,6 +49,7 @@ input[type="checkbox"] { accent-color: #4f6d7a; width: 14px; height: 14px; curso
 
 <script>
 let items = [];
+let monthlyHeaders = {};
 
 function genId(pre) { return pre + '_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8); }
 function genUUID() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }); }
@@ -60,11 +61,14 @@ function parse() {
   const lines = raw.split('\n');
   items = [];
   let year = '2026', month = '01';
+  monthlyHeaders = {};
 
   lines.forEach(line => {
     const t = line.trim(); if (!t) return;
     const mh = t.match(/^(\d{4})-(\d{2})$/); if (mh) { year = mh[1]; month = mh[2]; return; }
-    if (/^收:/.test(t)) return;
+    // Capture original header: 收: 400.00|支: 477.55
+    const sumMatch = t.match(/^收:\s*([\d.]+)\s*\|\s*支:\s*([\d.]+)/);
+    if (sumMatch) { monthlyHeaders[year+'-'+month] = { inc: parseFloat(sumMatch[1])||0, exp: parseFloat(sumMatch[2])||0 }; return; }
     const parts = t.split(/\s{2,}|\t+/); if (parts.length < 4) return;
     const day = parts[0].trim().padStart(2,'0');
     const type = parts[1].includes('支出') ? 'expense' : 'income';
@@ -99,7 +103,40 @@ function renderStats() {
   let pSum = 0, iSum = 0, pCnt = 0, iCnt = 0;
   items.forEach(it => { if (it.account==='pocket') { pSum+=it.amount; pCnt++; } else { iSum+=it.amount; iCnt++; } });
   document.getElementById('stats').innerHTML =
-    `共 ${items.length} 条 · <span class="text-[#5b8c5a]">零花 ${pCnt}条 ¥${pSum.toFixed(2)}</span> · <span class="text-[#c44b3d]">投资 ${iCnt}条 ¥${iSum.toFixed(2)}</span>`;
+    `共 ${items.length} 条 · <span class="text-[#5b8c5a]">零花 ${pCnt}条 ¥${pSum.toFixed(2)}</span> · <span class="text-[#c44b3d]">投资 ${iCnt}条 ¥${iSum.toFixed(2)}</span>` +
+    (Object.keys(monthlyHeaders).length > 0 ? renderMonthlyCheck() : '');
+}
+
+function renderMonthlyCheck() {
+  // Group parsed items by month
+  const parsed = {};
+  items.forEach(it => {
+    const m = it.date.slice(0,7);
+    if (!parsed[m]) parsed[m] = { inc: 0, exp: 0 };
+    if (it.type === 'income') parsed[m].inc += it.amount;
+    else parsed[m].exp += it.amount;
+  });
+
+  const rows = Object.keys(monthlyHeaders).sort().reverse().map(m => {
+    const h = monthlyHeaders[m];
+    const p = parsed[m] || { inc: 0, exp: 0 };
+    const incOk = Math.abs((p.inc - h.inc)) < 0.02;
+    const expOk = Math.abs((p.exp - h.exp)) < 0.02;
+    const ok = incOk && expOk;
+    return `<tr class="text-xs ${ok ? '' : 'bg-red-50'}">
+      <td class="py-1 px-2 font-semibold">${m}</td>
+      <td class="py-1 px-2 text-right ${incOk ? 'text-[#5b8c5a]' : 'text-[#c44b3d] font-bold'}">${ok ? '' : '⚠'} 收 ¥${p.inc.toFixed(2)}</td>
+      <td class="py-1 px-2 text-right text-gray-400">表头 ¥${h.inc.toFixed(2)}</td>
+      <td class="py-1 px-2 text-right ${expOk ? 'text-[#c44b3d]' : 'text-[#c44b3d] font-bold'}">${ok ? '' : '⚠'} 支 ¥${p.exp.toFixed(2)}</td>
+      <td class="py-1 px-2 text-right text-gray-400">表头 ¥${h.exp.toFixed(2)}</td>
+      <td class="py-1 px-2">${ok ? '<span class="text-[#5b8c5a]">✓</span>' : '<span class="text-[#c44b3d] font-bold">✗ 差</span>'}</td>
+    </tr>`;
+  }).join('');
+
+  return `<div class="mt-3 glass overflow-hidden">
+    <div class="px-4 py-2 text-xs font-semibold bg-black/[0.02] border-b border-black/5">📊 月度核对（解析 vs 原始表头）</div>
+    <table class="w-full"><thead class="text-[10px] text-gray-400"><tr><th class="py-1 px-2 text-left">月份</th><th class="py-1 px-2 text-right" colspan="2">收入</th><th class="py-1 px-2 text-right" colspan="2">支出</th><th></th></tr></thead>
+    <tbody>${rows}</tbody></table></div>`;
 }
 
 function renderPreview() {
