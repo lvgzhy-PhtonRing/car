@@ -1757,6 +1757,7 @@
           carAppData.cars.push(newCar);
         }
         carSid = sid;
+        if (carName) note = carName; // 收支备注同步为车名
       }
 
       else if (category === 'car_sell') {
@@ -1773,6 +1774,7 @@
           car.soldDate = sellDate;
         }
         carSid = selectedSid;
+        if (car) note = '卖出: ' + (car.brand ? car.brand + ' ' : '') + car.name;
       }
 
       // === 创建/更新交易记录 ===
