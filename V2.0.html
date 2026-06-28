@@ -1303,7 +1303,7 @@
         <div class="flex items-center justify-between px-4 py-2.5 hover:bg-white/30 text-sm">
           <div class="flex items-center gap-4 flex-1 min-w-0">
             <span class="font-semibold truncate">${esc(car.brand || '?')}</span>
-            <span class="text-gray-600 truncate">${esc(car.name)}</span>
+            <span class="text-gray-600 truncate" title="${esc(car.name)}">${car.name ? esc(car.name) : '<span class=\"text-gray-300 italic\">--</span>'}</span>
             <span class="text-xs text-gray-400">${car.buyDate}</span>
             <span class="text-xs font-mono text-gray-500">${fmt(car.buyPrice)}</span>
             <span class="text-xs text-gray-400">预期 ${fmt(car.expectedValue || car.buyPrice)}</span>
@@ -1930,7 +1930,8 @@
 
       const oldExpected = car.expectedValue;
       car.brand = document.getElementById('editCarBrand').value.trim();
-      car.name = document.getElementById('editCarName').value.trim();
+      const editCarName = document.getElementById('editCarName').value.trim();
+      if (editCarName) car.name = editCarName;
       const newExpected = parseFloat(document.getElementById('editCarExpected').value) || 0;
       if (newExpected !== oldExpected) {
         appendExpectedHistory(car, newExpected, getToday());
