@@ -1141,7 +1141,7 @@
                       ${isOverdue ? '⚠ 已逾期 ' + Math.abs(daysLeft) + ' 天' : '到期: ' + loan.dueDate + ' (' + daysLeft + ' 天)'}
                     </div>
                   </div>
-                  <button onclick="openRepayLoanModal('${loan.id}')" class="btn-glass text-xs px-3 py-1.5 bg-sell/10 text-sell hover:bg-sell/20">归还</button>
+                  <button onclick="openNewLoanModal('${loan.id}')" class="btn-glass text-xs px-1.5 py-0.5 text-gray-400 hover:text-accent rounded mr-1">编</button><button onclick="openRepayLoanModal('${loan.id}')" class="btn-glass text-xs px-3 py-1.5 bg-sell/10 text-sell hover:bg-sell/20">归还</button>
                 </div>`;
             }).join('')}
           </div>
