@@ -838,8 +838,6 @@
               ${isLoggedIn ? `
                 <div class="text-green-600">✅ 已登录 ${session.user.email}</div>
                 <button onclick="cloudLogout()" class="w-full btn-glass bg-red-50 text-red-600 py-2">退出登录</button>
-                <button onclick="cloudSyncNow()" class="w-full btn-glass bg-blue-50 text-blue-600 py-2">立即同步</button>
-                <button onclick="cloudLoadFromServer()" class="w-full btn-glass bg-green-50 text-green-600 py-2">从云端加载</button>
               ` : `
                 <div>
                   <label class="block text-gray-600 mb-1">邮箱</label>
@@ -851,6 +849,11 @@
                 </div>
                 <button onclick="cloudLogin()" class="w-full btn-glass bg-blue-50 text-blue-600 py-2">登录</button>
               `}
+              <hr class="border-black/10">
+              <div class="space-y-2">
+                <button onclick="cloudSyncNow()" class="w-full btn-glass bg-blue-50 text-blue-600 py-2">⬆️ 立即同步</button>
+                <button onclick="cloudLoadFromServer()" class="w-full btn-glass bg-green-50 text-green-600 py-2">⬇️ 从云端加载</button>
+              </div>
               <div class="flex justify-end gap-2 mt-4">
                 <button onclick="hideModal()" class="px-4 py-2 glass-light rounded-xl-apple text-sm btn-glass">取消</button>
                 <button onclick="saveCloudSettings()" class="px-4 py-2 bg-blue-600/90 text-white rounded-xl-apple text-sm btn-glass">保存配置</button>
