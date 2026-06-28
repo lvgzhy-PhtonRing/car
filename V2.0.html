@@ -1694,6 +1694,16 @@
 
       hideModal();
       saveData();
+
+      // 联动提示
+      if (category === 'car_buy' && carSid) {
+        const updatedCar = carAppData.cars.find(c => c.sid === carSid);
+        if (updatedCar) {
+          alert(`✅ 已同步更新车库小车: ${updatedCar.brand} ${updatedCar.name}`);
+        }
+      } else if (category === 'car_sell' && carSid) {
+        alert('✅ 小车已标记为售出，卖车收入已计入收支');
+      }
     }
 
     function editTransaction(accountId, txnId) {
@@ -1819,6 +1829,16 @@
 
       hideModal();
       saveData();
+
+      // 联动提示：查找关联收支
+      const linkedTxns = [
+        ...carAppData.accounts.pocket.transactions,
+        ...carAppData.accounts.invest.transactions
+      ].filter(t => t.carSid === car.sid);
+      if (linkedTxns.length > 0) {
+        const summary = linkedTxns.map(t => `  · ${t.date} ${t.category} ${fmt(t.amount)}`).join('\n');
+        alert(`✅ 小车属性已保存\n\n关联收支（未改动）:\n${summary}`);
+      }
     }
 
     function sellCar(sid) {
