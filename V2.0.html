@@ -1526,14 +1526,12 @@
     // 按收支类型过滤类别下拉
     function getCategoriesByType(type, accountId) {
       if (accountId === 'pocket') {
-        // 日常消费：只买小车/日常消费/其他
+        // 日常消费：买小车走专用入口，支出不含买车
         if (type === 'expense') return [
-          { value: 'car_buy', label: '买小车' },
           { value: 'daily', label: '日常消费' },
           { value: 'other', label: '其他' }
         ];
         return [
-          { value: 'car_sell', label: '卖小车' },
           { value: 'allowance', label: '存入零花钱' },
           { value: 'other', label: '其他' }
         ];
