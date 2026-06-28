@@ -1172,6 +1172,7 @@
             </div>
             <div class="flex gap-1 flex-shrink-0">
               <button onclick="sellCar('${car.sid}')" class="btn-sell">售出</button>
+              <button onclick="openCarEditModal('${car.sid}')" class="btn-glass text-xs px-2 py-1 text-accent border border-accent/20 rounded-lg">编辑</button>
               <button onclick="convertCar('${car.sid}')" class="btn-convert ${accountType === 'invest' ? 'btn-to-keep' : 'btn-to-invest'}">
                 → ${accountType === 'invest' ? '自留' : '投资'}
               </button>
@@ -1189,8 +1190,9 @@
           <div class="flex items-center justify-between">
             <h2 class="text-xl font-bold"><i data-lucide="wallet" class="w-5 h-5 inline-block align-middle mr-1"></i> 日常消费</h2>
             <div class="flex gap-2">
-              <button onclick="openTransactionModal('pocket', null, 'car_buy')" class="bg-invest/10 text-invest px-3 py-2 rounded-xl-apple text-sm hover:bg-invest/20 btn-glass"><i data-lucide="car" class="w-4 h-4 inline-block align-middle mr-1"></i> 新车</button>
-              <button onclick="openTransactionModal('pocket')" class="bg-accent/85 backdrop-blur text-white px-3 py-2 rounded-xl-apple text-sm hover:bg-accent/90 btn-glass"><i data-lucide="plus" class="w-4 h-4 inline-block align-middle mr-1"></i> 新增记录</button>
+              <button onclick="openTransactionModal('pocket', null, 'car_buy')" class="bg-invest/10 text-invest px-3 py-2 rounded-xl-apple text-sm hover:bg-invest/20 btn-glass"><i data-lucide="car" class="w-4 h-4 inline-block align-middle mr-1"></i> 买小车</button>
+              <button onclick="openTransactionModal('pocket', null, null, 'expense')" class="bg-accent/85 backdrop-blur text-white px-3 py-2 rounded-xl-apple text-sm hover:bg-accent/90 btn-glass"><i data-lucide="minus-circle" class="w-4 h-4 inline-block align-middle mr-1"></i> 支出</button>
+              <button onclick="openTransactionModal('pocket', null, null, 'income')" class="bg-keep/85 backdrop-blur text-white px-3 py-2 rounded-xl-apple text-sm hover:bg-keep/90 btn-glass"><i data-lucide="plus-circle" class="w-4 h-4 inline-block align-middle mr-1"></i> 收入</button>
             </div>
           </div>
 
@@ -1290,7 +1292,7 @@
     }
 
     // ==================== 通用弹窗 ====================
-    function openTransactionModal(accountId, txnId, presetCategory) {
+    function openTransactionModal(accountId, txnId, presetCategory, presetType) {
       const account = carAppData.accounts[accountId];
       let txn = null;
       let car = null;
@@ -1408,6 +1410,8 @@
       // 初始化类别下拉：优先用预设类别，其次编辑中的交易类别，最后默认
       let initType = 'expense';
       let initCat = 'other';
+      if (presetType === 'income') { initType = 'income'; initCat = 'other'; }
+      else if (presetType === 'expense') { initType = 'expense'; initCat = 'other'; }
       if (presetCategory === 'car_buy') { initType = 'expense'; initCat = 'car_buy'; }
       else if (presetCategory === 'car_sell') { initType = 'income'; initCat = 'car_sell'; }
       else if (txn) { initType = txn.type; initCat = txn.category; }
@@ -1626,6 +1630,75 @@
       if (!confirm('确定删除此交易记录吗？')) return;
       const account = carAppData.accounts[accountId];
       account.transactions = account.transactions.filter(t => t.id !== txnId);
+      saveData();
+    }
+
+    // ==================== 小车编辑弹窗 ====================
+    function openCarEditModal(sid) {
+      const car = carAppData.cars.find(c => c.sid === sid);
+      if (!car) return;
+
+      const html = `
+        <div id="carEditModal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-50">
+          <div class="glass-strong rounded-2xl-apple w-full max-w-sm p-6">
+            <h3 class="font-bold text-lg mb-4"><i data-lucide="car" class="w-4 h-4 inline-block align-middle mr-1"></i> 编辑小车</h3>
+            <input type="hidden" id="editCarSid" value="${car.sid}">
+            <div class="space-y-3">
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1">品牌</label>
+                  <input type="text" id="editCarBrand" value="${esc(car.brand)}" class="w-full glass-input p-2 text-sm">
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1">名称</label>
+                  <input type="text" id="editCarName" value="${esc(car.name)}" class="w-full glass-input p-2 text-sm">
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1">购买日期</label>
+                  <input type="date" id="editCarBuyDate" value="${car.buyDate}" class="w-full glass-input p-2 text-sm">
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1">购买价格</label>
+                  <input type="number" id="editCarBuyPrice" step="0.01" value="${car.buyPrice}" class="w-full glass-input p-2 text-sm">
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">预期价值</label>
+                <input type="number" id="editCarExpected" step="0.01" value="${car.expectedValue || ''}" class="w-full glass-input p-2 text-sm">
+              </div>
+              <div class="flex items-center gap-4 text-xs text-gray-400">
+                <span>类别: <strong class="${car.category === 'invest' ? 'text-invest' : 'text-keep'}">${car.category === 'invest' ? '投资' : '自留'}</strong></span>
+                <span class="font-mono">SID: ${car.sid.slice(0, 8)}</span>
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">备注</label>
+                <input type="text" id="editCarNote" value="${esc(car.note)}" class="w-full glass-input p-2 text-sm">
+              </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-2">
+              <button onclick="hideModal()" class="px-4 py-2 glass-light rounded-xl-apple hover:bg-white/60 text-sm btn-glass">取消</button>
+              <button onclick="saveCarEdit()" class="px-4 py-2 bg-accent/85 text-white rounded-xl-apple hover:bg-accent/90 text-sm btn-glass">保存</button>
+            </div>
+          </div>
+        </div>`;
+      showModal(html);
+    }
+
+    function saveCarEdit() {
+      const sid = document.getElementById('editCarSid').value;
+      const car = carAppData.cars.find(c => c.sid === sid);
+      if (!car) return;
+
+      car.brand = document.getElementById('editCarBrand').value.trim();
+      car.name = document.getElementById('editCarName').value.trim();
+      car.buyDate = document.getElementById('editCarBuyDate').value;
+      car.buyPrice = parseFloat(document.getElementById('editCarBuyPrice').value) || 0;
+      car.expectedValue = parseFloat(document.getElementById('editCarExpected').value) || 0;
+      car.note = document.getElementById('editCarNote').value.trim();
+
+      hideModal();
       saveData();
     }
 
