@@ -1210,7 +1210,7 @@
   let s="";
   for(let v=0;v<=niceM;v+=100){let gy=T+cH-(v/niceM)*cH;
     s+="<line x1=\""+L+"\" y1=\""+gy+"\" x2=\""+(W-R)+"\" y2=\""+gy+"\" stroke=\"var(--c-border)\" stroke-width=\"0.5\"/>";
-    s+="<text x=\""+(L-4)+"\" y=\""+(gy+3)+"\" text-anchor=\"end\" font-size=\"9\" fill=\"var(--c-text-tertiary)\">"+v+"</text>"}
+    s+="<text x=\""+(L-4)+"\" y=\""+(gy+3)+"\" text-anchor=\"end\" font-size=\"6\" fill=\"var(--c-text-tertiary)\">"+v+"</text>"}
   pts.forEach(p=>{s+="<rect x=\""+(p.x-bW-2)+"\" y=\""+(T+cH-p.eH)+"\" width=\""+bW+"\" height=\""+Math.max(1,p.eH)+"\" rx=\"2\" fill=\"var(--c-invest)\" opacity=\"0.55\"/>"});
   pts.forEach(p=>{s+="<rect x=\""+(p.x+2)+"\" y=\""+(T+cH-p.iH)+"\" width=\""+bW+"\" height=\""+Math.max(1,p.iH)+"\" rx=\"2\" fill=\"var(--c-keep)\" opacity=\"0.55\"/>"});
   let wPts=pts.map(p=>({x:p.x,y:zY-(p.n/maxN)*wA}));
@@ -1219,8 +1219,8 @@
   s+="<line x1=\""+L+"\" y1=\""+zY+"\" x2=\""+(W-R)+"\" y2=\""+zY+"\" stroke=\"var(--c-text-tertiary)\" stroke-width=\"0.5\" stroke-dasharray=\"3,3\" opacity=\"0.3\"/>";
   s+="<path d=\""+wd+"\" fill=\"none\" stroke=\"var(--c-allowance)\" stroke-width=\"2\" opacity=\"0.75\"/>";
   wPts.forEach(p=>{s+="<circle cx=\""+p.x.toFixed(1)+"\" cy=\""+p.y.toFixed(1)+"\" r=\"3.5\" fill=\"white\" stroke=\"var(--c-allowance)\" stroke-width=\"1.5\"/>"});
-  wPts.forEach((p,i)=>{s+="<text x=\""+p.x.toFixed(1)+"\" y=\""+(p.y-8)+"\" text-anchor=\"middle\" font-size=\"9\" font-weight=\"bold\" fill=\""+(pts[i].n>=0?"var(--c-keep)":"var(--c-invest)")+"\">"+(pts[i].n>=0?"+":"")+pts[i].n.toFixed(0)+"</text>"});
-  pts.forEach(p=>{s+="<text x=\""+p.x.toFixed(1)+"\" y=\""+(H-4)+"\" text-anchor=\"middle\" font-size=\"10\" fill=\"var(--c-text-secondary)\">"+p.l+"</text>"});
+  wPts.forEach((p,i)=>{s+="<text x=\""+p.x.toFixed(1)+"\" y=\""+(p.y-8)+"\" text-anchor=\"middle\" font-size=\"6\" font-weight=\"bold\" fill=\""+(pts[i].n>=0?"var(--c-keep)":"var(--c-invest)")+"\">"+(pts[i].n>=0?"+":"")+pts[i].n.toFixed(0)+"</text>"});
+  pts.forEach(p=>{s+="<text x=\""+p.x.toFixed(1)+"\" y=\""+(H-4)+"\" text-anchor=\"middle\" font-size=\"6\" fill=\"var(--c-text-secondary)\">"+p.l+"</text>"});
   return s;
 })()}
             </svg>
