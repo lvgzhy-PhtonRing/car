@@ -1189,64 +1189,41 @@
 
           <!-- 近六月收支平衡 -->
           <div class="glass rounded-2xl-apple p-5">
-            <h3 class="font-bold text-base mb-3"><i data-lucide="bar-chart-3" class="w-4 h-4 inline-block align-middle mr-1"></i> 近六月零花钱收支平衡</h3>
-            <div class="text-xs text-gray-400 mb-3">
-              <span class="text-invest">▮ 支出</span> &nbsp;
-              <span class="text-keep">▮ 收入</span> &nbsp;
-              <span class="text-allowance">～ 平衡趋势</span>
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-bold text-base"><i data-lucide="bar-chart-3" class="w-4 h-4 inline-block align-middle mr-1"></i> 近六月零花钱收支平衡</h3>
+              <div class="text-xs text-gray-400">零花钱余量 <span class="font-bold ${stats.pocketBalance >= 0 ? 'text-keep' : 'text-invest'} text-sm">${fmt(stats.pocketBalance)}</span></div>
             </div>
-            <div class="chart-wrap">
-              ${monthly.map(m => {
-                const maxH = 110;
-                const scale = Math.max(...monthly.map(x => Math.max(x.expense, x.income)), 200);
-                const expH = Math.max(2, (m.expense / scale) * maxH);
-                const incH = Math.max(2, (m.income / scale) * maxH);
-                return `
-                <div class="chart-bar-group">
-                  <div class="chart-val text-invest">${fmt(m.expense)}</div>
-                  <div class="chart-val text-keep">${fmt(m.income)}</div>
-                  <div class="chart-bar-pair">
-                    <div class="chart-bar-exp" style="height:${expH}px"></div>
-                    <div class="chart-bar-inc" style="height:${incH}px"></div>
-                  </div>
-                  <div class="chart-bar-label">${m.label}</div>
-                </div>`;
-              }).join('')}
-              <svg class="chart-wave" viewBox="0 0 ${monthly.length * 60} 140" preserveAspectRatio="none">
-                ${(() => {
-                  const n = monthly.length;
-                  const stepX = 30;
-                  const maxNet = Math.max(...monthly.map(m => Math.abs(m.income - m.expense)), 1);
-                  const baseY = 70, amp = 50;
-                  // 计算平滑曲线
-                  let pts = monthly.map((m, i) => ({
-                    x: stepX + i * stepX * 2,
-                    y: baseY - ((m.income - m.expense) / maxNet) * amp
-                  }));
-                  // 零线
-                  let svg = '<line x1="0" y1="' + baseY + '" x2="' + (n * stepX * 2 + 30) + '" y2="' + baseY + '" stroke="var(--c-sell)" stroke-width="0.5" stroke-dasharray="4,4" opacity="0.3"/>';
-                  // 平滑贝塞尔曲线
-                  let d = 'M' + pts[0].x + ',' + pts[0].y.toFixed(1);
-                  for (let i = 0; i < pts.length - 1; i++) {
-                    const cx = (pts[i].x + pts[i+1].x) / 2;
-                    d += ' C' + cx + ',' + pts[i].y.toFixed(1) + ' ' + cx + ',' + pts[i+1].y.toFixed(1) + ' ' + pts[i+1].x + ',' + pts[i+1].y.toFixed(1);
-                  }
-                  svg += '<path d="' + d + '" fill="none" stroke="var(--c-allowance)" stroke-width="2.5" opacity="0.8"/>';
-                  // 数据点
-                  pts.forEach(p => {
-                    svg += '<circle cx="' + p.x + '" cy="' + p.y.toFixed(1) + '" r="3" fill="var(--c-allowance)" opacity="0.9"/>';
-                  });
-                  return svg;
-                })()}
-              </svg>
+            <div class="flex items-center gap-3 text-[11px] text-gray-400 mb-2">
+              <span style="color:#c44b3d">▮ 支出</span>
+              <span style="color:#5b8c5a">▮ 收入</span>
+              <span style="color:#7a9cc6">～ 平衡趋势</span>
             </div>
-            <div class="flex justify-around text-[10px] mt-1">
-              ${monthly.map(m => {
-                const net = m.income - m.expense;
-                return '<span class="' + (net >= 0 ? 'text-keep' : 'text-invest') + '">' + (net >= 0 ? '+' : '') + fmt(net) + '</span>';
-              }).join('')}
-            </div>
-          </div>
+            <svg class="chart-svg" viewBox="${(() => {
+  const n=monthly.length,W=400,H=200,L=36,R=4,T=16,B=22;
+  const cW=W-L-R,cH=H-T-B;
+  const maxV=Math.max(...monthly.map(m=>Math.max(m.expense,m.income)),300);
+  const niceM=Math.ceil(maxV/100)*100,xS=cW/n,bW=Math.max(8,xS*0.22);
+  const pts=monthly.map((m,i)=>({x:L+xS*(i+0.5),eH:(m.expense/niceM)*cH,iH:(m.income/niceM)*cH,n:m.income-m.expense,l:m.label}));
+  const maxN=Math.max(...pts.map(p=>Math.abs(p.n)),1);
+  const zY=T+cH/2,wA=cH/2-8;
+  let s=W+" "+H+">";
+  for(let v=0;v<=niceM;v+=100){let gy=T+cH-(v/niceM)*cH;
+    s+="<line x1=\""+L+"\" y1=\""+gy+"\" x2=\""+(W-R)+"\" y2=\""+gy+"\" stroke=\"var(--c-border)\" stroke-width=\"0.5\"/>";
+    s+="<text x=\""+(L-4)+"\" y=\""+(gy+3)+"\" text-anchor=\"end\" font-size=\"9\" fill=\"var(--c-text-tertiary)\">"+v+"</text>"}
+  pts.forEach(p=>{s+="<rect x=\""+(p.x-bW-2)+"\" y=\""+(T+cH-p.eH)+"\" width=\""+bW+"\" height=\""+Math.max(1,p.eH)+"\" rx=\"2\" fill=\"var(--c-invest)\" opacity=\"0.55\"/>"});
+  pts.forEach(p=>{s+="<rect x=\""+(p.x+2)+"\" y=\""+(T+cH-p.iH)+"\" width=\""+bW+"\" height=\""+Math.max(1,p.iH)+"\" rx=\"2\" fill=\"var(--c-keep)\" opacity=\"0.55\"/>"});
+  let wPts=pts.map(p=>({x:p.x,y:zY-(p.n/maxN)*wA}));
+  let wd="M"+wPts[0].x.toFixed(1)+","+wPts[0].y.toFixed(1);
+  for(let i=0;i<wPts.length-1;i++){let cx=(wPts[i].x+wPts[i+1].x)/2;wd+=" C"+cx.toFixed(1)+","+wPts[i].y.toFixed(1)+" "+cx.toFixed(1)+","+wPts[i+1].y.toFixed(1)+" "+wPts[i+1].x.toFixed(1)+","+wPts[i+1].y.toFixed(1)}
+  s+="<line x1=\""+L+"\" y1=\""+zY+"\" x2=\""+(W-R)+"\" y2=\""+zY+"\" stroke=\"var(--c-text-tertiary)\" stroke-width=\"0.5\" stroke-dasharray=\"3,3\" opacity=\"0.3\"/>";
+  s+="<path d=\""+wd+"\" fill=\"none\" stroke=\"var(--c-allowance)\" stroke-width=\"2\" opacity=\"0.75\"/>";
+  wPts.forEach(p=>{s+="<circle cx=\""+p.x.toFixed(1)+"\" cy=\""+p.y.toFixed(1)+"\" r=\"3.5\" fill=\"white\" stroke=\"var(--c-allowance)\" stroke-width=\"1.5\"/>"});
+  wPts.forEach((p,i)=>{s+="<text x=\""+p.x.toFixed(1)+"\" y=\""+(p.y-8)+"\" text-anchor=\"middle\" font-size=\"9\" font-weight=\"bold\" fill=\""+(pts[i].n>=0?"var(--c-keep)":"var(--c-invest)")+"\">"+(pts[i].n>=0?"+":"")+pts[i].n.toFixed(0)+"</text>"});
+  pts.forEach(p=>{s+="<text x=\""+p.x.toFixed(1)+"\" y=\""+(H-4)+"\" text-anchor=\"middle\" font-size=\"10\" fill=\"var(--c-text-secondary)\">"+p.l+"</text>"});
+  return s;
+})()}">
+            </svg>
+
 
         </div>`;
 
