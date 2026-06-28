@@ -668,7 +668,7 @@
             data.accounts.pocket.transactions.push(txn);
           }
 
-          // 其他（生活消费等）
+          // 其它（生活消费等）
           else {
             const txn = {
               id: genId('txn'),
@@ -1183,7 +1183,7 @@
       const categoryLabels = {
         car_buy: '买车', car_sell: '卖车', allowance: '零花钱',
         loan_new: '新贷款', loan_repay: '还贷',
-        transfer_in: '转入', transfer_out: '转出', daily: '日常消费', other: '其他'
+        transfer_in: '转入', transfer_out: '转出', daily: '日常消费', other: '其它'
       };
 
       // 按月分组
@@ -1333,7 +1333,7 @@
           <div class="flex items-center justify-end">
             <div class="flex gap-2">
               <button onclick="openTransactionModal('invest', null, 'car_buy')" class="bg-invest/10 text-invest px-4 py-2 rounded-xl-apple text-sm font-medium hover:bg-invest/20 btn-glass"><i data-lucide="car" class="w-4 h-4 inline-block align-middle mr-1"></i> 买小车</button>
-              <button onclick="openTransactionModal('invest')" class="btn-glass text-gray-500 px-3 py-2 rounded-xl-apple text-sm hover:text-gray-700"><i data-lucide="ellipsis" class="w-4 h-4 inline-block align-middle mr-1"></i> 其他</button>
+              <button onclick="openTransactionModal('invest')" class="btn-glass text-gray-500 px-3 py-2 rounded-xl-apple text-sm hover:text-gray-700"><i data-lucide="ellipsis" class="w-4 h-4 inline-block align-middle mr-1"></i> 其它</button>
             </div>
           </div>
 
@@ -1615,19 +1615,19 @@
         // 日常消费：买小车走专用入口，支出不含买车
         if (type === 'expense') return [
           { value: 'daily', label: '日常消费' },
-          { value: 'other', label: '其他' }
+          { value: 'other', label: '其它' }
         ];
         return [
           { value: 'allowance', label: '存入零花钱' },
-          { value: 'other', label: '其他' }
+          { value: 'other', label: '其它' }
         ];
       }
       // 投资：买车走「新车」按钮，卖车从车库，此处只留通用
       if (type === 'expense') return [
-        { value: 'other', label: '其他' }
+        { value: 'other', label: '其它' }
       ];
       return [
-        { value: 'other', label: '其他' }
+        { value: 'other', label: '其它' }
       ];
     }
 
@@ -1754,7 +1754,7 @@
       let msg = `确定删除此交易记录？\n\n  ${txn.date}  ${txn.category}  ${fmt(txn.amount)}`;
       if (linkedCar) {
         msg += `\n\n⚠ 此记录关联小车: ${esc(linkedCar.brand)} ${esc(linkedCar.name)}`;
-        msg += `\n   该小车及其其他关联收支也将被删除。`;
+        msg += `\n   该小车及其其它关联收支也将被删除。`;
       }
 
       if (!confirm(msg)) return;
