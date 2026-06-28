@@ -1,0 +1,82 @@
+<h2>📐 修订数据模型 v2</h2>
+<p class="subtitle">根据大王陛下的决策更新：数据持久化用 JSON 导入导出 + localStorage 缓存；零花钱手动按钮存入。</p>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">🔄 数据流架构</div>
+    <div class="mockup-body" style="padding:20px; font-size:14px;">
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:12px;">
+
+        <!-- 数据存储层 -->
+        <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:14px; padding:16px;">
+          <div style="font-weight:700; margin-bottom:8px;">
+            <strong>JSON 文件存储</strong>（主数据源）
+          </div>
+          <div style="font-size:13px; color:#374151;">
+            localStorage（缓存层，页面加载时同步）
+          </div>
+        </div>
+
+        <!-- 数据流 -->
+        <div style="background:#fefce8; border:1px solid #fef08a; border-radius:14px; padding:16px;">
+          <div style="font-weight:700; color:#854d0e; margin-bottom:8px;">
+            <strong>导入</strong>：从 JSON 文件读取 → 写入 localStorage 缓存
+          </div>
+          <div style="font-size:13px;">
+            <strong>导出</strong>：从 localStorage 缓存 → 写入 JSON 文件下载
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 零花钱自动化 -->
+      <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:14px; padding:16px; margin-top:12px;">
+        <div style="display:flex;">
+          <div style="font-weight:500;">
+            Dashboard 按钮 → 点击后生成当月零花钱收入记录
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">🚗 小车库存 — 合并统计规则</div>
+    <div class="mockup-body" style="padding:20px; font-size:14px;">
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:12px;">
+
+        <!-- 同型号合并 -->
+        <div style="background:#fdf2f8; border:1px solid #fbcfe8; border-radius:14px; padding:16px;">
+          <div style="font-weight:700; color:#9d174d; margin-bottom:8px;">
+            <strong>同款车型</strong>：品牌 + 名称 相同 → 合并为一个条目
+          </div>
+          <div style="font-size:13px; color:#374151;">
+            <strong>平均价格</strong>：(买入价格之和) ÷ 同款车数量
+          </div>
+        </div>
+
+        <!-- 分组维度 -->
+        <div style="background:#fefce8; border:1px solid #fef08a; border-radius:14px; padding:16px;">
+          <div style="font-weight:700; color:#854d0e; margin-bottom:8px;">
+            <strong>按月</strong>、<strong>按品牌</strong> 分组聚合
+          </div>
+          <div style="font-size:13px;">
+            <strong>自留库/投资库</strong> 之间可以互相转属性
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  最后一个关键问题需要大王陛下确认：
+</div>
+

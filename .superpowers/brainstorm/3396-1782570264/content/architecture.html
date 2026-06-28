@@ -1,0 +1,142 @@
+<h2>🏗️ 整体架构 — 侧边栏 + 四模块</h2>
+<p class="subtitle">方案 A：在 V1.1.html 基础上重构。确认整体布局方向。</p>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">📐 页面布局结构</div>
+    <div class="mockup-body" style="padding:0; font-size:13px;">
+
+      <div style="display:flex; min-height:500px;">
+        <!-- Sidebar -->
+        <div style="width:200px; background:rgba(255,255,255,0.7); border-right:1px solid rgba(0,0,0,0.06); padding:16px 0; flex-shrink:0;">
+          <div style="padding:12px 20px; font-weight:700; font-size:16px; color:#1d1d1f; margin-bottom:16px;">
+            🚗 记账管理
+          </div>
+
+          <div style="padding:10px 20px; font-size:14px; color:#0071e3; background:rgba(0,113,227,0.08); border-right:3px solid #0071e3; font-weight:600; margin-bottom:2px;">
+            📊 Payton's 数据
+          </div>
+          <div style="padding:10px 20px; font-size:14px; color:#8e8e93; margin-bottom:2px;">
+            💰 日常消费
+          </div>
+          <div style="padding:10px 20px; font-size:14px; color:#8e8e93; margin-bottom:2px;">
+            📈 投资小车
+          </div>
+          <div style="padding:10px 20px; font-size:14px; color:#8e8e93; margin-bottom:2px;">
+            🏪 小车库存
+          </div>
+
+          <div style="margin-top:auto; padding:16px 20px; border-top:1px solid rgba(0,0,0,0.06); margin-top:24px;">
+            <div style="font-size:11px; color:#8e8e93;">v2.0.0</div>
+            <div style="display:flex; gap:8px; margin-top:8px;">
+              <button class="mock-button" style="font-size:11px; padding:4px 8px;">导出</button>
+              <button class="mock-button" style="font-size:11px; padding:4px 8px;">导入</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Content -->
+        <div style="flex:1; padding:24px; background:rgba(255,255,255,0.4);">
+          <div style="font-weight:700; font-size:18px; margin-bottom:16px;">📊 Payton's 数据 — 财务看板</div>
+
+          <!-- Dashboard Cards -->
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
+            <div style="background:rgba(255,255,255,0.6); border-radius:14px; padding:14px; border:1px solid rgba(0,0,0,0.05);">
+              <div style="font-size:11px; color:#6b7280;">💵 零花钱余量</div>
+              <div style="font-size:22px; font-weight:700;">¥ 1,280.00</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.6); border-radius:14px; padding:14px; border:1px solid rgba(0,0,0,0.05);">
+              <div style="font-size:11px; color:#6b7280;">🏦 投资款余额</div>
+              <div style="font-size:22px; font-weight:700;">¥ 8,500.00</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.6); border-radius:14px; padding:14px; border:1px solid rgba(0,0,0,0.05);">
+              <div style="font-size:11px; color:#6b7280;">🚗 已投资小车</div>
+              <div style="font-size:22px; font-weight:700;">12 辆 · ¥ 6,200</div>
+            </div>
+            <div style="background:rgba(255,255,255,0.6); border-radius:14px; padding:14px; border:1px solid rgba(0,0,0,0.05);">
+              <div style="font-size:11px; color:#6b7280;">📦 库存预期价值</div>
+              <div style="font-size:22px; font-weight:700;">¥ 9,300.00</div>
+            </div>
+          </div>
+
+          <!-- Loan countdown -->
+          <div style="background:rgba(254,243,199,0.5); border:1px solid rgba(234,179,8,0.2); border-radius:14px; padding:14px; margin-bottom:12px;">
+            <div style="font-size:12px; font-weight:600; color:#a16207;">⏰ 最近贷款倒计时</div>
+            <div style="display:flex; justify-content:space-between; margin-top:4px;">
+              <span style="font-size:14px;">贷款A — ¥3,000</span>
+              <span style="font-size:14px; font-weight:700; color:#dc2626;">还剩 15 天</span>
+            </div>
+          </div>
+
+          <!-- Monthly chart placeholder -->
+          <div style="background:rgba(255,255,255,0.6); border-radius:14px; padding:14px; border:1px solid rgba(0,0,0,0.05);">
+            <div style="font-size:12px; font-weight:600; margin-bottom:8px;">📈 近三月零花钱消费</div>
+            <div style="display:flex; gap:20px;">
+              <div style="text-align:center;"><div style="height:60px; width:40px; background:#e5e7eb; border-radius:6px; margin:0 auto; position:relative;"><div style="position:absolute; bottom:0; width:100%; height:40%; background:#3b82f6; border-radius:6px;"></div></div><div style="font-size:11px; margin-top:4px;">4月</div><div style="font-size:11px; color:#6b7280;">¥420</div></div>
+              <div style="text-align:center;"><div style="height:60px; width:40px; background:#e5e7eb; border-radius:6px; margin:0 auto; position:relative;"><div style="position:absolute; bottom:0; width:100%; height:65%; background:#3b82f6; border-radius:6px;"></div></div><div style="font-size:11px; margin-top:4px;">5月</div><div style="font-size:11px; color:#6b7280;">¥680</div></div>
+              <div style="text-align:center;"><div style="height:60px; width:40px; background:#e5e7eb; border-radius:6px; margin:0 auto; position:relative;"><div style="position:absolute; bottom:0; width:100%; height:30%; background:#3b82f6; border-radius:6px;"></div></div><div style="font-size:11px; margin-top:4px;">6月</div><div style="font-size:11px; color:#6b7280;">¥310</div></div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:8px; margin-top:12px;">
+            <button class="mock-button" style="background:#3b82f6; color:#fff;">+ 新增贷款</button>
+            <button class="mock-button">归还贷款</button>
+            <button class="mock-button" style="background:#059669; color:#fff;">存入本月零花钱</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>📋 四个模块职责</h3>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:12px;">
+
+    <div style="background:rgba(219,234,254,0.5); border:1px solid rgba(59,130,246,0.2); border-radius:12px; padding:14px;">
+      <div style="font-weight:700;">📊 模块1: Payton's 数据</div>
+      <div style="font-size:13px; color:#374151; margin-top:4px;">
+        Dashboard 汇总看板<br>
+        · 零花钱余额 + 近3月消费柱状图<br>
+        · 投资小车总额/个数/余额/预期价值<br>
+        · 贷款到期倒计时列表<br>
+        · 按钮：新增贷款 | 归还贷款 | 存入零花钱
+      </div>
+    </div>
+
+    <div style="background:rgba(209,250,229,0.5); border:1px solid rgba(16,185,129,0.2); border-radius:12px; padding:14px;">
+      <div style="font-weight:700;">💰 模块2: 日常消费</div>
+      <div style="font-size:13px; color:#374151; margin-top:4px;">
+        日常消费账户明细<br>
+        · 收支明细表（可编辑每条属性）<br>
+        · 自留车库<br>
+        · 支持非小车收支
+      </div>
+    </div>
+
+    <div style="background:rgba(254,226,226,0.5); border:1px solid rgba(239,68,68,0.2); border-radius:12px; padding:14px;">
+      <div style="font-weight:700;">📈 模块3: 投资小车</div>
+      <div style="font-size:13px; color:#374151; margin-top:4px;">
+        投资账户明细<br>
+        · 收支明细表（可编辑每条属性）<br>
+        · 投资车库<br>
+        · 贷款记录
+      </div>
+    </div>
+
+    <div style="background:rgba(243,232,255,0.5); border:1px solid rgba(168,85,247,0.2); border-radius:12px; padding:14px;">
+      <div style="font-weight:700;">🏪 模块4: 小车库存</div>
+      <div style="font-size:13px; color:#374151; margin-top:4px;">
+        售出操作 + 统计视图<br>
+        · 按型号合并（同品牌+同名称）<br>
+        · 自动计算平均价<br>
+        · 展开显示各 SID 采购日期/价格<br>
+        · 按月/按品牌排列<br>
+        · 自留↔投资 互转按钮
+      </div>
+    </div>
+
+  </div>
+</div>

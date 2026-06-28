@@ -1,0 +1,221 @@
+<h2>📋 模块 2-4 详细布局</h2>
+<p class="subtitle">日常消费、投资小车、小车库存三个模块的 UI 结构</p>
+
+<!-- 模块2: 日常消费 -->
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">💰 模块2: 日常消费 — 双区布局（明细表 + 自留车库）</div>
+    <div class="mockup-body" style="padding:16px; font-size:13px;">
+
+      <div style="display:flex; gap:16px;">
+        <!-- Left: 明细表 -->
+        <div style="flex:1.2;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div style="font-weight:600;">📝 收支明细</div>
+            <button class="mock-button" style="font-size:12px; background:#3b82f6; color:#fff;">+ 新增记录</button>
+          </div>
+          <table style="width:100%; border-collapse:collapse; font-size:12px;">
+            <thead>
+              <tr style="background:rgba(0,0,0,0.02); border-bottom:1px solid #e5e7eb;">
+                <th style="padding:6px 8px; text-align:left;">日期</th>
+                <th style="padding:6px 8px; text-align:left;">项目</th>
+                <th style="padding:6px 8px; text-align:left;">类型</th>
+                <th style="padding:6px 8px; text-align:right;">金额</th>
+                <th style="padding:6px 8px; text-align:left;">备注</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom:1px solid #f3f4f6;">
+                <td style="padding:6px 8px;">6/15</td>
+                <td style="padding:6px 8px;">买 花园大道白奔驰</td>
+                <td style="padding:6px 8px;"><span style="background:#d1fae5;color:#059669;padding:2px 6px;border-radius:4px;">买车</span></td>
+                <td style="padding:6px 8px; text-align:right; color:#059669;">-120.00</td>
+                <td style="padding:6px 8px;">闲鱼购入</td>
+                <td style="padding:6px 8px;"><span style="cursor:pointer;">✏️</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid #f3f4f6;">
+                <td style="padding:6px 8px;">6/20</td>
+                <td style="padding:6px 8px;">餐饮</td>
+                <td style="padding:6px 8px;"><span style="background:#fef3c7;color:#a16207;padding:2px 6px;border-radius:4px;">其他</span></td>
+                <td style="padding:6px 8px; text-align:right; color:#059669;">-35.00</td>
+                <td style="padding:6px 8px;">外卖</td>
+                <td style="padding:6px 8px;"><span style="cursor:pointer;">✏️</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid #f3f4f6;">
+                <td style="padding:6px 8px;">6/1</td>
+                <td style="padding:6px 8px;">6月零花钱</td>
+                <td style="padding:6px 8px;"><span style="background:#dbeafe;color:#1d4ed8;padding:2px 6px;border-radius:4px;">零花钱</span></td>
+                <td style="padding:6px 8px; text-align:right; color:#dc2626;">+500.00</td>
+                <td style="padding:6px 8px;">月度存入</td>
+                <td style="padding:6px 8px;"><span style="cursor:pointer;">✏️</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Right: 自留车库 -->
+        <div style="flex:0.8; background:rgba(209,250,229,0.15); border:1px solid rgba(16,185,129,0.15); border-radius:12px; padding:14px;">
+          <div style="font-weight:600; margin-bottom:10px;">🏠 自留车库 <span style="font-size:11px;color:#6b7280;">(3辆)</span></div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="background:white; border-radius:8px; padding:8px; border:1px solid #e5e7eb;">
+              <div style="font-weight:600;">奔驰 AMG 瓦罐</div>
+              <div style="font-size:11px; color:#6b7280;">白色 · ¥120 · 2024-06-15</div>
+              <div style="display:flex; gap:4px; margin-top:4px;">
+                <span style="font-size:10px; background:#fce7f3; color:#be185d; padding:2px 6px; border-radius:4px;">转投资</span>
+                <span style="font-size:10px; background:#fef3c7; color:#a16207; padding:2px 6px; border-radius:4px;">售出</span>
+              </div>
+            </div>
+            <div style="background:white; border-radius:8px; padding:8px; border:1px solid #e5e7eb;">
+              <div style="font-weight:600;">保时捷 911 GT3</div>
+              <div style="font-size:11px; color:#6b7280;">银色 · ¥85 · 2024-05-20</div>
+            </div>
+            <div style="background:white; border-radius:8px; padding:8px; border:1px solid #e5e7eb; opacity:0.5;">
+              <div style="font-weight:600;">宝马 M4 — <span style="color:#059669;">已售出</span></div>
+              <div style="font-size:11px; color:#6b7280;">¥150 → 卖出 ¥180</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 模块3: 投资小车 -->
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">📈 模块3: 投资小车 — 三区布局（明细表 + 贷款 + 投资车库）</div>
+    <div class="mockup-body" style="padding:16px; font-size:13px;">
+
+      <div style="display:flex; gap:16px;">
+        <!-- Left: 明细表 + 贷款 -->
+        <div style="flex:1.2;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div style="font-weight:600;">📝 投资账户明细</div>
+            <button class="mock-button" style="font-size:12px; background:#3b82f6; color:#fff;">+ 新增记录</button>
+          </div>
+          <table style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:14px;">
+            <thead>
+              <tr style="background:rgba(0,0,0,0.02); border-bottom:1px solid #e5e7eb;">
+                <th style="padding:6px 8px; text-align:left;">日期</th>
+                <th style="padding:6px 8px; text-align:left;">项目</th>
+                <th style="padding:6px 8px; text-align:left;">类型</th>
+                <th style="padding:6px 8px; text-align:right;">金额</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom:1px solid #f3f4f6;">
+                <td style="padding:6px 8px;">6/10</td>
+                <td style="padding:6px 8px;">借入 购车贷款A</td>
+                <td style="padding:6px 8px;"><span style="background:#e0e7ff;color:#4338ca;padding:2px 6px;border-radius:4px;">新贷款</span></td>
+                <td style="padding:6px 8px; text-align:right; color:#dc2626;">+5000.00</td>
+                <td style="padding:6px 8px;"><span>✏️</span></td>
+              </tr>
+              <tr style="border-bottom:1px solid #f3f4f6;">
+                <td style="padding:6px 8px;">6/12</td>
+                <td style="padding:6px 8px;">买 法拉利 F40</td>
+                <td style="padding:6px 8px;"><span style="background:#fce7f3;color:#be185d;padding:2px 6px;border-radius:4px;">买车</span></td>
+                <td style="padding:6px 8px; text-align:right; color:#059669;">-800.00</td>
+                <td style="padding:6px 8px;"><span>✏️</span></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- 贷款区 -->
+          <div style="background:rgba(254,243,199,0.3); border:1px solid rgba(234,179,8,0.2); border-radius:10px; padding:12px;">
+            <div style="font-weight:600; margin-bottom:8px;">🏦 进行中的贷款</div>
+            <div style="display:flex; flex-direction:column; gap:6px;">
+              <div style="display:flex; justify-content:space-between; background:white; padding:8px; border-radius:8px;">
+                <div>
+                  <div style="font-weight:600;">购车贷款A</div>
+                  <div style="font-size:11px; color:#6b7280;">¥5,000 · 2026/6/10 → 2026/12/10</div>
+                </div>
+                <div style="text-align:right;">
+                  <div style="color:#dc2626; font-weight:600;">剩 ¥3,500</div>
+                  <div style="font-size:11px; color:#6b7280;">⏰ 166 天</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: 投资车库 -->
+        <div style="flex:0.8; background:rgba(254,226,226,0.15); border:1px solid rgba(239,68,68,0.15); border-radius:12px; padding:14px;">
+          <div style="font-weight:600; margin-bottom:10px;">🚗 投资车库 <span style="font-size:11px;color:#6b7280;">(5辆)</span></div>
+          <div style="display:flex; flex-direction:column; gap:8px;">
+            <div style="background:white; border-radius:8px; padding:8px; border:1px solid #e5e7eb;">
+              <div style="font-weight:600;">法拉利 F40</div>
+              <div style="font-size:11px; color:#6b7280;">红 · ¥800 · 预期 ¥1,200</div>
+              <div style="display:flex; gap:4px; margin-top:4px;">
+                <span style="font-size:10px; background:#d1fae5; color:#059669; padding:2px 6px; border-radius:4px;">转自留</span>
+                <span style="font-size:10px; background:#fef3c7; color:#a16207; padding:2px 6px; border-radius:4px;">售出</span>
+              </div>
+            </div>
+            <div style="background:white; border-radius:8px; padding:8px; border:1px solid #e5e7eb;">
+              <div style="font-weight:600;">兰博基尼 Countach</div>
+              <div style="font-size:11px; color:#6b7280;">黄 · ¥650 · 预期 ¥900</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- 模块4: 小车库存 -->
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">🏪 模块4: 小车库存 — 售出操作 + 分组聚合视图</div>
+    <div class="mockup-body" style="padding:16px; font-size:13px;">
+
+      <!-- 工具栏 -->
+      <div style="display:flex; gap:12px; margin-bottom:14px; align-items:center;">
+        <div style="font-weight:600;">全车库 <span style="font-size:11px;color:#6b7280;">8 辆 (投资5 + 自留3)</span></div>
+        <div style="flex:1;"></div>
+        <select class="mock-input" style="font-size:12px; padding:4px 8px;">
+          <option>按品牌</option><option>按月</option>
+        </select>
+        <input class="mock-input" placeholder="搜索..." style="font-size:12px; padding:4px 8px; width:140px;">
+      </div>
+
+      <!-- 分组: 法拉利 F40 ×2 -->
+      <div style="background:rgba(255,255,255,0.6); border:1px solid rgba(0,0,0,0.06); border-radius:12px; margin-bottom:10px; overflow:hidden;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; background:rgba(0,0,0,0.01); cursor:pointer;">
+          <div>
+            <span style="font-weight:700;">法拉利 F40</span>
+            <span style="font-size:11px; color:#6b7280; margin-left:8px;">×2 · 均价 ¥750</span>
+            <span style="font-size:10px; margin-left:8px; background:#fce7f3; color:#be185d; padding:2px 6px; border-radius:4px;">投资</span>
+          </div>
+          <span style="font-size:11px; color:#6b7280;">▼ 展开</span>
+        </div>
+        <!-- 展开后的子行 (隐藏状态) -->
+        <div style="border-top:1px solid #f3f4f6; padding:8px 16px; background:rgba(0,0,0,0.01);">
+          <div style="display:flex; justify-content:space-between; padding:4px 0; font-size:12px;">
+            <span>SID: a1b2c3d4-...  |  2024-03-15 购入  |  ¥700</span>
+            <span class="mock-button" style="font-size:10px; padding:2px 6px;">售出</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; padding:4px 0; font-size:12px;">
+            <span>SID: e5f6g7h8-...  |  2024-06-01 购入  |  ¥800</span>
+            <span class="mock-button" style="font-size:10px; padding:2px 6px;">售出</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 分组: 奔驰 AMG 瓦罐 ×1 -->
+      <div style="background:rgba(255,255,255,0.6); border:1px solid rgba(0,0,0,0.06); border-radius:12px; margin-bottom:10px; overflow:hidden;">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; background:rgba(0,0,0,0.01);">
+          <div>
+            <span style="font-weight:700;">奔驰 AMG 瓦罐</span>
+            <span style="font-size:11px; color:#6b7280; margin-left:8px;">×1 · ¥120</span>
+            <span style="font-size:10px; margin-left:8px; background:#d1fae5; color:#059669; padding:2px 6px; border-radius:4px;">自留</span>
+          </div>
+          <span style="font-size:11px; color:#6b7280;">▶ 展开</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

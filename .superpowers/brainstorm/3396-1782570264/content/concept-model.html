@@ -1,0 +1,124 @@
+<h2>核心概念模型 — 数据实体关系</h2>
+<p class="subtitle">基于大王陛下的需求，梳理出以下数据实体及其关系。请确认方向是否正确。</p>
+
+<div class="section">
+  <div class="mockup">
+    <div class="mockup-header">🏗️ 两大脉络 · 四大实体</div>
+    <div class="mockup-body" style="padding:24px; font-size:14px; line-height:2;">
+
+      <table style="width:100%; border-collapse:collapse; text-align:left;">
+        <thead>
+          <tr style="border-bottom:2px solid #e5e7eb;">
+            <th style="padding:10px 14px; background:#f9fafb;">脉络</th>
+            <th style="padding:10px 14px; background:#f9fafb;">实体</th>
+            <th style="padding:10px 14px; background:#f9fafb;">核心属性</th>
+            <th style="padding:10px 14px; background:#f9fafb;">关键关系</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid #f3f4f6;">
+            <td rowspan="2" style="padding:10px 14px; vertical-align:top;"><strong>💰 钱</strong></td>
+            <td style="padding:10px 14px;">
+              <span style="background:#dbeafe;color:#1d4ed8;padding:2px 8px;border-radius:6px;font-size:13px;">账户</span><br>
+              <small style="color:#6b7280;">零花钱账户 / 投资账户</small>
+            </td>
+            <td style="padding:10px 14px; font-size:13px;">
+              账户名称 · 当前余额 · 账户类型
+            </td>
+            <td style="padding:10px 14px; font-size:13px;">
+              拥有多条「交易记录」<br>
+              含多笔「贷款」
+            </td>
+          </tr>
+          <tr style="border-bottom:1px solid #f3f4f6;">
+            <td style="padding:10px 14px;">
+              <span style="background:#fef3c7;color:#a16207;padding:2px 8px;border-radius:6px;font-size:13px;">交易记录</span><br>
+              <small style="color:#6b7280;">收入 / 支出 / 转账</small>
+            </td>
+            <td style="padding:10px 14px; font-size:13px;">
+              项目名称 · 日期 · 金额 · 类型 · 备注
+            </td>
+            <td style="padding:10px 14px; font-size:13px;">
+              属于某个账户<br>
+              可关联某辆小车
+            </td>
+          </tr>
+
+          <tr style="border-bottom:1px solid #f3f4f6;">
+            <td rowspan="2" style="padding:10px 14px; vertical-align:top;"><strong>🚗 小车</strong></td>
+            <td style="padding:10px 14px;">
+              <span style="background:#fce7f3;color:#be185d;padding:2px 8px;border-radius:6px;font-size:13px;">小车</span><br>
+              <small style="color:#6b7280;">投资车 / 自留车</small>
+            </td>
+            <td style="padding:10px 14px; font-size:13px;">
+              品牌 · 名称 · 购买日期 · 购买价格<br>
+              预期价值 · 投资/自留 · SID · 备注
+            </td>
+            <td style="padding:10px 14px; font-size:13px;">
+              可互相转换(投资↔自留)<br>
+              售出时产生交易记录
+            </td>
+          </tr>
+          <tr style="border-bottom:1px solid #f3f4f6;">
+            <td style="padding:10px 14px;">
+              <span style="background:#e0e7ff;color:#4338ca;padding:2px 8px;border-radius:6px;font-size:13px;">贷款</span><br>
+              <small style="color:#6b7280;">仅投资账户</small>
+            </td>
+            <td style="padding:10px 14px; font-size:13px;">
+              贷款金额 · 利率 · 起止日期<br>
+              还款计划 · 状态
+            </td>
+            <td style="padding:10px 14px; font-size:13px;">
+              属于投资账户<br>
+              用于购买投资小车
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>🔗 关联规则</h3>
+
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:12px;">
+
+    <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:14px; padding:16px;">
+      <div style="font-weight:700; color:#166534; margin-bottom:8px;">🚗 投资小车 → 投资账户</div>
+      <div style="font-size:13px; color:#374151;">
+        买入投资车 → 投资账户「支出」<br>
+        卖出投资车 → 投资账户「收入」<br>
+        盈亏计入投资模块
+      </div>
+    </div>
+
+    <div style="background:#fefce8; border:1px solid #fef08a; border-radius:14px; padding:16px;">
+      <div style="font-weight:700; color:#854d0e; margin-bottom:8px;">🏠 自留小车 → 日常消费账户</div>
+      <div style="font-size:13px; color:#374151;">
+        买入自留车 → 日常消费「支出」<br>
+        卖出自留车 → 日常消费「收入」<br>
+        盈亏计入日常消费
+      </div>
+    </div>
+
+    <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:14px; padding:16px;">
+      <div style="font-weight:700; color:#1e40af; margin-bottom:8px;">🔄 账户互转</div>
+      <div style="font-size:13px; color:#374151;">
+        零花钱 ⇄ 投资账户<br>
+        每笔转账双方各产生一条记录<br>
+        详细记录转账原因
+      </div>
+    </div>
+
+    <div style="background:#fdf2f8; border:1px solid #fbcfe8; border-radius:14px; padding:16px;">
+      <div style="font-weight:700; color:#9d174d; margin-bottom:8px;">🏦 贷款 → 投资账户</div>
+      <div style="font-size:13px; color:#374151;">
+        新增贷款 → 投资账户「收入」<br>
+        归还贷款 → 投资账户「支出」<br>
+        支持多笔并行贷款
+      </div>
+    </div>
+
+  </div>
+</div>
