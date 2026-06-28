@@ -2962,8 +2962,12 @@
     }
 
     function closeModal(id) {
-      const el = document.getElementById(id);
-      if (el) el.classList.add('hidden');
+      if (id) {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('hidden');
+      } else {
+        document.getElementById('modalContainer').innerHTML = '';
+      }
     }
 
     // ==================== 示例数据 ====================
@@ -3026,6 +3030,14 @@
     }
 
     // ==================== 云同步 ====================
+    function showSyncToast(message, duration = 2000) {
+      const toast = document.createElement('div');
+      toast.className = 'fixed top-4 right-4 z-50 glass-strong px-4 py-2 rounded-xl text-sm shadow-lg';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), duration);
+    }
+
     function updateCloudStatusUI() {
       const config = CarCloudSync.loadConfig();
       const session = CarCloudSync.loadSession();
@@ -3050,6 +3062,7 @@
       const config = CarCloudSync.loadConfig();
       const session = CarCloudSync.loadSession();
       const isLoggedIn = session.accessToken && CarCloudSync.isSessionValid(session);
+      const lastSync = localStorage.getItem('car_last_sync') || '从未同步';
 
       const html = `
         <div class="fixed inset-0 bg-black/30 flex items-center justify-center z-50" onclick="if(event.target===this)closeModal()">
@@ -3068,6 +3081,7 @@
                 <input id="cloudEnabled" type="checkbox" ${config.enabled ? 'checked' : ''}>
                 <label for="cloudEnabled">启用云端同步</label>
               </div>
+              <div id="syncStatus" class="text-xs text-gray-400">上次同步: ${lastSync}</div>
               <hr class="border-black/10">
               ${isLoggedIn ? `
                 <div class="text-green-600">✅ 已登录: ${session.user.email}</div>
@@ -3101,21 +3115,22 @@
       CarCloudSync.saveConfig(config);
       updateCloudStatusUI();
       closeModal();
+      showSyncToast('配置已保存');
     }
 
     async function cloudLogin() {
       const email = document.getElementById('cloudEmail').value.trim();
       const password = document.getElementById('cloudPassword').value;
-      if (!email || !password) return alert('请填写邮箱和密码');
+      if (!email || !password) return showSyncToast('请填写邮箱和密码');
       try {
         const config = CarCloudSync.loadConfig();
         const session = await CarCloudSync.signIn(config, email, password);
         CarCloudSync.saveSession(session);
         updateCloudStatusUI();
         closeModal();
-        alert('登录成功！');
+        showSyncToast('登录成功！');
       } catch (err) {
-        alert('登录失败: ' + err.message);
+        showSyncToast('登录失败: ' + err.message);
       }
     }
 
@@ -3126,28 +3141,38 @@
     }
 
     async function cloudSyncNow() {
+      const statusEl = document.getElementById('syncStatus');
+      if (statusEl) statusEl.textContent = '同步中...';
       try {
         await CarCloudSync.syncNow(() => carAppData);
-        alert('同步成功！');
+        const now = new Date().toLocaleString('zh-CN');
+        localStorage.setItem('car_last_sync', now);
+        if (statusEl) statusEl.textContent = '✅ 同步成功: ' + now;
+        updateCloudStatusUI();
       } catch (err) {
-        alert('同步失败: ' + err.message);
+        if (statusEl) statusEl.textContent = '❌ 同步失败: ' + err.message;
       }
     }
 
     async function cloudLoadFromServer() {
       if (!confirm('从云端加载将覆盖本地数据，确定？')) return;
+      const statusEl = document.getElementById('syncStatus');
+      if (statusEl) statusEl.textContent = '加载中...';
       try {
         const data = await CarCloudSync.loadFromCloud();
         if (data) {
           carAppData = data;
           saveData();
           renderCurrentModule();
-          alert('加载成功！');
+          const now = new Date().toLocaleString('zh-CN');
+          localStorage.setItem('car_last_sync', now);
+          if (statusEl) statusEl.textContent = '✅ 加载成功: ' + now;
+          updateCloudStatusUI();
         } else {
-          alert('云端无数据');
+          if (statusEl) statusEl.textContent = '云端无数据';
         }
       } catch (err) {
-        alert('加载失败: ' + err.message);
+        if (statusEl) statusEl.textContent = '❌ 加载失败: ' + err.message;
       }
     }
 
