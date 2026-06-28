@@ -362,6 +362,7 @@
                 <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                 记账管理
             </h1>
+            <div class="text-[10px] text-gray-400 mt-1" id="appVersion">v2.0.0</div>
         </div>
         <nav class="sidebar-nav">
             <div class="sidebar-nav-item active" data-module="dashboard" onclick="switchModule('dashboard')">
@@ -383,7 +384,6 @@
                 <input type="file" class="hidden" accept=".json" onchange="importData(event)">
                 导入 JSON
             </label>
-            <div class="text-xs text-gray-400 text-center pt-2" id="appVersion">v2.0.0</div>
         </div>
     </aside>
 
@@ -1091,9 +1091,6 @@
         <div class="max-w-6xl mx-auto space-y-6">
 
           <!-- Header -->
-          <div class="flex items-center justify-end">
-            <span class="text-xs text-gray-400">v${esc(carAppData.version)}</span>
-          </div>
 
           <!-- 账户余额 + 互转 -->
           <div class="flex items-stretch gap-3">
@@ -2354,6 +2351,7 @@
         seedDemoData();
       }
 
+      document.getElementById('appVersion').innerText = 'v' + carAppData.version;
       renderCurrentModule();
     };
     </script>
