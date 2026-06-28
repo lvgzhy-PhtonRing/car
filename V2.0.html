@@ -1232,7 +1232,7 @@
             <div>月额: ¥${pocket.monthlyAllowance || 0}</div>
           </div>
 
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="space-y-4">
             <div class="glass rounded-2xl-apple overflow-hidden">
               <div class="glass-light p-3 border-b border-black/5 font-semibold text-sm"><i data-lucide="list" class="w-4 h-4 inline-block align-middle mr-1"></i> 收支明细</div>
               ${renderTransactionTable(pocket.transactions, 'pocket')}
@@ -1295,7 +1295,7 @@
             <div>贷款数: ${invest.loans.filter(l => l.status === 'active').length} 笔</div>
           </div>
 
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="space-y-4">
             <div class="glass rounded-2xl-apple overflow-hidden">
               <div class="glass-light p-3 border-b border-black/5 font-semibold text-sm"><i data-lucide="list" class="w-4 h-4 inline-block align-middle mr-1"></i> 投资明细</div>
               ${renderTransactionTable(invest.transactions, 'invest')}
@@ -1308,7 +1308,7 @@
               </div>
             </div>
 
-            <div class="lg:col-span-2 glass rounded-2xl-apple overflow-hidden">
+            <div class="glass rounded-2xl-apple overflow-hidden">
               <div class="glass-light p-3 border-b border-black/5 font-semibold text-sm flex justify-between items-center">
                 <span><i data-lucide="banknote" class="w-4 h-4 inline-block align-middle mr-1"></i> 贷款管理</span>
                 <div class="flex gap-1">
