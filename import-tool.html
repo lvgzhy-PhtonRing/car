@@ -8,34 +8,42 @@
 <style>
 body { font-family: system-ui, -apple-system, sans-serif; background: #f5f0ea; }
 .glass { background: rgba(255,255,255,0.7); border: 1px solid rgba(0,0,0,0.06); border-radius: 14px; }
-input[type="checkbox"] { accent-color: #4f6d7a; }
+input[type="checkbox"] { accent-color: #4f6d7a; width: 14px; height: 14px; cursor: pointer; }
+.btn-p0 { background: #5b8c5a; color: #fff; border-radius: 8px; padding: 6px 16px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
+.btn-i0 { background: #c44b3d; color: #fff; border-radius: 8px; padding: 6px 16px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
+.btn-p0:hover { opacity: 0.85; } .btn-i0:hover { opacity: 0.85; }
+.btn-out { background: #fff; border: 1px solid #ccc; border-radius: 8px; padding: 5px 12px; font-size: 12px; cursor: pointer; }
+.row-p0 { border-left: 3px solid #5b8c5a; } .row-i0 { border-left: 3px solid #c44b3d; }
 </style>
 </head>
-<body class="p-6 max-w-4xl mx-auto">
-<h1 class="text-xl font-bold mb-2">旧数据 → carAppData JSON</h1>
-<p class="text-xs text-gray-500 mb-4">粘贴多月份数据，逐行指定归属账户，输出 V2.0 JSON</p>
+<body class="p-6 max-w-5xl mx-auto">
+<h1 class="text-xl font-bold mb-1">旧数据 → carAppData JSON</h1>
+<p class="text-xs text-gray-500 mb-4">粘贴 → 解析 → 勾选 → 点按钮指定归属 → 生成 JSON</p>
 
 <div class="flex gap-4 mb-4">
-  <textarea id="raw" rows="20" class="flex-1 glass p-3 text-xs font-mono" placeholder="粘贴旧数据（支持多月）..."></textarea>
+  <textarea id="raw" rows="18" class="flex-1 glass p-3 text-xs font-mono" placeholder="粘贴旧数据（支持多月，含 2026-06 等月份头）..."></textarea>
   <div class="flex flex-col gap-2">
-    <button onclick="parse()" class="px-6 py-2 bg-[#4f6d7a] text-white rounded-lg text-sm font-medium hover:opacity-90">解析</button>
-    <button onclick="selectAll('pocket')" class="px-4 py-1.5 glass text-xs hover:bg-white">全选零花</button>
-    <button onclick="selectAll('invest')" class="px-4 py-1.5 glass text-xs hover:bg-white">全选投资</button>
-    <label class="text-xs flex items-center gap-1 cursor-pointer"><input type="checkbox" id="autoMatchSell" checked> 卖车配对已有买车</label>
+    <button onclick="parse()" class="px-6 py-2.5 bg-[#4f6d7a] text-white rounded-xl text-sm font-bold hover:opacity-90">① 解析</button>
+    <span class="text-[10px] text-gray-400 text-center">或</span>
+    <button onclick="selectAll('pocket')" class="btn-p0">💰 全归零花</button>
+    <button onclick="selectAll('invest')" class="btn-i0">📈 全归投资</button>
+    <button onclick="toggleChecked('pocket')" class="btn-out">✅ 勾中 → 零花</button>
+    <button onclick="toggleChecked('invest')" class="btn-out">✅ 勾中 → 投资</button>
+    <label class="text-xs flex items-center gap-1 cursor-pointer mt-1"><input type="checkbox" id="autoMatchSell" checked> 卖车配对已有买车</label>
   </div>
 </div>
 
-<div id="stats" class="text-sm mb-3"></div>
-<div id="preview" class="space-y-4"></div>
+<div id="stats" class="text-sm mb-3 font-semibold"></div>
+<div id="preview" class="space-y-3"></div>
 
 <div class="mt-4 flex gap-3 items-center" id="actions" style="display:none">
-  <button onclick="generate()" class="px-6 py-2 bg-[#4f6d7a] text-white rounded-lg text-sm font-medium">生成 JSON</button>
+  <button onclick="generate()" class="px-6 py-2.5 bg-[#4f6d7a] text-white rounded-xl text-sm font-bold">② 生成 JSON</button>
   <span class="text-xs text-gray-400" id="summary"></span>
 </div>
 
 <div id="output" class="mt-4" style="display:none">
-  <textarea id="jsonOut" rows="15" class="w-full glass p-3 text-xs font-mono"></textarea>
-  <button onclick="download()" class="mt-2 px-4 py-2 bg-[#5b8c5a] text-white rounded-lg text-sm">下载 JSON</button>
+  <textarea id="jsonOut" rows="12" class="w-full glass p-3 text-xs font-mono"></textarea>
+  <button onclick="download()" class="mt-2 px-5 py-2.5 bg-[#5b8c5a] text-white rounded-xl text-sm font-bold">③ 下载 JSON</button>
   <span class="text-xs text-gray-400 ml-2">导入到 V2.0.html 的「导入 JSON」即可</span>
 </div>
 
@@ -44,6 +52,7 @@ let items = [];
 
 function genId(pre) { return pre + '_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8); }
 function genUUID() { return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random() * 16 | 0; return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16); }); }
+function esc(s) { return s ? s.replace(/[&<>'"]/g, t => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[t]||t)) : ''; }
 
 function parse() {
   const raw = document.getElementById('raw').value;
@@ -53,16 +62,10 @@ function parse() {
   let year = '2026', month = '01';
 
   lines.forEach(line => {
-    const t = line.trim();
-    if (!t) return;
-    // Month header: 2026-06
-    const mh = t.match(/^(\d{4})-(\d{2})$/);
-    if (mh) { year = mh[1]; month = mh[2]; return; }
-    // Summary line: 收:400|支:500
+    const t = line.trim(); if (!t) return;
+    const mh = t.match(/^(\d{4})-(\d{2})$/); if (mh) { year = mh[1]; month = mh[2]; return; }
     if (/^收:/.test(t)) return;
-    // Data line: 日 收支 [类别] 名称 金额
-    const parts = t.split(/\s{2,}|\t+/);
-    if (parts.length < 4) return;
+    const parts = t.split(/\s{2,}|\t+/); if (parts.length < 4) return;
     const day = parts[0].trim().padStart(2,'0');
     const type = parts[1].includes('支出') ? 'expense' : 'income';
     const catRaw = (parts[2]||'').replace(/[\[\]]/g,'');
@@ -72,55 +75,57 @@ function parse() {
     else if (catRaw.includes('零花钱')) cat = 'allowance';
     else if (catRaw.includes('生活日常')) cat = 'daily';
     let nameRaw = parts[3]||'';
-    // Clean sell prefix and xN suffix
-    const isSell = /^卖/.test(nameRaw);
     nameRaw = nameRaw.replace(/^卖(出)?/, '').replace(/\s*x\d+$/,'').trim();
     const lastPart = parts[parts.length-1]||'';
     const amt = Math.abs(parseFloat(lastPart.replace(/[+¥,]/g,'')))||0;
-    items.push({ day, date: year+'-'+month+'-'+day, type, category: cat, name: nameRaw, isSell, amount: amt, account: 'pocket', year, month });
+    items.push({ day, date: year+'-'+month+'-'+day, type, category: cat, name: nameRaw, amount: amt, account: 'pocket', year, month, checked: false });
   });
 
-  if (items.length === 0) return alert('未解析到数据。格式示例：\n31    支出    [买小车] 普卡黑法拉利F40    余额宝    -79.60');
-
-  render();
+  if (items.length === 0) return alert('未解析到数据');
+  renderStats();
+  renderPreview();
+  document.getElementById('actions').style.display = 'flex';
+  document.getElementById('output').style.display = 'none';
 }
 
-function render() {
+function renderStats() {
   let pSum = 0, iSum = 0, pCnt = 0, iCnt = 0;
-  items.forEach(it => { if (it.account === 'pocket') { pSum += it.amount; pCnt++; } else { iSum += it.amount; iCnt++; } });
-  document.getElementById('stats').innerHTML = `解析 <b>${items.length}</b> 条 · 💰零花 ${pCnt}条 ¥${pSum.toFixed(2)} · 📈投资 ${iCnt}条 ¥${iSum.toFixed(2)}`;
+  items.forEach(it => { if (it.account==='pocket') { pSum+=it.amount; pCnt++; } else { iSum+=it.amount; iCnt++; } });
+  document.getElementById('stats').innerHTML =
+    `共 ${items.length} 条 · <span class="text-[#5b8c5a]">零花 ${pCnt}条 ¥${pSum.toFixed(2)}</span> · <span class="text-[#c44b3d]">投资 ${iCnt}条 ¥${iSum.toFixed(2)}</span>`;
+}
 
-  // Group by month
+function renderPreview() {
   const groups = {};
   items.forEach(it => { const k = it.date.slice(0,7); if (!groups[k]) groups[k] = []; groups[k].push(it); });
 
   document.getElementById('preview').innerHTML = Object.entries(groups).sort((a,b) => b[0].localeCompare(a[0])).map(([mon, its]) => {
     const rows = its.map((it, i) => {
       const idx = items.indexOf(it);
-      return `<div class="flex items-center gap-2 py-1.5 border-b border-black/5 text-xs">
+      const isP = it.account === 'pocket';
+      return `<div class="flex items-center gap-2 py-1 px-2 border-b border-black/5 text-xs ${isP ? 'row-p0' : 'row-i0'}">
+        <input type="checkbox" ${it.checked?'checked':''} onchange="items[${idx}].checked=this.checked">
         <span class="w-16 text-gray-400">${it.date}</span>
-        <span class="w-8 ${it.type==='expense'?'text-red-600':'text-green-700'} font-semibold">${it.type==='expense'?'出':'入'}</span>
-        <span class="w-16 px-1.5 py-0.5 rounded text-xs ${it.category==='car_buy'?'bg-red-50 text-red-600':it.category==='car_sell'?'bg-yellow-50 text-yellow-700':it.category==='allowance'?'bg-blue-50 text-blue-600':'bg-gray-100 text-gray-600'}">${it.category}</span>
-        <span class="flex-1 truncate">${it.name.replace(/[&<>'"]/g, t => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[t]||t))}</span>
-        <span class="w-20 text-right font-mono ${it.type==='expense'?'text-red-600':'text-green-700'}">${it.type==='expense'?'-':'+'}¥${it.amount.toFixed(2)}</span>
-        <select onchange="items[${idx}].account=this.value;render()" class="text-xs border rounded px-1 py-0.5">
-          <option value="pocket" ${it.account==='pocket'?'selected':''}>零花</option>
-          <option value="invest" ${it.account==='invest'?'selected':''}>投资</option>
-        </select>
+        <span class="w-8 ${it.type==='expense'?'text-[#c44b3d]':'text-[#5b8c5a]'} font-semibold">${it.type==='expense'?'出':'入'}</span>
+        <span class="w-14 px-1.5 py-0.5 rounded text-[11px] ${it.category==='car_buy'?'bg-red-50 text-[#c44b3d]':it.category==='car_sell'?'bg-yellow-50 text-[#d4943a]':it.category==='allowance'?'bg-blue-50 text-[#7a9cc6]':'bg-gray-100 text-gray-600'}">${it.category}</span>
+        <span class="flex-1 truncate">${esc(it.name)}</span>
+        <span class="w-20 text-right font-mono ${it.type==='expense'?'text-[#c44b3d]':'text-[#5b8c5a]'}">${it.type==='expense'?'-':'+'}¥${it.amount.toFixed(2)}</span>
+        <span class="w-10 text-center font-semibold text-[11px] ${isP?'text-[#5b8c5a]':'text-[#c44b3d]'}">${isP?'零花':'投资'}</span>
+        <button onclick="items[${idx}].account=items[${idx}].account==='pocket'?'invest':'pocket';renderStats();renderPreview()" class="text-[10px] px-1.5 py-0.5 rounded border hover:bg-gray-50">切换</button>
       </div>`;
     }).join('');
     const mSum = { exp: 0, inc: 0 };
     its.forEach(it => { if (it.type==='expense') mSum.exp += it.amount; else mSum.inc += it.amount; });
     return `<div class="glass overflow-hidden"><div class="px-4 py-2 font-semibold text-sm bg-black/[0.02] border-b border-black/5">${mon} · 收 ¥${mSum.inc.toFixed(2)} 支 ¥${mSum.exp.toFixed(2)}</div><div class="divide-y divide-black/5">${rows}</div></div>`;
   }).join('');
-
-  document.getElementById('actions').style.display = 'flex';
-  document.getElementById('output').style.display = 'none';
 }
 
-function selectAll(acc) {
-  items.forEach(it => it.account = acc);
-  render();
+function selectAll(acc) { items.forEach(it => it.account = acc); renderStats(); renderPreview(); }
+function toggleChecked(acc) {
+  let changed = 0;
+  items.forEach(it => { if (it.checked) { it.account = acc; it.checked = false; changed++; } });
+  if (changed === 0) alert('请先勾选条目');
+  renderStats(); renderPreview();
 }
 
 function generate() {
@@ -130,13 +135,10 @@ function generate() {
       pocket: { id: 'pocket', name: '零花钱账户', monthlyAllowance: 200, allowanceDay: 1, transactions: [], loans: [] },
       invest: { id: 'invest', name: '投资账户', monthlyAllowance: null, allowanceDay: null, transactions: [], loans: [] }
     },
-    cars: [],
-    transferPairs: [],
-    operationLogs: []
+    cars: [], transferPairs: [], operationLogs: []
   };
 
   const autoMatch = document.getElementById('autoMatchSell').checked;
-  let carIndex = {}; // name → sid for auto-matching sells
 
   items.forEach(it => {
     const acc = data.accounts[it.account];
@@ -151,17 +153,11 @@ function generate() {
         sellPrice: null, soldDate: null, isSold: false, note: '',
         expectedHistory: [{ date: it.date, value: it.amount }]
       });
-      if (autoMatch) carIndex[it.name] = carSid;
     }
 
     if (it.category === 'car_sell' && autoMatch) {
       const existing = data.cars.find(c => c.name === it.name && !c.isSold && c.category === (it.account === 'invest' ? 'invest' : 'keep'));
-      if (existing) {
-        existing.isSold = true;
-        existing.sellPrice = it.amount;
-        existing.soldDate = it.date;
-        carSid = existing.sid;
-      }
+      if (existing) { existing.isSold = true; existing.sellPrice = it.amount; existing.soldDate = it.date; carSid = existing.sid; }
     }
 
     acc.transactions.push({
@@ -176,7 +172,7 @@ function generate() {
   document.getElementById('output').style.display = 'block';
   const pTxns = data.accounts.pocket.transactions.length;
   const iTxns = data.accounts.invest.transactions.length;
-  document.getElementById('summary').innerHTML = `💰${pTxns}笔 · 📈${iTxns}笔 · 🚗${data.cars.length}辆`;
+  document.getElementById('summary').innerHTML = `💰${pTxns}笔 · 📈${iTxns}笔 · 🚗${data.cars.length}辆车`;
 }
 
 function download() {
