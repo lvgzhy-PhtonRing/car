@@ -1255,10 +1255,16 @@
         <div class="max-w-6xl mx-auto space-y-4">
           <div class="flex items-center justify-between">
             <h2 class="text-xl font-bold"><i data-lucide="trending-up" class="w-5 h-5 inline-block align-middle mr-1"></i> 投资小车</h2>
-            <div class="flex gap-2">
-              <button onclick="openTransactionModal('invest', null, 'car_buy')" class="bg-invest/10 text-invest px-3 py-2 rounded-xl-apple text-sm hover:bg-invest/20 btn-glass"><i data-lucide="car" class="w-4 h-4 inline-block align-middle mr-1"></i> 新车</button>
-              <button onclick="openTransactionModal('invest')" class="bg-accent/85 backdrop-blur text-white px-3 py-2 rounded-xl-apple text-sm hover:bg-accent/90 btn-glass"><i data-lucide="plus" class="w-4 h-4 inline-block align-middle mr-1"></i> 新增记录</button>
-              <button onclick="openNewLoanModal()" class="bg-invest/10 text-invest px-3 py-2 rounded-xl-apple text-sm hover:bg-invest/20 btn-glass"><i data-lucide="plus-circle" class="w-4 h-4 inline-block align-middle mr-1"></i> 新增贷款</button>
+            <div class="flex gap-2 relative">
+              <button onclick="openTransactionModal('invest', null, 'car_buy')" class="bg-invest/10 text-invest px-4 py-2 rounded-xl-apple text-sm font-medium hover:bg-invest/20 btn-glass"><i data-lucide="car" class="w-4 h-4 inline-block align-middle mr-1"></i> 买小车</button>
+              <div class="relative">
+                <button onclick="toggleLoanPopup(event)" class="bg-sell/10 text-sell px-4 py-2 rounded-xl-apple text-sm font-medium hover:bg-sell/20 btn-glass"><i data-lucide="landmark" class="w-4 h-4 inline-block align-middle mr-1"></i> 贷款操作</button>
+                <div id="loanPopup" class="hidden absolute top-full right-0 mt-2 glass-strong rounded-xl-apple p-2 shadow-lg z-30 min-w-[140px]">
+                  <button onclick="openNewLoanModal();toggleLoanPopup()" class="w-full text-left px-3 py-2 rounded-xl text-sm hover:bg-accent/5 flex items-center gap-2"><i data-lucide="plus-circle" class="w-4 h-4"></i> 新增贷款</button>
+                  <button onclick="openRepayLoanModal();toggleLoanPopup()" class="w-full text-left px-3 py-2 rounded-xl text-sm hover:bg-accent/5 flex items-center gap-2"><i data-lucide="banknote" class="w-4 h-4"></i> 归还贷款</button>
+                </div>
+              </div>
+              <button onclick="openTransactionModal('invest')" class="btn-glass text-gray-500 px-3 py-2 rounded-xl-apple text-sm hover:text-gray-700"><i data-lucide="ellipsis" class="w-4 h-4 inline-block align-middle mr-1"></i> 其他</button>
             </div>
           </div>
 
@@ -1968,6 +1974,23 @@
       invSearchText = document.getElementById('invSearch') ? document.getElementById('invSearch').value.trim().toLowerCase() : '';
       renderCurrentModule();
     }
+
+    // ==================== 贷款操作弹层 ====================
+    function toggleLoanPopup(e) {
+      if (e) e.stopPropagation();
+      const popup = document.getElementById('loanPopup');
+      if (!popup) return;
+      popup.classList.toggle('hidden');
+      initIcons();
+    }
+
+    // 点击其他地方关闭贷款弹层
+    document.addEventListener('click', (e) => {
+      const popup = document.getElementById('loanPopup');
+      if (popup && !popup.classList.contains('hidden') && !e.target.closest('#loanPopup') && !e.target.closest('[onclick*=\"toggleLoanPopup\"]')) {
+        popup.classList.add('hidden');
+      }
+    });
 
     function renderCurrentModule() {
       switch (currentModule) {
