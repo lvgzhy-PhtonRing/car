@@ -992,7 +992,9 @@
       if (from === to) return alert('转出和转入账户不能相同');
 
       const fromBal = calcBalance(carAppData.accounts[from]);
-      if (amount > fromBal) return alert('转出账户余额不足');
+      if (amount > fromBal) {
+        if (!confirm(`转出账户余额不足（当前 ${fmt(fromBal)}，转出 ${fmt(amount)}）。\n\n确认后余额将为负值，继续转账？`)) return;
+      }
 
       const pairId = genId('tp');
 
