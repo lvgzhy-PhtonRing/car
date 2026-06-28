@@ -399,7 +399,7 @@
     <div id="modalContainer"></div>
 
     <!-- Expected Price Updater Floating Button -->
-    <button onclick="openExpectedUpdater()" class="stat-card fixed right-5 top-1/2 -translate-y-1/2 z-20 cursor-pointer hover:shadow-md transition-all text-center" title="预期价格更新">
+    <button id="expectedBtn" onclick="openExpectedUpdater()" class="stat-card fixed right-5 top-1/2 -translate-y-1/2 z-20 cursor-pointer hover:shadow-md transition-all text-center" title="预期价格更新">
       <i data-lucide="diamond" class="w-6 h-6 text-accent"></i>
       <div class="text-[10px] text-gray-400 mt-1">估值</div>
     </button>
@@ -734,6 +734,10 @@
       document.querySelectorAll('.module-panel').forEach(el => {
         el.classList.toggle('active', el.id === 'module' + moduleName.charAt(0).toUpperCase() + moduleName.slice(1));
       });
+
+      // 估值按钮：面板1不显示，面板2/3/4各自显示
+      const btn = document.getElementById('expectedBtn');
+      if (btn) btn.style.display = moduleName === 'dashboard' ? 'none' : '';
 
       renderCurrentModule();
     }
@@ -2092,9 +2096,13 @@
 
     // ==================== 预期价格更新器 ====================
     function openExpectedUpdater() {
-      const unsoldCars = carAppData.cars.filter(c => !c.isSold);
+      let unsoldCars = carAppData.cars.filter(c => !c.isSold);
+      // 按当前模块过滤：2=日常(自留), 3=投资, 4=库存(全部)
+      if (currentModule === 'daily') unsoldCars = unsoldCars.filter(c => c.category === 'keep');
+      else if (currentModule === 'invest') unsoldCars = unsoldCars.filter(c => c.category === 'invest');
+
       if (unsoldCars.length === 0) {
-        alert('无未售小车可更新');
+        alert('当前版面无可更新小车');
         return;
       }
 
