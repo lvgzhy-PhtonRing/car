@@ -1351,12 +1351,44 @@
         groups[key].push(c);
       });
 
-      // 排序：价格模式按买入价排序，其他按标签字母序
+      // 排序：价格模式按买入价排序，品牌-类型模式按自定义顺序，其他按标签字母序
       let sortedEntries = Object.entries(groups);
       if (sortMode === 'price-desc') {
         sortedEntries.sort(([, a], [, b]) => (b[0].buyPrice || 0) - (a[0].buyPrice || 0));
       } else if (sortMode === 'price-asc') {
         sortedEntries.sort(([, a], [, b]) => (a[0].buyPrice || 0) - (b[0].buyPrice || 0));
+      } else if (sortMode === 'brand-subcat') {
+        // 品牌-类型模式：Hotwheels内部按子类别排序，其他品牌按ALL_BRANDS顺序
+        sortedEntries.sort(([keyA], [keyB]) => {
+          const partsA = keyA.split('|');
+          const partsB = keyB.split('|');
+          const brandA = partsA[0] || '';
+          const brandB = partsB[0] || '';
+          const subCatA = partsA[1] || '';
+          const subCatB = partsB[1] || '';
+          
+          // Hotwheels品牌排在最前面
+          const isHWA = brandA === 'Hotwheels';
+          const isHWB = brandB === 'Hotwheels';
+          if (isHWA && !isHWB) return -1;
+          if (!isHWA && isHWB) return 1;
+          
+          if (isHWA && isHWB) {
+            // Hotwheels内部按子类别排序
+            const indexA = HW_SUBCAT_ORDER.indexOf(subCatA);
+            const indexB = HW_SUBCAT_ORDER.indexOf(subCatB);
+            return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
+          } else {
+            // 其他品牌按ALL_BRANDS顺序排序
+            const brandIndexA = ALL_BRANDS.indexOf(brandA);
+            const brandIndexB = ALL_BRANDS.indexOf(brandB);
+            const brandOrderA = brandIndexA === -1 ? 999 : brandIndexA;
+            const brandOrderB = brandIndexB === -1 ? 999 : brandIndexB;
+            if (brandOrderA !== brandOrderB) return brandOrderA - brandOrderB;
+            // 同品牌内按子类别排序
+            return subCatA.localeCompare(subCatB);
+          }
+        });
       } else {
         sortedEntries.sort(([a], [b]) => a.localeCompare(b));
       }
