@@ -1708,19 +1708,12 @@
                   <input type="text" id="editCarName" value="${esc(car.name)}" class="w-full glass-input p-2 text-sm">
                 </div>
               </div>
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="block text-sm text-gray-600 mb-1">购买日期</label>
-                  <input type="date" id="editCarBuyDate" value="${car.buyDate}" class="w-full glass-input p-2 text-sm">
-                </div>
-                <div>
-                  <label class="block text-sm text-gray-600 mb-1">购买价格</label>
-                  <input type="number" id="editCarBuyPrice" step="0.01" value="${car.buyPrice}" class="w-full glass-input p-2 text-sm">
-                </div>
-              </div>
               <div>
                 <label class="block text-sm text-gray-600 mb-1">预期价值</label>
                 <input type="number" id="editCarExpected" step="0.01" value="${car.expectedValue || ''}" class="w-full glass-input p-2 text-sm">
+              </div>
+              <div class="text-xs text-gray-400 flex gap-4">
+                <span>购入: ${car.buyDate} · ${fmt(car.buyPrice)}</span>
               </div>
               <div class="flex items-center gap-4 text-xs text-gray-400">
                 <span>类别: <strong class="${car.category === 'invest' ? 'text-invest' : 'text-keep'}">${car.category === 'invest' ? '投资' : '自留'}</strong></span>
@@ -1747,8 +1740,6 @@
 
       car.brand = document.getElementById('editCarBrand').value.trim();
       car.name = document.getElementById('editCarName').value.trim();
-      car.buyDate = document.getElementById('editCarBuyDate').value;
-      car.buyPrice = parseFloat(document.getElementById('editCarBuyPrice').value) || 0;
       car.expectedValue = parseFloat(document.getElementById('editCarExpected').value) || 0;
       car.note = document.getElementById('editCarNote').value.trim();
 
