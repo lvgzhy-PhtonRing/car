@@ -384,6 +384,7 @@
                 <input type="file" class="hidden" accept=".json" onchange="importData(event)">
                 导入 JSON
             </label>
+            <button onclick="openOldFormatImport()" class="w-full text-xs px-3 py-1.5 text-gray-400 hover:text-gray-600 transition-colors text-left">导入旧格式</button>
             <button onclick="toggleLogPanel()" class="w-full text-xs px-3 py-1.5 text-gray-400 hover:text-gray-600 transition-colors text-left">操作日志</button>
         </div>
     </aside>
@@ -2350,6 +2351,154 @@
           ${detailKeys ? `<div class="log-detail hidden mt-2 pt-2 border-t border-black/5 text-xs">${detailKeys}</div>` : ''}
         </div>`;
       }).join('');
+    }
+
+    // ==================== 旧格式导入 ====================
+    function openOldFormatImport() {
+      const html = `
+        <div id="oldImportModal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-50">
+          <div class="glass-strong rounded-2xl-apple w-full max-w-2xl max-h-[90vh] flex flex-col">
+            <div class="p-5 border-b border-black/5 flex justify-between items-center">
+              <h3 class="font-bold text-lg">导入旧格式数据</h3>
+              <button onclick="hideModal()" class="text-gray-400 hover:text-gray-700 text-lg">&times;</button>
+            </div>
+            <div class="p-5 space-y-3 flex-1 overflow-y-auto">
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">粘贴旧数据（日 收支 [类别] 名称 金额）</label>
+                <textarea id="oldImportText" rows="8" placeholder="31    支出    [买小车] 普卡黑法拉利F40    儿童手表    -79.60" class="w-full glass-input p-3 text-sm font-mono"></textarea>
+              </div>
+              <div class="flex gap-2">
+                <button onclick="parseOldImport()" class="px-4 py-2 bg-accent/85 text-white rounded-xl-apple text-sm btn-glass">解析</button>
+                <span class="text-xs text-gray-400 self-center">品牌默认 Hotwheels，月份默认当前月</span>
+              </div>
+              <div id="oldImportPreview" class="text-xs"></div>
+            </div>
+          </div>
+        </div>`;
+      showModal(html);
+    }
+
+    let _oldImportItems = [];
+
+    function parseOldImport() {
+      const raw = document.getElementById('oldImportText').value.trim();
+      if (!raw) return alert('请粘贴数据');
+      const lines = raw.split('\n').filter(l => l.trim());
+      const items = [];
+      let month = String(new Date().getMonth() + 1).padStart(2, '0');
+      let year = String(new Date().getFullYear());
+
+      lines.forEach((line, i) => {
+        const parts = line.trim().split(/\s{2,}|\t+/);
+        if (parts.length < 4) return;
+        const day = parts[0].trim().padStart(2, '0');
+        const type = parts[1].includes('支出') ? 'expense' : 'income';
+        const catRaw = (parts[2] || '').replace(/[\[\]]/g, '');
+        let category = 'other', isCarBuy = false, isCarSell = false;
+        if (catRaw.includes('买小车')) { category = 'car_buy'; isCarBuy = true; }
+        else if (catRaw.includes('卖小车')) { category = 'car_sell'; isCarSell = true; }
+        else if (catRaw.includes('零花钱')) category = 'allowance';
+        const name = (parts[3] || '').replace(/^卖/, '').replace(/ x\d+$/, '');
+        const amountStr = (parts[parts.length - 1] || '').replace(/[+¥,]/g, '');
+        const amount = Math.abs(parseFloat(amountStr)) || 0;
+        items.push({ idx: i, day, date: year + '-' + month + '-' + day, type, category, isCarBuy, isCarSell, name, amount, origLine: line.trim() });
+      });
+
+      if (items.length === 0) return alert('未解析到有效数据');
+
+      _oldImportItems = items;
+
+      let expenseTotal = 0, incomeTotal = 0;
+      items.forEach(it => { if (it.type === 'expense') expenseTotal += it.amount; else incomeTotal += it.amount; });
+
+      const preview = items.map((it, i) => `
+        <div class="flex items-center gap-2 py-1.5 border-b border-black/5 text-xs">
+          <span class="w-6 text-gray-400">${i + 1}</span>
+          <span class="w-10">${it.date}</span>
+          <span class="w-8 ${it.type === 'expense' ? 'text-invest' : 'text-keep'} font-semibold">${it.type === 'expense' ? '出' : '入'}</span>
+          <span class="w-14">${it.category}</span>
+          <span class="flex-1 truncate">${esc(it.name)}</span>
+          <span class="w-20 text-right font-mono ${it.type === 'expense' ? 'text-invest' : 'text-keep'}">${it.type === 'expense' ? '-' : '+'}${fmt(it.amount)}</span>
+          <select id="oldAcc_${i}" class="glass-input text-xs p-1 rounded-lg" onchange="updateOldImportStats()">
+            <option value="invest" ${it.category === 'car_sell' ? 'selected' : ''}>投资</option>
+            <option value="pocket" ${it.category === 'allowance' ? 'selected' : ''}>零花</option>
+          </select>
+        </div>`).join('');
+
+      document.getElementById('oldImportPreview').innerHTML = `
+        <div class="font-semibold mb-2">解析 ${items.length} 条 · 支出 ${fmt(expenseTotal)} · 收入 ${fmt(incomeTotal)}</div>
+        <div class="glass rounded-xl-apple overflow-hidden divide-y divide-black/5 mb-3">
+          ${preview}
+        </div>
+        <div id="oldImportStats" class="text-gray-500 mb-2"></div>
+        <button onclick="executeOldImport()" class="px-4 py-2 bg-accent/85 text-white rounded-xl-apple text-sm btn-glass">确认导入</button>
+      `;
+      setTimeout(updateOldImportStats, 100);
+    }
+
+    function updateOldImportStats() {
+      let pCount = 0, iCount = 0, pSum = 0, iSum = 0;
+      document.querySelectorAll('[id^="oldAcc_"]').forEach(sel => {
+        const val = sel.value;
+        const row = sel.closest('.flex');
+        const amtText = row?.querySelector('.font-mono')?.textContent?.replace(/[+¥,]/g, '') || '0';
+        const amt = Math.abs(parseFloat(amtText)) || 0;
+        if (val === 'pocket') { pCount++; pSum += amt; }
+        else { iCount++; iSum += amt; }
+      });
+      const el = document.getElementById('oldImportStats');
+      if (el) el.innerHTML = '💰 零花钱 ' + pCount + '条 ' + fmt(pSum) + ' &emsp; 📈 投资 ' + iCount + '条 ' + fmt(iSum);
+    }
+
+    function executeOldImport() {
+      const items = _oldImportItems;
+      const year = String(new Date().getFullYear());
+      const month = String(new Date().getMonth() + 1).padStart(2, '0');
+      let carCount = 0, txnCount = 0;
+
+      items.forEach((it, i) => {
+        const sel = document.getElementById('oldAcc_' + i);
+        const accountId = sel ? sel.value : (it.category === 'car_sell' ? 'invest' : 'invest');
+        const account = carAppData.accounts[accountId];
+        let carSid = null;
+
+        if (it.isCarBuy) {
+          carSid = genUUID();
+          carAppData.cars.push({
+            sid: carSid, brand: 'Hotwheels', name: it.name,
+            buyDate: it.date, buyPrice: it.amount,
+            expectedValue: it.amount, category: accountId === 'invest' ? 'invest' : 'keep',
+            sellPrice: null, soldDate: null, isSold: false, note: '',
+            expectedHistory: [{ date: it.date, value: it.amount }]
+          });
+          carCount++;
+        }
+
+        if (it.isCarSell) {
+          const sellName = it.name;
+          const existingCar = carAppData.cars.find(c =>
+            c.name === sellName && !c.isSold && c.category === (accountId === 'invest' ? 'invest' : 'keep')
+          );
+          if (existingCar) {
+            existingCar.isSold = true;
+            existingCar.sellPrice = it.amount;
+            existingCar.soldDate = it.date;
+            carSid = existingCar.sid;
+          }
+        }
+
+        account.transactions.push({
+          id: genId('txn'), type: it.type, category: it.category,
+          amount: it.amount, date: it.date,
+          carSid, loanId: null, transferPairId: null, note: it.name
+        });
+        txnCount++;
+      });
+
+      hideModal();
+      addOperationLog('import', '导入旧格式 ' + txnCount + '笔·' + carCount + '辆车', { txnCount, carCount });
+      saveData();
+      alert('✅ 导入完成！' + txnCount + '条收支 · ' + carCount + '辆车');
     }
 
     function renderCurrentModule() {
