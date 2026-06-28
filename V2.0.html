@@ -381,6 +381,9 @@
             </div>
         </nav>
         <div class="sidebar-footer space-y-2">
+<button onclick="toggleWebDAV()" class="w-full text-xs px-3 py-1.5 text-gray-400 hover:text-gray-600 transition-colors text-left flex items-center">
+    <span id="syncDot" class="w-2 h-2 rounded-full bg-gray-400 mr-2"></span>WebDAV 云同步
+</button>
 <button onclick="exportData()" class="w-full text-xs px-3 py-1.5 text-gray-400 hover:text-gray-600 transition-colors text-left">导出 JSON</button>
             <label class="w-full text-xs px-3 py-1.5 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer text-left block">
                 <input type="file" class="hidden" accept=".json" onchange="importData(event)">
@@ -392,6 +395,22 @@
 
     <!-- Main Content -->
     <main class="main-content p-6">
+        <!-- WebDAV 面板 -->
+        <div id="webdavPanel" class="hidden glass rounded-2xl-apple p-4 mb-6">
+            <h3 class="font-bold mb-3 border-b border-black/5 pb-2">WebDAV 云端设置</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <input type="text" id="wdUrl" placeholder="服务器地址(含文件名.json)" class="glass-input p-2.5 text-sm w-full">
+                <input type="text" id="wdUser" placeholder="用户名" class="glass-input p-2.5 text-sm w-full">
+                <input type="password" id="wdPass" placeholder="密码" class="glass-input p-2.5 text-sm w-full">
+            </div>
+            <div class="flex space-x-2">
+                <button onclick="saveWebDAV()" class="bg-blue-600/90 backdrop-blur text-white px-4 py-2 rounded-xl-apple text-sm hover:bg-blue-700 btn-glass">保存配置</button>
+                <button onclick="syncDown()" class="bg-green-600/90 backdrop-blur text-white px-4 py-2 rounded-xl-apple text-sm hover:bg-green-700 btn-glass">从云端下载覆盖</button>
+                <button onclick="syncUp()" class="bg-indigo-600/90 backdrop-blur text-white px-4 py-2 rounded-xl-apple text-sm hover:bg-indigo-700 btn-glass">上传到云端</button>
+            </div>
+            <div id="wdLog" class="mt-2 text-xs text-gray-500"></div>
+        </div>
+
         <div id="moduleDashboard" class="module-panel active"></div>
         <div id="moduleDaily" class="module-panel"></div>
         <div id="moduleInvest" class="module-panel"></div>
@@ -774,6 +793,87 @@
       };
       reader.readAsText(file);
       e.target.value = '';
+    }
+
+    // ==================== WebDAV 云同步 ====================
+    function toggleWebDAV() {
+      document.getElementById('webdavPanel').classList.toggle('hidden');
+    }
+
+    function initWebDAVUI() {
+      const cfg = JSON.parse(localStorage.getItem('webdavCfg'));
+      if(cfg) {
+        document.getElementById('wdUrl').value = cfg.url || '';
+        document.getElementById('wdUser').value = cfg.user || '';
+        document.getElementById('wdPass').value = cfg.pass || '';
+        document.getElementById('syncDot').classList.replace('bg-gray-400', 'bg-green-500');
+      }
+    }
+
+    function saveWebDAV() {
+      const cfg = {
+        url: document.getElementById('wdUrl').value.trim(),
+        user: document.getElementById('wdUser').value.trim(),
+        pass: document.getElementById('wdPass').value.trim()
+      };
+      localStorage.setItem('webdavCfg', JSON.stringify(cfg));
+      document.getElementById('syncDot').classList.replace('bg-gray-400', 'bg-green-500');
+      logWD("配置已保存。");
+    }
+
+    function logWD(msg) {
+      document.getElementById('wdLog').innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+    }
+
+    async function doWDReq(method, body=null) {
+      const cfg = JSON.parse(localStorage.getItem('webdavCfg'));
+      if(!cfg || !cfg.url) throw new Error("请先保存WebDAV配置");
+
+      const headers = new Headers();
+      headers.append("Authorization", "Basic " + btoa(`${cfg.user}:${cfg.pass}`));
+      if(body) headers.append("Content-Type", "application/json; charset=utf-8");
+
+      const res = await fetch(cfg.url, { method, headers, body });
+      if(!res.ok && !(method==='GET' && res.status===404)) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
+      return res;
+    }
+
+    async function syncUp() {
+      try {
+        const jsonStr = JSON.stringify(carAppData, null, 2);
+        await doWDReq('PUT', jsonStr);
+        logWD("✅ 上传成功！");
+        addOperationLog('export', 'WebDAV上传 ' + carAppData.cars.length + '车', {});
+      } catch(e) {
+        logWD("❌ 上传失败: " + e.message);
+        alert("上传失败: " + e.message);
+      }
+    }
+
+    async function syncDown() {
+      if(!confirm("从云端下载将覆盖本地数据，确认继续？")) return;
+      try {
+        const res = await doWDReq('GET');
+        if(res.status === 404) {
+          logWD("⚠️ 云端无数据文件");
+          return;
+        }
+        const parsed = await res.json();
+        if(parsed.version && parsed.accounts && parsed.cars) {
+          carAppData = parsed;
+          saveData();
+          logWD("✅ 下载成功！已覆盖本地数据。");
+          addOperationLog('import', 'WebDAV下载 ' + parsed.cars.length + '车', {});
+          alert("下载成功！");
+        } else {
+          throw new Error("无效的数据格式");
+        }
+      } catch(e) {
+        logWD("❌ 下载失败: " + e.message);
+        alert("下载失败: " + e.message);
+      }
     }
 
     // ==================== 模块路由 ====================
@@ -3108,6 +3208,7 @@
       }
 
       document.getElementById('appVersion').innerText = 'v' + carAppData.version;
+      initWebDAVUI();
       renderCurrentModule();
     };
     </script>
