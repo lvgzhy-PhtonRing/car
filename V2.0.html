@@ -1218,10 +1218,10 @@
             <span class="text-xs text-gray-400">预期 ${fmt(car.expectedValue || car.buyPrice)}</span>
           </div>
           <div class="flex gap-1 flex-shrink-0 ml-2">
-            <button onclick="deleteCar('${car.sid}')" class="btn-glass text-xs px-1.5 py-0.5 text-gray-400 hover:text-invest rounded">删</button>
             <button onclick="sellCar('${car.sid}')" class="btn-sell text-xs">卖出</button>
             <button onclick="convertCar('${car.sid}')" class="btn-convert text-xs ${accountType === 'invest' ? 'btn-to-keep' : 'btn-to-invest'}">→${accountType === 'invest' ? '自留' : '投资'}</button>
             <button onclick="openCarEditModal('${car.sid}')" class="btn-glass text-xs px-1.5 py-0.5 text-gray-400 hover:text-accent rounded">编</button>
+            <button onclick="deleteCar('${car.sid}')" class="btn-glass text-xs px-1 py-0.5 text-gray-300 hover:text-invest rounded">删</button>
           </div>
         </div>`).join('') + `</div>`;
     }
@@ -1964,12 +1964,12 @@
                             <span class="text-gray-400 ml-1">预期 ${fmt(c.expectedValue || c.buyPrice)}</span>
                           </div>
                           <div class="flex gap-1">
-                            <button onclick="deleteCar('${c.sid}')" class="btn-glass text-xs px-2 py-1 text-invest border border-invest/20 rounded-lg">删除</button>
                             <button onclick="sellCar('${c.sid}')" class="btn-sell text-xs">卖出</button>
                             <button onclick="convertCar('${c.sid}')" class="btn-convert ${c.category === 'invest' ? 'btn-to-keep' : 'btn-to-invest'} text-xs">
                               → ${c.category === 'invest' ? '自留' : '投资'}
                             </button>
-                            <button onclick="openCarEditModal('${c.sid}')" class="btn-glass text-xs px-2 py-1 text-accent border border-accent/20 rounded-lg">编辑</button>
+                            <button onclick="openCarEditModal('${c.sid}')" class="btn-glass text-xs px-1.5 py-0.5 text-gray-400 hover:text-accent rounded">编</button>
+                            <button onclick="deleteCar('${c.sid}')" class="btn-glass text-xs px-1 py-0.5 text-gray-300 hover:text-invest rounded">删</button>
                           </div>
                         </div>`).join('')}
                     </div>
