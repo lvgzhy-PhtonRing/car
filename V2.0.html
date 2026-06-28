@@ -1716,8 +1716,9 @@
       let carSid = null;
 
       if (category === 'car_buy') {
-        const carName = document.getElementById('carName').value.trim();
-        if (!carName) return alert('请填写颜色/车型');
+        const carNameEl = document.getElementById('carName');
+        const carName = carNameEl ? carNameEl.value.trim() : '';
+        if (!carName && !txnId) return alert('请填写颜色/车型');
         const sid = document.getElementById('carSid').value;
         const brand = document.getElementById('carBrand').value.trim();
         const buyDate = document.getElementById('carBuyDate').value || date;
@@ -1728,9 +1729,9 @@
 
         const existingCar = carAppData.cars.find(c => c.sid === sid);
         if (existingCar) {
-          // 更新已有小车
+          // 更新已有小车（名称非空才覆盖，防止误清空）
           existingCar.brand = brand;
-          existingCar.name = carName;
+          if (carName) existingCar.name = carName;
           existingCar.buyDate = buyDate;
           existingCar.buyPrice = buyPrice;
           existingCar.note = carNote;
