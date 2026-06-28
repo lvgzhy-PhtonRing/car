@@ -2422,7 +2422,8 @@
           const subCatB = carsB[0].subCategory || '';
           const indexA = HW_SUBCAT_ORDER.indexOf(subCatA);
           const indexB = HW_SUBCAT_ORDER.indexOf(subCatB);
-          return indexA - indexB;
+          // 处理不在列表中的子类别，放到最后
+          return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
         });
         
         // 其他品牌按ALL_BRANDS顺序排序
@@ -2431,7 +2432,8 @@
           const brandB = carsB[0].brand || '';
           const indexA = ALL_BRANDS.indexOf(brandA);
           const indexB = ALL_BRANDS.indexOf(brandB);
-          return indexA - indexB;
+          // 处理不在列表中的品牌，放到最后
+          return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
         });
         
         // 合并排序结果
