@@ -742,7 +742,7 @@
     function getMonthlySpending() {
       const now = new Date();
       const months = [];
-      for (let i = 2; i >= 0; i--) {
+      for (let i = 5; i >= 0; i--) {
         const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
         months.push({
           label: (d.getMonth() + 1) + '月',
@@ -1110,9 +1110,9 @@
             }).join('')}
           </div>
 
-          <!-- 近三月柱状图 -->
+          <!-- 近六月柱状图 -->
           <div class="glass rounded-2xl-apple p-5">
-            <h3 class="font-bold text-base mb-3"><i data-lucide="bar-chart-3" class="w-4 h-4 inline-block align-middle mr-1"></i> 近三月零花钱消费</h3>
+            <h3 class="font-bold text-base mb-3"><i data-lucide="bar-chart-3" class="w-4 h-4 inline-block align-middle mr-1"></i> 近六月零花钱消费</h3>
             <div class="bar-chart">
               ${monthly.map(m => `
                 <div class="bar-item">
