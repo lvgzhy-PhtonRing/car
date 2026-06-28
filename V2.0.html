@@ -3065,8 +3065,8 @@
       const lastSync = localStorage.getItem('car_last_sync') || '从未同步';
 
       const html = `
-        <div class="fixed inset-0 bg-black/30 flex items-center justify-center z-50" onclick="if(event.target===this)closeModal()">
-          <div class="glass-strong rounded-2xl p-6 w-[400px] max-h-[80vh] overflow-y-auto">
+        <div class="fixed inset-0 bg-black/30 flex items-center justify-center z-50" onclick="closeModal()">
+          <div class="glass-strong rounded-2xl p-6 w-[400px] max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()">
             <h3 class="text-lg font-bold mb-4">☁️ 云端同步设置</h3>
             <div class="space-y-3 text-sm">
               <div>
