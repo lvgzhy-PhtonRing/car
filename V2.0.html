@@ -1171,11 +1171,12 @@
               <div class="text-xs text-gray-400 font-mono mt-0.5">SID: ${car.sid.slice(0, 8)}...</div>
             </div>
             <div class="flex gap-1 flex-shrink-0">
-              <button onclick="sellCar('${car.sid}')" class="btn-sell">售出</button>
-              <button onclick="openCarEditModal('${car.sid}')" class="btn-glass text-xs px-2 py-1 text-accent border border-accent/20 rounded-lg">编辑</button>
+              <button onclick="deleteCar('${car.sid}')" class="btn-glass text-xs px-2 py-1 text-invest border border-invest/20 rounded-lg">删除</button>
+              <button onclick="sellCar('${car.sid}')" class="btn-sell">卖出</button>
               <button onclick="convertCar('${car.sid}')" class="btn-convert ${accountType === 'invest' ? 'btn-to-keep' : 'btn-to-invest'}">
                 → ${accountType === 'invest' ? '自留' : '投资'}
               </button>
+              <button onclick="openCarEditModal('${car.sid}')" class="btn-glass text-xs px-2 py-1 text-accent border border-accent/20 rounded-lg">编辑</button>
             </div>
           </div>
         </div>`).join('');
@@ -1650,6 +1651,36 @@
       saveData();
     }
 
+    // ==================== 小车删除 ====================
+    function deleteCar(sid) {
+      const car = carAppData.cars.find(c => c.sid === sid);
+      if (!car) return;
+
+      // 查找关联的收支记录
+      const allTxns = [
+        ...carAppData.accounts.pocket.transactions,
+        ...carAppData.accounts.invest.transactions
+      ];
+      const linkedTxns = allTxns.filter(t => t.carSid === sid);
+      const txnDetails = linkedTxns.map(t =>
+        `  · ${t.date}  ${t.type === 'income' ? '收入' : '支出'} ${t.category}  ${fmt(t.amount)}  [${t.id.slice(0, 8)}]`
+      ).join('\n');
+
+      const msg = `确定删除 "${esc(car.brand)} ${esc(car.name)}"？\n\n` +
+        `关联的收支记录将被同步删除：\n${txnDetails || '无关联收支'}`;
+
+      if (!confirm(msg)) return;
+
+      // 删除关联交易
+      ['pocket', 'invest'].forEach(accId => {
+        carAppData.accounts[accId].transactions =
+          carAppData.accounts[accId].transactions.filter(t => t.carSid !== sid);
+      });
+      // 删除小车
+      carAppData.cars = carAppData.cars.filter(c => c.sid !== sid);
+      saveData();
+    }
+
     // ==================== 小车编辑弹窗 ====================
     function openCarEditModal(sid) {
       const car = carAppData.cars.find(c => c.sid === sid);
@@ -1782,48 +1813,35 @@
 
       const oldCategory = car.category;
       const newCategory = oldCategory === 'invest' ? 'keep' : 'invest';
+      const oldLabel = oldCategory === 'invest' ? '投资' : '自留';
+      const newLabel = newCategory === 'invest' ? '投资' : '自留';
 
-      if (!confirm(`确定将 "${car.name}" 从${oldCategory === 'invest' ? '投资' : '自留'}转为${newCategory === 'invest' ? '投资' : '自留'}？\n将按买入价 ${fmt(car.buyPrice)} 生成转账记录。`)) return;
+      if (!confirm(`确定将 "${car.name}" 从${oldLabel}库移至${newLabel}库？\n\n买入价 ${fmt(car.buyPrice)} — 关联收支将同步转移。`)) return;
 
       car.category = newCategory;
 
-      const fromAccount = oldCategory === 'invest' ? 'invest' : 'pocket';
-      const toAccount = newCategory === 'invest' ? 'invest' : 'pocket';
+      const fromAccId = oldCategory === 'invest' ? 'invest' : 'pocket';
+      const toAccId = newCategory === 'invest' ? 'invest' : 'pocket';
 
+      // 转移关联的买车/卖车交易
+      const fromAcc = carAppData.accounts[fromAccId];
+      const toAcc = carAppData.accounts[toAccId];
+      const linkedTxns = fromAcc.transactions.filter(t => t.carSid === sid);
+      linkedTxns.forEach(t => toAcc.transactions.push(t));
+      carAppData.accounts[fromAccId].transactions =
+        fromAcc.transactions.filter(t => t.carSid !== sid);
+
+      // 生成转账配对记录
       const transferPairId = genId('tp');
       const date = getToday();
 
-      carAppData.accounts[fromAccount].transactions.push({
-        id: genId('txn'),
-        type: 'expense',
-        category: 'transfer_out',
-        amount: car.buyPrice,
-        date: date,
-        carSid: car.sid,
-        loanId: null,
-        transferPairId: transferPairId,
-        note: '转出: ' + car.name
-      });
-
-      carAppData.accounts[toAccount].transactions.push({
-        id: genId('txn'),
-        type: 'income',
-        category: 'transfer_in',
-        amount: car.buyPrice,
-        date: date,
-        carSid: car.sid,
-        loanId: null,
-        transferPairId: transferPairId,
-        note: '转入: ' + car.name
-      });
-
       carAppData.transferPairs.push({
         id: transferPairId,
-        fromAccount: fromAccount,
-        toAccount: toAccount,
+        fromAccount: fromAccId,
+        toAccount: toAccId,
         amount: car.buyPrice,
         date: date,
-        note: '转换: ' + car.name + ' (' + oldCategory + '→' + newCategory + ')'
+        note: `${oldLabel}→${newLabel}: ${car.name}`
       });
 
       saveData();
@@ -1903,10 +1921,12 @@
                             <span class="text-gray-400 ml-1">预期 ${fmt(c.expectedValue || c.buyPrice)}</span>
                           </div>
                           <div class="flex gap-1">
-                            <button onclick="sellCar('${c.sid}')" class="btn-sell text-xs">售出</button>
+                            <button onclick="deleteCar('${c.sid}')" class="btn-glass text-xs px-2 py-1 text-invest border border-invest/20 rounded-lg">删除</button>
+                            <button onclick="sellCar('${c.sid}')" class="btn-sell text-xs">卖出</button>
                             <button onclick="convertCar('${c.sid}')" class="btn-convert ${c.category === 'invest' ? 'btn-to-keep' : 'btn-to-invest'} text-xs">
                               → ${c.category === 'invest' ? '自留' : '投资'}
                             </button>
+                            <button onclick="openCarEditModal('${c.sid}')" class="btn-glass text-xs px-2 py-1 text-accent border border-accent/20 rounded-lg">编辑</button>
                           </div>
                         </div>`).join('')}
                     </div>
