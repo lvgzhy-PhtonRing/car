@@ -384,6 +384,7 @@
                 <input type="file" class="hidden" accept=".json" onchange="importData(event)">
                 导入 JSON
             </label>
+            <button onclick="toggleLogPanel()" class="w-full text-xs px-3 py-1.5 text-gray-400 hover:text-gray-600 transition-colors text-left">📋 操作日志</button>
         </div>
     </aside>
 
@@ -397,6 +398,18 @@
 
     <!-- Modal Container -->
     <div id="modalContainer"></div>
+
+    <!-- Operation Log Drawer -->
+    <div id="logDrawer" class="fixed right-0 top-0 h-full w-[380px] glass-strong shadow-2xl z-40 flex flex-col translate-x-full transition-transform duration-300">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-black/5">
+        <h3 class="font-bold text-base">📋 操作日志</h3>
+        <div class="flex gap-2">
+          <button onclick="clearOperationLogs()" class="text-xs px-2 py-1 text-gray-400 hover:text-invest transition-colors">清空</button>
+          <button onclick="toggleLogPanel()" class="text-gray-400 hover:text-gray-700 text-lg leading-none">&times;</button>
+        </div>
+      </div>
+      <div id="logList" class="flex-1 overflow-y-auto p-4 space-y-2"></div>
+    </div>
 
     <!-- Expected Price Updater Floating Button -->
     <button id="expectedBtn" onclick="openExpectedUpdater()" class="stat-card fixed right-5 top-1/2 -translate-y-1/2 z-20 cursor-pointer hover:shadow-md transition-all text-center" title="预期价格更新">
@@ -473,6 +486,32 @@
       populateNameDatalist(brand, 'carNameList');
       populateNameDatalist(brand, 'editCarNameList');
     }
+
+    // ==================== 操作日志 ====================
+    function addOperationLog(type, message, detail) {
+      if (!carAppData.operationLogs) carAppData.operationLogs = [];
+      carAppData.operationLogs.unshift({
+        id: Date.now() + Math.floor(Math.random() * 1000),
+        time: new Date().toISOString(),
+        type, message, detail: detail || {}
+      });
+      if (carAppData.operationLogs.length > 200) carAppData.operationLogs.length = 200;
+    }
+
+    const LOG_COLORS = {
+      car_buy: 'badge-keep', car_sell: 'badge-transfer', car_edit: 'bg-blue-100 text-blue-700',
+      car_delete: 'badge-invest', car_convert: 'bg-purple-100 text-purple-700',
+      txn_add: 'badge-keep', txn_edit: 'bg-blue-100 text-blue-700', txn_delete: 'badge-invest',
+      loan_new: 'bg-orange-100 text-orange-700', loan_repay: 'bg-orange-100 text-orange-700', loan_edit: 'bg-blue-100 text-blue-700',
+      transfer: 'bg-purple-100 text-purple-700', allowance: 'badge-income',
+      expected_update: 'bg-blue-100 text-blue-700', import: 'bg-gray-100 text-gray-600', export: 'bg-gray-100 text-gray-600'
+    };
+    const LOG_LABELS = {
+      car_buy: '买车', car_sell: '卖出', car_edit: '编辑', car_delete: '删除', car_convert: '转库',
+      txn_add: '新增', txn_edit: '编辑', txn_delete: '删除',
+      loan_new: '贷款', loan_repay: '归还', loan_edit: '编辑',
+      transfer: '互转', allowance: '零花钱', expected_update: '更新', import: '导入', export: '导出'
+    };
 
     // 预期价格历史
     function appendExpectedHistory(car, value, date) {
@@ -696,6 +735,7 @@
       document.body.appendChild(a);
       a.click();
       a.remove();
+      addOperationLog('export', '导出JSON ' + carAppData.cars.length + '车·' + (carAppData.accounts.pocket.transactions.length + carAppData.accounts.invest.transactions.length) + '笔', {});
     }
 
     // 导入
@@ -708,6 +748,7 @@
           const parsed = JSON.parse(ev.target.result);
           if (parsed.version && parsed.accounts && parsed.cars && confirm('导入将覆盖当前所有数据，确认继续？')) {
             carAppData = parsed;
+            addOperationLog('import', '导入JSON ' + parsed.cars.length + '车·' + (parsed.accounts.pocket.transactions.length + parsed.accounts.invest.transactions.length) + '笔', {});
             saveData();
             alert('导入成功！');
           } else {
@@ -877,6 +918,7 @@
       }
 
       hideModal();
+      addOperationLog(id ? 'loan_edit' : 'loan_new', (id ? '编辑' : '新增') + '贷款 ' + name + ' ' + fmt(amount), { name, amount });
       saveData();
     }
 
@@ -951,6 +993,7 @@
       });
 
       hideModal();
+      addOperationLog('loan_repay', '归还贷款 ' + loan.name + ' ' + fmt(amount) + '（剩余' + fmt(loan.remaining) + '）', { name: loan.name, amount, remaining: loan.remaining });
       saveData();
     }
 
@@ -1055,6 +1098,7 @@
         note: note || (from === 'pocket' ? '零花钱→投资' : '投资→零花钱')
       });
 
+      addOperationLog('transfer', (from === 'pocket' ? '零花钱→投资' : '投资→零花钱') + ' ' + fmt(amount), { from, to, amount });
       hideModal();
       saveData();
     }
@@ -1080,6 +1124,7 @@
         note: monthKey + ' 零花钱'
       });
 
+      addOperationLog('allowance', '存入' + monthKey + '零花钱 ' + fmt(pocket.monthlyAllowance), { amount: pocket.monthlyAllowance });
       saveData();
     }
 
@@ -1726,14 +1771,25 @@
       hideModal();
       saveData();
 
-      // 联动提示
-      if (category === 'car_buy' && carSid) {
-        const updatedCar = carAppData.cars.find(c => c.sid === carSid);
-        if (updatedCar) {
-          alert(`✅ 已同步更新车库小车: ${updatedCar.brand} ${updatedCar.name}`);
+      // 联动提示 & 操作日志
+      if (category === 'car_buy') {
+        if (carSid) {
+          const updatedCar = carAppData.cars.find(c => c.sid === carSid);
+          if (updatedCar) {
+            const isNew = !txnId;
+            addOperationLog('car_buy', `买小车 ${esc(updatedCar.brand)} ${esc(updatedCar.name)} ${fmt(amount)}`, { name: updatedCar.name, brand: updatedCar.brand, amount, account: accountId });
+            alert(`✅ 已同步更新车库小车: ${updatedCar.brand} ${updatedCar.name}`);
+          }
         }
       } else if (category === 'car_sell' && carSid) {
+        const soldCar = carAppData.cars.find(c => c.sid === carSid);
+        if (soldCar) {
+          addOperationLog('car_sell', `卖出 ${esc(soldCar.brand || '')} ${esc(soldCar.name)} 售价 ${fmt(amount)}`, { name: soldCar.name, brand: soldCar.brand, sellPrice: amount, account: accountId });
+        }
         alert('✅ 小车已标记为售出，卖车收入已计入收支');
+      } else if (category !== 'car_buy' && category !== 'car_sell') {
+        const logType = txnId ? 'txn_edit' : 'txn_add';
+        addOperationLog(logType, `${type === 'income' ? '收入' : '支出'} ${category} ${fmt(amount)}`, { type, category, amount, account: accountId });
       }
     }
 
@@ -1763,8 +1819,10 @@
             carAppData.accounts[accId].transactions.filter(t => t.carSid !== linkedCar.sid);
         });
         carAppData.cars = carAppData.cars.filter(c => c.sid !== linkedCar.sid);
+        addOperationLog('car_delete', `删除小车 ${esc(linkedCar.brand)} ${esc(linkedCar.name)}（含关联收支）`, { name: linkedCar.name, brand: linkedCar.brand });
       } else {
         account.transactions = account.transactions.filter(t => t.id !== txnId);
+        addOperationLog('txn_delete', `删除${txn.type === 'income' ? '收入' : '支出'} ${txn.category} ${fmt(txn.amount)}`, { type: txn.type, category: txn.category, amount: txn.amount });
       }
 
       saveData();
@@ -1797,6 +1855,7 @@
       });
       // 删除小车
       carAppData.cars = carAppData.cars.filter(c => c.sid !== sid);
+      addOperationLog('car_delete', `删除小车 ${esc(car.brand)} ${esc(car.name)}${linkedTxns.length > 0 ? '（含' + linkedTxns.length + '条收支）' : ''}`, { name: car.name, brand: car.brand, txnCount: linkedTxns.length });
       saveData();
     }
 
@@ -1853,15 +1912,17 @@
       const car = carAppData.cars.find(c => c.sid === sid);
       if (!car) return;
 
+      const oldExpected = car.expectedValue;
       car.brand = document.getElementById('editCarBrand').value.trim();
       car.name = document.getElementById('editCarName').value.trim();
       const newExpected = parseFloat(document.getElementById('editCarExpected').value) || 0;
-      if (newExpected !== car.expectedValue) {
+      if (newExpected !== oldExpected) {
         appendExpectedHistory(car, newExpected, getToday());
       }
       car.note = document.getElementById('editCarNote').value.trim();
 
       hideModal();
+      addOperationLog('car_edit', `编辑小车 ${esc(car.brand)} ${esc(car.name)}`, { name: car.name, brand: car.brand, expected: newExpected !== oldExpected ? fmt(oldExpected) + '→' + fmt(newExpected) : '' });
       saveData();
 
       // 联动提示：查找关联收支
@@ -1928,6 +1989,7 @@
         note: '卖出: ' + (car.brand ? car.brand + ' ' : '') + car.name
       });
 
+      addOperationLog('car_sell', '卖出 ' + (car.brand ? esc(car.brand) + ' ' : '') + esc(car.name) + ' 售价 ' + fmt(sellPrice), { name: car.name, brand: car.brand, sellPrice });
       hideModal();
       saveData();
     }
@@ -1969,6 +2031,7 @@
         note: `${oldLabel}→${newLabel}: ${car.name}`
       });
 
+      addOperationLog('car_convert', esc(car.name) + ' ' + oldLabel + '→' + newLabel + ' 按 ' + fmt(car.buyPrice), { name: car.name, from: oldLabel, to: newLabel, amount: car.buyPrice });
       saveData();
     }
 
@@ -2245,8 +2308,48 @@
         const car = carAppData.cars.find(c => c.sid === sid);
         if (car) appendExpectedHistory(car, value, date);
       });
+      addOperationLog('expected_update', '更新' + Object.keys(changes).length + '辆小车预期价格', { count: Object.keys(changes).length });
       hideModal();
       saveData();
+    }
+
+    // ==================== 操作日志面板 ====================
+    function toggleLogPanel() {
+      const drawer = document.getElementById('logDrawer');
+      drawer.classList.toggle('translate-x-full');
+      if (!drawer.classList.contains('translate-x-full')) renderLogs();
+    }
+
+    function clearOperationLogs() {
+      if (!confirm('确定清空所有操作日志？')) return;
+      if (carAppData.operationLogs) carAppData.operationLogs.length = 0;
+      saveData();
+      renderLogs();
+    }
+
+    function renderLogs() {
+      const logs = carAppData.operationLogs || [];
+      if (logs.length === 0) {
+        document.getElementById('logList').innerHTML = '<div class="text-center text-gray-400 py-8 text-sm">暂无日志</div>';
+        return;
+      }
+      document.getElementById('logList').innerHTML = logs.slice(0, 100).map(log => {
+        const pillClass = LOG_COLORS[log.type] || 'bg-gray-100 text-gray-600';
+        const label = LOG_LABELS[log.type] || log.type;
+        const time = new Date(log.time).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+        const detailKeys = log.detail && Object.keys(log.detail).length > 0
+          ? Object.entries(log.detail).filter(([k]) => !k.startsWith('_')).map(([k, v]) => `<span class="text-gray-500">${k}:</span> <span class="text-gray-700">${esc(String(v))}</span>`).join('&emsp;')
+          : '';
+        return `
+        <div class="glass-light rounded-xl-apple p-3 text-sm cursor-pointer hover:shadow-sm transition-shadow" onclick="this.classList.toggle('ring-2'); this.querySelector('.log-detail').classList.toggle('hidden')">
+          <div class="flex items-center justify-between gap-2">
+            <span class="inline-block px-2 py-0.5 rounded text-xs font-medium ${pillClass}">${label}</span>
+            <span class="text-xs text-gray-400 ml-auto shrink-0">${time}</span>
+          </div>
+          <div class="text-sm text-gray-800 mt-1">${esc(log.message)}</div>
+          ${detailKeys ? `<div class="log-detail hidden mt-2 pt-2 border-t border-black/5 text-xs">${detailKeys}</div>` : ''}
+        </div>`;
+      }).join('');
     }
 
     function renderCurrentModule() {
