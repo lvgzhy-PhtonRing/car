@@ -1198,9 +1198,9 @@
               <span style="color:#5b8c5a">▮ 收入</span>
               <span style="color:#7a9cc6">～ 平衡趋势</span>
             </div>
-            <svg class="chart-svg" viewBox="0 0 ${400} ${200}">
+            <svg class="chart-svg" viewBox="0 0 ${400} ${120}">
               ${(() => {
-  const n=monthly.length,W=400,H=200,L=36,R=4,T=16,B=22;
+  const n=monthly.length,W=400,H=120,L=36,R=4,T=12,B=18;
   const cW=W-L-R,cH=H-T-B;
   const maxV=Math.max(...monthly.map(m=>Math.max(m.expense,m.income)),300);
   const niceM=Math.ceil(maxV/100)*100,xS=cW/n,bW=Math.max(8,xS*0.22);
