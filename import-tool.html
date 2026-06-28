@@ -214,7 +214,7 @@ function generate() {
     }
 
     if (it.category === 'car_sell' && autoMatch) {
-      const existing = data.cars.find(c => c.name === it.name && !c.isSold && c.category === (it.account === 'invest' ? 'invest' : 'keep'));
+      const existing = data.cars.find(c => c.name === it.name && !c.isSold && true);
       if (existing) { existing.isSold = true; existing.sellPrice = it.amount; existing.soldDate = it.date; carSid = existing.sid; }
     }
 
