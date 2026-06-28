@@ -1145,7 +1145,7 @@
                       ${isOverdue ? '⚠ 已逾期 ' + Math.abs(daysLeft) + ' 天' : '到期: ' + loan.dueDate + ' (' + daysLeft + ' 天)'}
                     </div>
                   </div>
-                  <button onclick="openNewLoanModal('${loan.id}')" class="btn-glass text-xs px-1.5 py-0.5 text-gray-400 hover:text-accent rounded mr-1">编</button><button onclick="openRepayLoanModal('${loan.id}')" class="btn-glass text-xs px-3 py-1.5 bg-sell/10 text-sell hover:bg-sell/20">归还</button>
+                  <button onclick="openRepayLoanModal('${loan.id}')" class="btn-glass text-xs px-3 py-1.5 bg-sell/10 text-sell hover:bg-sell/20 mr-1">归还</button><button onclick="openNewLoanModal('${loan.id}')" class="text-accent hover:underline text-xs"><i data-lucide="pencil-line" class="w-3 h-3 inline-block"></i></button>
                 </div>`;
             }).join('')}
           </div>
@@ -1255,8 +1255,8 @@
           <div class="flex gap-1 flex-shrink-0 ml-2">
             <button onclick="sellCar('${car.sid}')" class="btn-sell text-xs">卖出</button>
             <button onclick="convertCar('${car.sid}')" class="btn-convert text-xs ${accountType === 'invest' ? 'btn-to-keep' : 'btn-to-invest'}">→${accountType === 'invest' ? '自留' : '投资'}</button>
-            <button onclick="openCarEditModal('${car.sid}')" class="btn-glass text-xs px-1.5 py-0.5 text-gray-400 hover:text-accent rounded">编</button>
-            <button onclick="deleteCar('${car.sid}')" class="btn-glass text-xs px-1 py-0.5 text-gray-300 hover:text-invest rounded">删</button>
+            <button onclick="openCarEditModal('${car.sid}')" class="text-accent hover:underline text-xs mr-1"><i data-lucide="pencil-line" class="w-3 h-3 inline-block"></i></button>
+            <button onclick="deleteCar('${car.sid}')" class="text-invest hover:underline text-xs"><i data-lucide="trash-2" class="w-3 h-3 inline-block"></i></button>
           </div>
         </div>`).join('') + `</div>`;
     }
@@ -1319,7 +1319,7 @@
                   ${isOverdue ? '⚠ 已逾期 ' + Math.abs(daysLeft) + ' 天' : '到期: ' + loan.dueDate}
                 </div>
               </div>
-              <button onclick="openNewLoanModal('${loan.id}')" class="btn-glass text-xs px-1.5 py-0.5 text-gray-400 hover:text-accent rounded mr-1">编</button><button onclick="openRepayLoanModal('${loan.id}')" class="btn-glass text-xs px-3 py-1.5 bg-sell/10 text-sell">归还</button>
+              <button onclick="openRepayLoanModal('${loan.id}')" class="btn-glass text-xs px-3 py-1.5 bg-sell/10 text-sell mr-1">归还</button><button onclick="openNewLoanModal('${loan.id}')" class="text-accent hover:underline text-xs"><i data-lucide="pencil-line" class="w-3 h-3 inline-block"></i></button>
             </div>
           </div>`;
       }).join('');
@@ -2054,8 +2054,8 @@
                             <button onclick="convertCar('${c.sid}')" class="btn-convert ${c.category === 'invest' ? 'btn-to-keep' : 'btn-to-invest'} text-xs">
                               → ${c.category === 'invest' ? '自留' : '投资'}
                             </button>
-                            <button onclick="openCarEditModal('${c.sid}')" class="btn-glass text-xs px-1.5 py-0.5 text-gray-400 hover:text-accent rounded">编</button>
-                            <button onclick="deleteCar('${c.sid}')" class="btn-glass text-xs px-1 py-0.5 text-gray-300 hover:text-invest rounded">删</button>
+                            <button onclick="openCarEditModal('${c.sid}')" class="text-accent hover:underline text-xs mr-1"><i data-lucide="pencil-line" class="w-3 h-3 inline-block"></i></button>
+                            <button onclick="deleteCar('${c.sid}')" class="text-invest hover:underline text-xs"><i data-lucide="trash-2" class="w-3 h-3 inline-block"></i></button>
                           </div>
                         </div>`).join('')}
                     </div>
