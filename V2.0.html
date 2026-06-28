@@ -1059,8 +1059,7 @@
         <div class="max-w-6xl mx-auto space-y-6">
 
           <!-- Header -->
-          <div class="flex items-center justify-between">
-            <h2 class="text-xl font-bold"><i data-lucide="layout-dashboard" class="w-5 h-5 inline-block align-middle mr-1"></i> Payton's 数据</h2>
+          <div class="flex items-center justify-end">
             <span class="text-xs text-gray-400">v${esc(carAppData.version)}</span>
           </div>
 
@@ -1217,8 +1216,7 @@
 
       const html = `
         <div class="max-w-6xl mx-auto space-y-4">
-          <div class="flex items-center justify-between">
-            <h2 class="text-xl font-bold"><i data-lucide="wallet" class="w-5 h-5 inline-block align-middle mr-1"></i> 日常消费</h2>
+          <div class="flex items-center justify-end">
             <div class="flex gap-2">
               <button onclick="openTransactionModal('pocket', null, 'car_buy')" class="bg-invest/10 text-invest px-3 py-2 rounded-xl-apple text-sm hover:bg-invest/20 btn-glass"><i data-lucide="car" class="w-4 h-4 inline-block align-middle mr-1"></i> 买小车</button>
               <button onclick="openTransactionModal('pocket', null, null, 'expense')" class="bg-accent/85 backdrop-blur text-white px-3 py-2 rounded-xl-apple text-sm hover:bg-accent/90 btn-glass"><i data-lucide="minus-circle" class="w-4 h-4 inline-block align-middle mr-1"></i> 支出</button>
@@ -1282,8 +1280,7 @@
 
       const html = `
         <div class="max-w-6xl mx-auto space-y-4">
-          <div class="flex items-center justify-between">
-            <h2 class="text-xl font-bold"><i data-lucide="trending-up" class="w-5 h-5 inline-block align-middle mr-1"></i> 投资小车</h2>
+          <div class="flex items-center justify-end">
             <div class="flex gap-2">
               <button onclick="openTransactionModal('invest', null, 'car_buy')" class="bg-invest/10 text-invest px-4 py-2 rounded-xl-apple text-sm font-medium hover:bg-invest/20 btn-glass"><i data-lucide="car" class="w-4 h-4 inline-block align-middle mr-1"></i> 买小车</button>
               <button onclick="openTransactionModal('invest')" class="btn-glass text-gray-500 px-3 py-2 rounded-xl-apple text-sm hover:text-gray-700"><i data-lucide="ellipsis" class="w-4 h-4 inline-block align-middle mr-1"></i> 其他</button>
@@ -1907,7 +1904,6 @@
 
       const html = `
         <div class="max-w-6xl mx-auto space-y-4">
-          <h2 class="text-xl font-bold"><i data-lucide="warehouse" class="w-5 h-5 inline-block align-middle mr-1"></i> 小车库存</h2>
 
           <div class="glass rounded-2xl-apple p-3 flex flex-wrap gap-3 items-center">
             <div class="flex gap-1">
