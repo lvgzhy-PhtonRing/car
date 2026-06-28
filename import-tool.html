@@ -79,8 +79,12 @@ function parse() {
     else if (catRaw.includes('零花钱')) cat = 'allowance';
     else if (catRaw.includes('生活日常')) cat = 'daily';
     nameRaw = nameRaw.replace(/^卖(出)?/, '').replace(/\s*x\d+$/,'').trim();
-    const lastPart = parts[parts.length-1]||'';
-    const amt = Math.abs(parseFloat(lastPart.replace(/[+¥,]/g,'')))||0;
+    // 找金额：从后往前找到第一个看起来像数字的列
+    let amt = 0;
+    for (let j = parts.length - 1; j >= 0; j--) {
+      const v = parseFloat(parts[j].replace(/[+¥,\s]/g,''));
+      if (!isNaN(v)) { amt = Math.abs(v); break; }
+    }
     items.push({ day, date: year+'-'+month+'-'+day, type, category: cat, name: nameRaw, amount: amt, account: 'pocket', year, month, checked: false });
   });
 
