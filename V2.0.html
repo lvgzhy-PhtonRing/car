@@ -1198,7 +1198,8 @@
               <span style="color:#5b8c5a">▮ 收入</span>
               <span style="color:#7a9cc6">～ 平衡趋势</span>
             </div>
-            <svg class="chart-svg" viewBox="${(() => {
+            <svg class="chart-svg" viewBox="0 0 ${400} ${200}">
+              ${(() => {
   const n=monthly.length,W=400,H=200,L=36,R=4,T=16,B=22;
   const cW=W-L-R,cH=H-T-B;
   const maxV=Math.max(...monthly.map(m=>Math.max(m.expense,m.income)),300);
@@ -1206,7 +1207,7 @@
   const pts=monthly.map((m,i)=>({x:L+xS*(i+0.5),eH:(m.expense/niceM)*cH,iH:(m.income/niceM)*cH,n:m.income-m.expense,l:m.label}));
   const maxN=Math.max(...pts.map(p=>Math.abs(p.n)),1);
   const zY=T+cH/2,wA=cH/2-8;
-  let s=W+" "+H+">";
+  let s="";
   for(let v=0;v<=niceM;v+=100){let gy=T+cH-(v/niceM)*cH;
     s+="<line x1=\""+L+"\" y1=\""+gy+"\" x2=\""+(W-R)+"\" y2=\""+gy+"\" stroke=\"var(--c-border)\" stroke-width=\"0.5\"/>";
     s+="<text x=\""+(L-4)+"\" y=\""+(gy+3)+"\" text-anchor=\"end\" font-size=\"9\" fill=\"var(--c-text-tertiary)\">"+v+"</text>"}
@@ -1221,7 +1222,7 @@
   wPts.forEach((p,i)=>{s+="<text x=\""+p.x.toFixed(1)+"\" y=\""+(p.y-8)+"\" text-anchor=\"middle\" font-size=\"9\" font-weight=\"bold\" fill=\""+(pts[i].n>=0?"var(--c-keep)":"var(--c-invest)")+"\">"+(pts[i].n>=0?"+":"")+pts[i].n.toFixed(0)+"</text>"});
   pts.forEach(p=>{s+="<text x=\""+p.x.toFixed(1)+"\" y=\""+(H-4)+"\" text-anchor=\"middle\" font-size=\"10\" fill=\"var(--c-text-secondary)\">"+p.l+"</text>"});
   return s;
-})()}">
+})()}
             </svg>
 
 
