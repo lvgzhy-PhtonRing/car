@@ -848,8 +848,12 @@
 
       if (id) {
         const loan = invest.loans.find(l => l.id === id);
+        const amountDelta = amount - loan.amount;
         loan.name = name; loan.amount = amount; loan.startDate = startDate;
         loan.dueDate = dueDate; loan.note = note;
+        if (amountDelta !== 0) {
+          loan.remaining = Math.max(0, (loan.remaining || 0) + amountDelta);
+        }
       } else {
         const newLoan = {
           id: genId('loan'),
@@ -1315,7 +1319,7 @@
                   ${isOverdue ? '⚠ 已逾期 ' + Math.abs(daysLeft) + ' 天' : '到期: ' + loan.dueDate}
                 </div>
               </div>
-              <button onclick="openRepayLoanModal('${loan.id}')" class="btn-glass text-xs px-3 py-1.5 bg-sell/10 text-sell">归还</button>
+              <button onclick="openNewLoanModal('${loan.id}')" class="btn-glass text-xs px-1.5 py-0.5 text-gray-400 hover:text-accent rounded mr-1">编</button><button onclick="openRepayLoanModal('${loan.id}')" class="btn-glass text-xs px-3 py-1.5 bg-sell/10 text-sell">归还</button>
             </div>
           </div>`;
       }).join('');
