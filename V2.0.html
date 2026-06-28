@@ -1343,7 +1343,7 @@
                 <label class="block text-sm text-gray-600 mb-1">日期</label>
                 <input type="date" id="txnDate" onchange="onTxnDateChange()" value="${txn ? txn.date : getToday()}" class="w-full glass-input p-2.5 text-sm">
               </div>
-              ${isCarBuy || isCarSell ? '' : `
+              ${isCarBuy || isCarSell ? `
 
               <!-- === 小车属性（买小车/卖小车时显示） === -->
               <div id="carFields" class="hidden space-y-3 border-t border-dashed border-gray-200 pt-4 mt-2">
@@ -1417,7 +1417,7 @@
               <button onclick="saveTransaction()" class="px-4 py-2 bg-accent/85 text-white rounded-xl-apple hover:bg-accent/90 text-sm btn-glass">保存</button>
             </div>
           </div>
-        </div>`;
+        </div>` : ''}`;
       showModal(html);
 
       // 初始化
