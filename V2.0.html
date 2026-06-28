@@ -2001,14 +2001,15 @@
                     <span class="text-gray-400 text-sm" id="${groupId}_icon">▶</span>
                   </div>
                   <div id="${groupId}_body" class="accordion-body collapsed">
-                    <div class="p-3 space-y-2 border-t border-black/5">
+                    <div class="divide-y divide-black/5 border-t border-black/5">
                       ${cars.map(c => `
-                        <div class="flex justify-between items-center p-2 glass-light rounded-xl">
-                          <div class="text-xs">
-                            <span class="font-mono text-gray-400 mr-2">${c.sid.slice(0, 8)}</span>
-                            <span>${c.buyDate}</span>
-                            <span class="ml-2 font-semibold">${fmt(c.buyPrice)}</span>
-                            <span class="text-gray-400 ml-1">预期 ${fmt(c.expectedValue || c.buyPrice)}</span>
+                        <div class="flex items-center justify-between px-4 py-2.5 hover:bg-white/30 text-sm">
+                          <div class="flex items-center gap-4 flex-1 min-w-0">
+                            <span class="font-semibold text-xs truncate">${esc(c.brand || '?')}</span>
+                            <span class="text-gray-600 text-xs truncate">${esc(c.name)}</span>
+                            <span class="text-xs text-gray-400">${c.buyDate}</span>
+                            <span class="text-xs font-mono text-gray-500">${fmt(c.buyPrice)}</span>
+                            <span class="text-xs text-gray-400">预期 ${fmt(c.expectedValue || c.buyPrice)}</span>
                           </div>
                           <div class="flex gap-1">
                             <button onclick="sellCar('${c.sid}')" class="btn-sell text-xs">卖出</button>
