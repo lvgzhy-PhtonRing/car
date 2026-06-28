@@ -398,6 +398,12 @@
     <!-- Modal Container -->
     <div id="modalContainer"></div>
 
+    <!-- Expected Price Updater Floating Button -->
+    <button onclick="openExpectedUpdater()" class="stat-card fixed right-5 top-1/2 -translate-y-1/2 z-20 cursor-pointer hover:shadow-md transition-all text-center" title="预期价格更新">
+      <i data-lucide="diamond" class="w-6 h-6 text-accent"></i>
+      <div class="text-[10px] text-gray-400 mt-1">估值</div>
+    </button>
+
     <script>
     // ==================== 数据层 ====================
     let carAppData = getDefaultData();
@@ -468,6 +474,21 @@
       populateNameDatalist(brand, 'editCarNameList');
     }
 
+    // 预期价格历史
+    function appendExpectedHistory(car, value, date) {
+      if (!car.expectedHistory) car.expectedHistory = [];
+      car.expectedHistory.unshift({ date: date || getToday(), value: value || car.expectedValue || car.buyPrice });
+      car.expectedValue = car.expectedHistory[0].value;
+    }
+
+    function migrateExpectedHistory() {
+      carAppData.cars.forEach(car => {
+        if (!car.expectedHistory || car.expectedHistory.length === 0) {
+          car.expectedHistory = [{ date: car.buyDate || getToday(), value: car.expectedValue || car.buyPrice }];
+        }
+      });
+    }
+
     // 日期工具
     const getToday = () => new Date().toISOString().split('T')[0];
 
@@ -500,6 +521,7 @@
         try {
           carAppData = JSON.parse(raw);
           if (!carAppData.version) carAppData.version = '2.0.0';
+          migrateExpectedHistory();
           return true;
         } catch (e) {
           console.error('数据解析失败，使用默认数据', e);
@@ -1647,17 +1669,22 @@
           existingCar.name = carName;
           existingCar.buyDate = buyDate;
           existingCar.buyPrice = buyPrice;
-          existingCar.expectedValue = expectedValue;
           existingCar.note = carNote;
+          if (expectedValue !== existingCar.expectedValue) {
+            appendExpectedHistory(existingCar, expectedValue, date);
+          }
         } else {
           // 新建小车
-          carAppData.cars.push({
+          const newCar = {
             sid, brand, name: carName,
-            buyDate, buyPrice, expectedValue,
+            buyDate, buyPrice,
             category: carCat,
             sellPrice: null, soldDate: null,
-            isSold: false, note: carNote
-          });
+            isSold: false, note: carNote,
+            expectedHistory: [{ date: date, value: expectedValue }],
+            expectedValue
+          };
+          carAppData.cars.push(newCar);
         }
         carSid = sid;
       }
@@ -1824,7 +1851,10 @@
 
       car.brand = document.getElementById('editCarBrand').value.trim();
       car.name = document.getElementById('editCarName').value.trim();
-      car.expectedValue = parseFloat(document.getElementById('editCarExpected').value) || 0;
+      const newExpected = parseFloat(document.getElementById('editCarExpected').value) || 0;
+      if (newExpected !== car.expectedValue) {
+        appendExpectedHistory(car, newExpected, getToday());
+      }
       car.note = document.getElementById('editCarNote').value.trim();
 
       hideModal();
@@ -2058,6 +2088,157 @@
     function onInvSearch() {
       invSearchText = document.getElementById('invSearch') ? document.getElementById('invSearch').value.trim().toLowerCase() : '';
       renderCurrentModule();
+    }
+
+    // ==================== 预期价格更新器 ====================
+    function openExpectedUpdater() {
+      const unsoldCars = carAppData.cars.filter(c => !c.isSold);
+      if (unsoldCars.length === 0) {
+        alert('无未售小车可更新');
+        return;
+      }
+
+      const investCars = unsoldCars.filter(c => c.category === 'invest');
+      const keepCars = unsoldCars.filter(c => c.category === 'keep');
+
+      const carRow = (c) => `
+        <label class="flex items-center gap-3 px-4 py-2.5 hover:bg-white/30 text-sm cursor-pointer">
+          <input type="checkbox" value="${c.sid}" class="expected-check rounded">
+          <span class="text-xs ${c.category === 'invest' ? 'text-invest' : 'text-keep'} font-semibold w-8">${c.category === 'invest' ? '投资' : '自留'}</span>
+          <span class="font-medium truncate flex-1">${esc(c.brand || '?')} ${esc(c.name)}</span>
+          <span class="text-xs text-gray-500">预期 ${fmt(c.expectedValue || c.buyPrice)}</span>
+          ${c.expectedHistory && c.expectedHistory.length > 1 ? `<span class="text-[10px] text-gray-400">(${c.expectedHistory.length}次)</span>` : ''}
+        </label>`;
+
+      const html = `
+        <div id="expectedModal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-50">
+          <div class="glass-strong rounded-2xl-apple w-full max-w-lg max-h-[85vh] overflow-y-auto p-6">
+            <h3 class="font-bold text-lg mb-2"><i data-lucide="diamond" class="w-4 h-4 inline-block align-middle mr-1 text-accent"></i> 预期价格更新</h3>
+            <p class="text-xs text-gray-400 mb-4">选择要更新预期价格的小车（可多选）</p>
+
+            <div id="expectedStep1">
+              ${investCars.length > 0 ? `
+                <div class="text-xs text-invest font-semibold mb-2 mt-2">投资库 (${investCars.length} 辆)</div>
+                <div class="divide-y divide-black/5 glass rounded-xl-apple overflow-hidden mb-3">
+                  ${investCars.map(carRow).join('')}
+                </div>` : ''}
+              ${keepCars.length > 0 ? `
+                <div class="text-xs text-keep font-semibold mb-2 mt-2">自留库 (${keepCars.length} 辆)</div>
+                <div class="divide-y divide-black/5 glass rounded-xl-apple overflow-hidden mb-3">
+                  ${keepCars.map(carRow).join('')}
+                </div>` : ''}
+              <div class="flex justify-end gap-2 mt-4">
+                <button onclick="hideModal()" class="px-4 py-2 glass-light rounded-xl-apple hover:bg-white/60 text-sm btn-glass">取消</button>
+                <button onclick="startExpectedUpdate()" class="px-4 py-2 bg-accent/85 text-white rounded-xl-apple hover:bg-accent/90 text-sm btn-glass">开始更新</button>
+              </div>
+            </div>
+
+            <div id="expectedStep2" class="hidden"></div>
+          </div>
+        </div>`;
+      showModal(html);
+      initIcons();
+    }
+
+    function startExpectedUpdate() {
+      const checked = document.querySelectorAll('.expected-check:checked');
+      if (checked.length === 0) { alert('请至少选择一辆小车'); return; }
+
+      const sids = Array.from(checked).map(cb => cb.value);
+      window._expectedSids = sids;
+      window._expectedIdx = 0;
+      window._expectedChanges = {};
+      renderExpectedFill();
+    }
+
+    function renderExpectedFill() {
+      const sids = window._expectedSids;
+      const idx = window._expectedIdx;
+      if (idx >= sids.length) {
+        showExpectedSummary();
+        return;
+      }
+
+      const car = carAppData.cars.find(c => c.sid === sids[idx]);
+      if (!car) { window._expectedIdx++; renderExpectedFill(); return; }
+
+      const html = `
+        <div class="space-y-3">
+          <div class="text-xs text-gray-400">${idx + 1} / ${sids.length}</div>
+          <div class="glass rounded-xl-apple p-4 text-center">
+            <div class="text-sm font-semibold">${esc(car.brand || '?')} ${esc(car.name)}</div>
+            <div class="text-xs text-gray-400 mt-1">当前预期: ${fmt(car.expectedValue || car.buyPrice)}</div>
+            ${car.expectedHistory && car.expectedHistory.length > 1 ? `<div class="text-[10px] text-gray-400 mt-0.5">历史: ${car.expectedHistory.map(h => h.date + ' ' + fmt(h.value)).join(' → ')}</div>` : ''}
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600 mb-1">新预期价格</label>
+            <input type="number" id="expectedNewVal" step="0.01" value="${car.expectedValue || car.buyPrice}" class="w-full glass-input p-2.5 text-sm" autofocus onkeydown="if(event.key==='Enter')confirmExpectedFill()">
+          </div>
+          <div class="flex justify-between gap-2">
+            <button onclick="skipExpectedFill()" class="px-4 py-2 glass-light rounded-xl-apple hover:bg-white/60 text-sm btn-glass">跳过</button>
+            <button onclick="confirmExpectedFill()" class="px-4 py-2 bg-accent/85 text-white rounded-xl-apple hover:bg-accent/90 text-sm btn-glass">确认</button>
+          </div>
+        </div>`;
+      document.getElementById('expectedStep1').classList.add('hidden');
+      document.getElementById('expectedStep2').classList.remove('hidden');
+      document.getElementById('expectedStep2').innerHTML = html;
+      initIcons();
+    }
+
+    function confirmExpectedFill() {
+      const sids = window._expectedSids;
+      const idx = window._expectedIdx;
+      const car = carAppData.cars.find(c => c.sid === sids[idx]);
+      const newVal = parseFloat(document.getElementById('expectedNewVal').value);
+      if (!newVal || newVal <= 0) { alert('请输入有效价格'); return; }
+
+      window._expectedChanges[sids[idx]] = newVal;
+      window._expectedIdx++;
+      renderExpectedFill();
+    }
+
+    function skipExpectedFill() {
+      window._expectedIdx++;
+      renderExpectedFill();
+    }
+
+    function showExpectedSummary() {
+      const changes = window._expectedChanges;
+      const sids = Object.keys(changes);
+      if (sids.length === 0) { hideModal(); return; }
+
+      const rows = sids.map(sid => {
+        const car = carAppData.cars.find(c => c.sid === sid);
+        const newVal = changes[sid];
+        return `<div class="flex justify-between text-sm px-3 py-2">
+          <span>${esc(car.brand || '?')} ${esc(car.name)}</span>
+          <span class="text-gray-400">${fmt(car.expectedValue || car.buyPrice)} → <strong class="${newVal > car.expectedValue ? 'text-keep' : 'text-invest'}">${fmt(newVal)}</strong></span>
+        </div>`;
+      }).join('');
+
+      const html = `
+        <div class="space-y-3">
+          <div class="text-sm font-semibold">确认更新 ${sids.length} 辆小车</div>
+          <div class="divide-y divide-black/5 glass rounded-xl-apple overflow-hidden">
+            ${rows}
+          </div>
+          <div class="flex justify-end gap-2">
+            <button onclick="hideModal()" class="px-4 py-2 glass-light rounded-xl-apple hover:bg-white/60 text-sm btn-glass">取消</button>
+            <button onclick="saveExpectedChanges()" class="px-4 py-2 bg-accent/85 text-white rounded-xl-apple hover:bg-accent/90 text-sm btn-glass">确认保存</button>
+          </div>
+        </div>`;
+      document.getElementById('expectedStep2').innerHTML = html;
+    }
+
+    function saveExpectedChanges() {
+      const changes = window._expectedChanges;
+      const date = getToday();
+      Object.entries(changes).forEach(([sid, value]) => {
+        const car = carAppData.cars.find(c => c.sid === sid);
+        if (car) appendExpectedHistory(car, value, date);
+      });
+      hideModal();
+      saveData();
     }
 
     function renderCurrentModule() {
