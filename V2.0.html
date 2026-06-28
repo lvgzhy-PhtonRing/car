@@ -6,6 +6,7 @@
     <title>记账管理系统 v2.0.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="cloud-sync.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -381,6 +382,9 @@
             </div>
         </nav>
         <div class="sidebar-footer space-y-2">
+<div id="cloudStatus" class="text-xs px-3 py-1.5 text-gray-400 cursor-pointer" onclick="openCloudSettings()">
+  <span id="cloudIcon">☁️</span> <span id="cloudLabel">云端未配置</span>
+</div>
 <button onclick="exportData()" class="w-full text-xs px-3 py-1.5 text-gray-400 hover:text-gray-600 transition-colors text-left">导出 JSON</button>
             <label class="w-full text-xs px-3 py-1.5 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer text-left block">
                 <input type="file" class="hidden" accept=".json" onchange="importData(event)">
@@ -589,6 +593,7 @@
     function saveData() {
       localStorage.setItem('carAppData', JSON.stringify(carAppData));
       if (typeof renderCurrentModule === 'function') renderCurrentModule();
+      if (window.CarCloudSync) CarCloudSync.scheduleSync(() => carAppData);
     }
 
     // V1 → V2 数据迁移
@@ -3020,6 +3025,132 @@
       saveData();
     }
 
+    // ==================== 云同步 ====================
+    function updateCloudStatusUI() {
+      const config = CarCloudSync.loadConfig();
+      const session = CarCloudSync.loadSession();
+      const icon = document.getElementById('cloudIcon');
+      const label = document.getElementById('cloudLabel');
+      if (!config.enabled || !config.supabaseAnonKey) {
+        icon.textContent = '☁️';
+        label.textContent = '云端未配置';
+      } else if (!session.accessToken) {
+        icon.textContent = '🔒';
+        label.textContent = '未登录';
+      } else if (!CarCloudSync.isSessionValid(session)) {
+        icon.textContent = '⚠️';
+        label.textContent = '登录已过期';
+      } else {
+        icon.textContent = '✅';
+        label.textContent = session.user.email || '已连接';
+      }
+    }
+
+    function openCloudSettings() {
+      const config = CarCloudSync.loadConfig();
+      const session = CarCloudSync.loadSession();
+      const isLoggedIn = session.accessToken && CarCloudSync.isSessionValid(session);
+
+      const html = `
+        <div class="fixed inset-0 bg-black/30 flex items-center justify-center z-50" onclick="if(event.target===this)closeModal()">
+          <div class="glass-strong rounded-2xl p-6 w-[400px] max-h-[80vh] overflow-y-auto">
+            <h3 class="text-lg font-bold mb-4">☁️ 云端同步设置</h3>
+            <div class="space-y-3 text-sm">
+              <div>
+                <label class="block text-gray-600 mb-1">Supabase Anon Key</label>
+                <input id="cloudKey" type="password" class="w-full glass-input p-2" value="${config.supabaseAnonKey}" placeholder="eyJ...">
+              </div>
+              <div>
+                <label class="block text-gray-600 mb-1">数据 ID</label>
+                <input id="cloudStateId" type="text" class="w-full glass-input p-2" value="${config.stateId || 'main'}" placeholder="main">
+              </div>
+              <div class="flex items-center gap-2">
+                <input id="cloudEnabled" type="checkbox" ${config.enabled ? 'checked' : ''}>
+                <label for="cloudEnabled">启用云端同步</label>
+              </div>
+              <hr class="border-black/10">
+              ${isLoggedIn ? `
+                <div class="text-green-600">✅ 已登录: ${session.user.email}</div>
+                <button onclick="cloudLogout()" class="w-full btn-glass bg-red-50 text-red-600 py-2">退出登录</button>
+                <button onclick="cloudSyncNow()" class="w-full btn-glass bg-blue-50 text-blue-600 py-2">立即同步</button>
+                <button onclick="cloudLoadFromServer()" class="w-full btn-glass bg-green-50 text-green-600 py-2">从云端加载</button>
+              ` : `
+                <div>
+                  <label class="block text-gray-600 mb-1">邮箱</label>
+                  <input id="cloudEmail" type="email" class="w-full glass-input p-2" placeholder="user@example.com">
+                </div>
+                <div>
+                  <label class="block text-gray-600 mb-1">密码</label>
+                  <input id="cloudPassword" type="password" class="w-full glass-input p-2">
+                </div>
+                <button onclick="cloudLogin()" class="w-full btn-glass bg-accent text-white py-2">登录</button>
+              `}
+              <button onclick="saveCloudSettings()" class="w-full btn-glass bg-gray-100 py-2">保存配置</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.getElementById('modalContainer').innerHTML = html;
+    }
+
+    function saveCloudSettings() {
+      const config = CarCloudSync.loadConfig();
+      config.supabaseAnonKey = document.getElementById('cloudKey').value.trim();
+      config.stateId = document.getElementById('cloudStateId').value.trim() || 'main';
+      config.enabled = document.getElementById('cloudEnabled').checked;
+      CarCloudSync.saveConfig(config);
+      updateCloudStatusUI();
+      closeModal();
+    }
+
+    async function cloudLogin() {
+      const email = document.getElementById('cloudEmail').value.trim();
+      const password = document.getElementById('cloudPassword').value;
+      if (!email || !password) return alert('请填写邮箱和密码');
+      try {
+        const config = CarCloudSync.loadConfig();
+        const session = await CarCloudSync.signIn(config, email, password);
+        CarCloudSync.saveSession(session);
+        updateCloudStatusUI();
+        closeModal();
+        alert('登录成功！');
+      } catch (err) {
+        alert('登录失败: ' + err.message);
+      }
+    }
+
+    function cloudLogout() {
+      localStorage.removeItem('car_cloud_session');
+      updateCloudStatusUI();
+      closeModal();
+    }
+
+    async function cloudSyncNow() {
+      try {
+        await CarCloudSync.syncNow(() => carAppData);
+        alert('同步成功！');
+      } catch (err) {
+        alert('同步失败: ' + err.message);
+      }
+    }
+
+    async function cloudLoadFromServer() {
+      if (!confirm('从云端加载将覆盖本地数据，确定？')) return;
+      try {
+        const data = await CarCloudSync.loadFromCloud();
+        if (data) {
+          carAppData = data;
+          saveData();
+          renderCurrentModule();
+          alert('加载成功！');
+        } else {
+          alert('云端无数据');
+        }
+      } catch (err) {
+        alert('加载失败: ' + err.message);
+      }
+    }
+
     // ==================== 初始化 ====================
     window.onload = () => {
       loadData();
@@ -3033,6 +3164,22 @@
 
       document.getElementById('appVersion').innerText = 'v' + carAppData.version;
       renderCurrentModule();
+      updateCloudStatusUI();
+
+      // 关闭页面时自动同步
+      window.addEventListener('beforeunload', () => {
+        const config = CarCloudSync.loadConfig();
+        if (config.enabled && config.supabaseAnonKey) {
+          const session = CarCloudSync.loadSession();
+          if (session.accessToken && CarCloudSync.isSessionValid(session)) {
+            navigator.sendBeacon(`${config.supabaseUrl}/rest/v1/car_state`, JSON.stringify({
+              id: config.stateId,
+              payload: carAppData,
+              updated_at: new Date().toISOString(),
+            }));
+          }
+        }
+      });
     };
     </script>
 </body>
