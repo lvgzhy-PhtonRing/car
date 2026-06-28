@@ -434,11 +434,35 @@
     // 品牌列表
     const ALL_BRANDS = ['Hotwheels', 'MINIGT', 'TLV', 'Kyosho', 'Tomica', 'Matchbox', 'ARBOX', 'KingModel', 'Mortal', '其它'];
 
-    function renderBrandSelect(id, selected) {
-      return `<select id="${id}" class="w-full glass-input p-2 text-sm">
+    function renderBrandSelect(id, selected, onChange) {
+      const handler = onChange ? ` onchange="${onChange}"` : '';
+      return `<select id="${id}" class="w-full glass-input p-2 text-sm"${handler}>
         <option value="">选择品牌</option>
         ${ALL_BRANDS.map(b => `<option value="${b}" ${b === selected ? 'selected' : ''}>${b}</option>`).join('')}
       </select>`;
+    }
+
+    // 品牌→颜色/车型 强联想
+    function getBrandNames(brand) {
+      if (!brand) return [];
+      const names = new Set();
+      carAppData.cars.forEach(c => {
+        if (c.brand === brand && c.name) names.add(c.name);
+      });
+      return Array.from(names).sort();
+    }
+
+    function populateNameDatalist(brand, datalistId) {
+      const dl = document.getElementById(datalistId);
+      if (!dl) return;
+      const names = getBrandNames(brand);
+      dl.innerHTML = names.map(n => `<option value="${esc(n)}">`).join('');
+    }
+
+    function onCarBrandChange() {
+      const brand = document.getElementById('carBrand')?.value || document.getElementById('editCarBrand')?.value || '';
+      populateNameDatalist(brand, 'carNameList');
+      populateNameDatalist(brand, 'editCarNameList');
     }
 
     // 日期工具
@@ -1373,11 +1397,12 @@
                   <div class="grid grid-cols-2 gap-3">
                     <div>
                       <label class="block text-sm text-gray-600 mb-1">品牌</label>
-                      ${renderBrandSelect('carBrand', car ? car.brand : '')}
+                      ${renderBrandSelect('carBrand', car ? car.brand : '', 'onCarBrandChange()')}
                     </div>
                     <div>
-                      <label class="block text-sm text-gray-600 mb-1">名称 <span class="text-invest">*</span></label>
-                      <input type="text" id="carName" value="${esc(car ? car.name : '')}" placeholder="如：普卡F1" class="w-full glass-input p-2 text-sm">
+                      <label class="block text-sm text-gray-600 mb-1">颜色/车型 <span class="text-invest">*</span></label>
+                      <input type="text" id="carName" list="carNameList" value="${esc(car ? car.name : '')}" placeholder="如：红奔驰AMG瓦罐" class="w-full glass-input p-2 text-sm">
+                      <datalist id="carNameList"></datalist>
                     </div>
                   </div>
                   <div class="grid grid-cols-2 gap-3 mt-3">
@@ -1444,7 +1469,10 @@
         const carBuyFields = document.getElementById('carBuyFields');
         const carSellFields = document.getElementById('carSellFields');
         if (carFields) carFields.classList.remove('hidden');
-        if (isCarBuy && carBuyFields) carBuyFields.classList.remove('hidden');
+        if (isCarBuy && carBuyFields) {
+          carBuyFields.classList.remove('hidden');
+          onCarBrandChange();
+        }
         if (isCarSell && carSellFields) {
           carSellFields.classList.remove('hidden');
           populateSellCarDropdown();
@@ -1591,7 +1619,7 @@
 
       if (category === 'car_buy') {
         const carName = document.getElementById('carName').value.trim();
-        if (!carName) return alert('请填写小车名称');
+        if (!carName) return alert('请填写颜色/车型');
         const sid = document.getElementById('carSid').value;
         const brand = document.getElementById('carBrand').value.trim();
         const buyDate = document.getElementById('carBuyDate').value || date;
@@ -1711,11 +1739,12 @@
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block text-sm text-gray-600 mb-1">品牌</label>
-                  ${renderBrandSelect('editCarBrand', car.brand)}
+                  ${renderBrandSelect('editCarBrand', car.brand, 'onCarBrandChange()')}
                 </div>
                 <div>
-                  <label class="block text-sm text-gray-600 mb-1">名称</label>
-                  <input type="text" id="editCarName" value="${esc(car.name)}" class="w-full glass-input p-2 text-sm">
+                  <label class="block text-sm text-gray-600 mb-1">颜色/车型</label>
+                  <input type="text" id="editCarName" list="editCarNameList" value="${esc(car.name)}" class="w-full glass-input p-2 text-sm">
+                  <datalist id="editCarNameList"></datalist>
                 </div>
               </div>
               <div>
@@ -1741,6 +1770,7 @@
           </div>
         </div>`;
       showModal(html);
+      onCarBrandChange(); // 强联想：填充该品牌的颜色/车型建议
     }
 
     function saveCarEdit() {
