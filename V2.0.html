@@ -1701,9 +1701,31 @@
     }
 
     function deleteTransaction(accountId, txnId) {
-      if (!confirm('确定删除此交易记录吗？')) return;
       const account = carAppData.accounts[accountId];
-      account.transactions = account.transactions.filter(t => t.id !== txnId);
+      const txn = account.transactions.find(t => t.id === txnId);
+      if (!txn) return;
+
+      // 检查是否关联小车
+      const linkedCar = txn.carSid ? carAppData.cars.find(c => c.sid === txn.carSid) : null;
+      let msg = `确定删除此交易记录？\n\n  ${txn.date}  ${txn.category}  ${fmt(txn.amount)}`;
+      if (linkedCar) {
+        msg += `\n\n⚠ 此记录关联小车: ${esc(linkedCar.brand)} ${esc(linkedCar.name)}`;
+        msg += `\n   该小车及其其他关联收支也将被删除。`;
+      }
+
+      if (!confirm(msg)) return;
+
+      // 如果关联小车，删除小车及其全部关联交易
+      if (linkedCar) {
+        ['pocket', 'invest'].forEach(accId => {
+          carAppData.accounts[accId].transactions =
+            carAppData.accounts[accId].transactions.filter(t => t.carSid !== linkedCar.sid);
+        });
+        carAppData.cars = carAppData.cars.filter(c => c.sid !== linkedCar.sid);
+      } else {
+        account.transactions = account.transactions.filter(t => t.id !== txnId);
+      }
+
       saveData();
     }
 
