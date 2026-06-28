@@ -1433,11 +1433,11 @@
           populateSellCarDropdown();
         }
       } else {
-        // 普通交易：填充类别下拉
+        // 普通交易：填充类别下拉，默认取列表第一个
         let initType = 'expense';
-        let initCat = 'other';
-        if (presetType === 'income') { initType = 'income'; initCat = 'other'; }
-        else if (presetType === 'expense') { initType = 'expense'; initCat = 'other'; }
+        let initCat = accountId === 'pocket' ? 'daily' : 'other';
+        if (presetType === 'income') { initType = 'income'; initCat = accountId === 'pocket' ? 'allowance' : 'other'; }
+        else if (presetType === 'expense') { initType = 'expense'; initCat = accountId === 'pocket' ? 'daily' : 'other'; }
         else if (txn) { initType = txn.type; initCat = txn.category; }
         populateCategoryDropdown(initType, accountId, initCat);
       }
@@ -1536,13 +1536,11 @@
           { value: 'other', label: '其他' }
         ];
       }
-      // 投资：只买卖小车
+      // 投资：买车走「新车」按钮，卖车从车库，此处只留通用
       if (type === 'expense') return [
-        { value: 'car_buy', label: '买小车' },
         { value: 'other', label: '其他' }
       ];
       return [
-        { value: 'car_sell', label: '卖小车' },
         { value: 'other', label: '其他' }
       ];
     }
