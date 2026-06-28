@@ -1485,7 +1485,7 @@
               ${isCarBuy || isCarSell ? `
 
               <!-- === 小车属性（买小车/卖小车时显示） === -->
-              <div id="carFields" class="hidden space-y-3 border-t border-dashed border-gray-200 pt-4 mt-2">
+              <div id="carFields" class="space-y-3 border-t border-dashed border-gray-200 pt-4 mt-2" style="display:${isCarBuy || isCarSell ? 'block' : 'none'}">
                 <div class="flex items-center gap-2 text-sm font-semibold text-accent">
                   <i data-lucide="car" class="w-4 h-4"></i> 小车属性
                 </div>
@@ -1566,13 +1566,13 @@
         const carFields = document.getElementById('carFields');
         const carBuyFields = document.getElementById('carBuyFields');
         const carSellFields = document.getElementById('carSellFields');
-        if (carFields) carFields.classList.remove('hidden');
+        if (carFields) carFields.style.display = "block";
         if (isCarBuy && carBuyFields) {
-          carBuyFields.classList.remove('hidden');
+          carBuyFields.style.display = "block";
           onCarBrandChange();
         }
         if (isCarSell && carSellFields) {
-          carSellFields.classList.remove('hidden');
+          carSellFields.style.display = "block";
           populateSellCarDropdown();
         }
       } else {
@@ -1607,19 +1607,19 @@
       const carSellFields = document.getElementById('carSellFields');
 
       if (cat === 'car_buy') {
-        carFields.classList.remove('hidden');
-        carBuyFields.classList.remove('hidden');
+        carFields.style.display = "block";
+        carBuyFields.style.display = "block";
         carSellFields.classList.add('hidden');
         // 金额同步
         onTxnAmountChange();
         onTxnDateChange();
       } else if (cat === 'car_sell') {
-        carFields.classList.remove('hidden');
+        carFields.style.display = "block";
         carBuyFields.classList.add('hidden');
-        carSellFields.classList.remove('hidden');
+        carSellFields.style.display = "block";
         populateSellCarDropdown();
       } else {
-        carFields.classList.add('hidden');
+        carFields.style.display = "none";
       }
     }
 
