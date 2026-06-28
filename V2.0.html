@@ -1,0 +1,3078 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>记账管理系统 v2.0.1</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                fontFamily: {
+                    sans: ['system-ui', '-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', '"Helvetica Neue"', '"PingFang SC"', '"Microsoft YaHei"', 'sans-serif'],
+                },
+                extend: {
+                    // Tailwind semantic color tokens
+                    colors: {
+                        invest: '#c44b3d',
+                        keep: '#5b8c5a',
+                        sell: '#d4943a',
+                        allowance: '#7a9cc6',
+                        accent: '#4f6d7a',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* ===== Design System Tokens ===== */
+        :root {
+            --c-bg: #f5f0ea;
+            --c-surface: #ece5db;
+            --c-surface-glass: rgba(245, 240, 234, 0.62);
+            --c-surface-glass-strong: rgba(245, 240, 234, 0.78);
+            --c-surface-glass-light: rgba(245, 240, 234, 0.4);
+            --c-border: rgba(0,0,0,0.06);
+            --c-text-primary: #2c2420;
+            --c-text-secondary: #8c8279;
+            --c-text-tertiary: #b5aba0;
+            --c-invest: #c44b3d;
+            --c-invest-bg: rgba(196, 75, 61, 0.12);
+            --c-invest-border: rgba(196, 75, 61, 0.2);
+            --c-keep: #5b8c5a;
+            --c-keep-bg: rgba(91, 140, 90, 0.12);
+            --c-keep-border: rgba(91, 140, 90, 0.2);
+            --c-sell: #d4943a;
+            --c-sell-bg: rgba(212, 148, 58, 0.12);
+            --c-sell-border: rgba(212, 148, 58, 0.2);
+            --c-allowance: #7a9cc6;
+            --c-allowance-bg: rgba(122, 156, 198, 0.12);
+            --c-accent: #4f6d7a;
+            --c-accent-bg: rgba(79, 109, 122, 0.12);
+            --c-danger: #c44b3d;
+            --c-warning: #d4943a;
+            --c-success: #5b8c5a;
+        }
+
+        /* ===== Apple Glass Morphism Base ===== */
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+            font-size: 15.5px;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #f0ebe3 0%, #e8e0d4 25%, #e3dcd0 50%, #eae3d8 75%, #f2ede5 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+        /* 背景装饰光斑（暖调） */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -20%; left: -10%;
+            width: 60%; height: 60%;
+            background: radial-gradient(ellipse, rgba(212, 178, 140, 0.18) 0%, transparent 70%);
+            pointer-events: none; z-index: 0;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -15%; right: -10%;
+            width: 55%; height: 55%;
+            background: radial-gradient(ellipse, rgba(196, 167, 180, 0.12) 0%, transparent 70%);
+            pointer-events: none; z-index: 0;
+        }
+
+        /* ===== Glass Panel (暖白色基) ===== */
+        .glass {
+            background: var(--c-surface-glass);
+            backdrop-filter: blur(20px) saturate(140%);
+            -webkit-backdrop-filter: blur(20px) saturate(140%);
+            border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.06);
+        }
+        .glass-strong {
+            background: var(--c-surface-glass-strong);
+            backdrop-filter: blur(24px) saturate(160%);
+            -webkit-backdrop-filter: blur(24px) saturate(160%);
+            border: 1px solid rgba(255,255,255,0.6);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03), 0 12px 32px rgba(0,0,0,0.07);
+        }
+        .glass-light {
+            background: var(--c-surface-glass-light);
+            backdrop-filter: blur(12px) saturate(120%);
+            -webkit-backdrop-filter: blur(12px) saturate(120%);
+            border: 1px solid rgba(255,255,255,0.4);
+        }
+        .glass-header {
+            background: rgba(255,255,255,0.55);
+            backdrop-filter: blur(10px) saturate(130%);
+            -webkit-backdrop-filter: blur(10px) saturate(130%);
+            border-bottom: 1px solid var(--c-border);
+        }
+        .glass-input {
+            background: rgba(255,255,255,0.5);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+        .glass-input:focus {
+            background: rgba(255,255,255,0.75);
+            border-color: var(--c-accent);
+            box-shadow: 0 0 0 3px var(--c-accent-bg);
+            outline: none;
+        }
+        .glass-input::placeholder { color: var(--c-text-tertiary); }
+
+        /* ===== Rounded Corners ===== */
+        .rounded-xl-apple { border-radius: 14px; }
+        .rounded-2xl-apple { border-radius: 18px; }
+
+        /* ===== Buttons ===== */
+        .btn-glass {
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 12px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+        }
+        .btn-glass:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .btn-glass:active { transform: translateY(0); }
+
+        /* ===== Semantic Text Colors ===== */
+        .text-positive { color: var(--c-invest); }
+        .text-negative { color: var(--c-keep); }
+
+        /* ===== Category Colors ===== */
+        .text-invest { color: var(--c-invest); }
+        .text-keep { color: var(--c-keep); }
+        .text-transfer { color: var(--c-sell); }
+        .badge-invest {
+            background: var(--c-invest-bg); color: var(--c-invest);
+            border: 1px solid var(--c-invest-border); border-radius: 8px;
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+        }
+        .badge-keep {
+            background: var(--c-keep-bg); color: var(--c-keep);
+            border: 1px solid var(--c-keep-border); border-radius: 8px;
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+        }
+        .badge-transfer {
+            background: var(--c-sell-bg); color: var(--c-sell);
+            border: 1px solid var(--c-sell-border); border-radius: 8px;
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+        }
+
+        /* ===== Brand Dropdown ===== */
+        .brand-wrap { position: relative; }
+        .brand-dropdown {
+            position: absolute; top: 100%; left: 0; right: 0;
+            max-height: 200px; overflow-y: auto;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--c-border); border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            z-index: 20; display: none; list-style: none; padding: 4px; margin: 4px 0;
+        }
+        .brand-dropdown.show { display: block; }
+        .brand-dropdown li {
+            padding: 8px 12px; cursor: pointer; font-size: 14px;
+            border-radius: 8px; transition: background 0.15s;
+        }
+        .brand-dropdown li:hover { background: var(--c-accent-bg); }
+
+        /* ===== Search ===== */
+        mark.search-hit { background-color: rgba(212, 148, 58, 0.25); padding: 0 2px; border-radius: 3px; }
+
+        /* ===== View Tabs ===== */
+        .view-tab {
+            padding: 10px 20px; font-size: 14px; font-weight: 500;
+            border-bottom: 2px solid transparent; cursor: pointer;
+            color: var(--c-text-secondary); transition: all 0.2s ease;
+            background: none; border-radius: 0;
+        }
+        .view-tab.active { color: var(--c-accent); border-bottom-color: var(--c-accent); }
+        .view-tab:hover:not(.active) { color: var(--c-text-primary); border-bottom-color: rgba(0,0,0,0.1); }
+
+        /* ===== Convert Buttons ===== */
+        .btn-convert {
+            font-size: 12px; padding: 3px 10px; border-radius: 10px;
+            cursor: pointer; border: 1px solid; transition: all 0.2s ease;
+            white-space: nowrap; backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+        .btn-convert:hover { transform: translateY(-1px); }
+        .btn-to-keep { color: var(--c-keep); border-color: var(--c-keep-border); background: var(--c-keep-bg); }
+        .btn-to-keep:hover { background: rgba(91, 140, 90, 0.18); box-shadow: 0 2px 8px rgba(91, 140, 90, 0.12); }
+        .btn-to-invest { color: var(--c-invest); border-color: var(--c-invest-border); background: var(--c-invest-bg); }
+        .btn-to-invest:hover { background: rgba(196, 75, 61, 0.18); box-shadow: 0 2px 8px rgba(196, 75, 61, 0.12); }
+        .btn-sell {
+            font-size: 12px; padding: 3px 12px; border-radius: 10px;
+            cursor: pointer; border: 1px solid var(--c-sell-border);
+            background: var(--c-sell-bg); color: var(--c-sell);
+            font-weight: 500; white-space: nowrap;
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+            transition: all 0.2s ease;
+        }
+        .btn-sell:hover { background: rgba(212, 148, 58, 0.18); transform: translateY(-1px); box-shadow: 0 2px 8px rgba(212, 148, 58, 0.15); }
+	.btn-detail {
+	    color: var(--c-accent); border: 1px solid var(--c-accent);
+	    background: transparent; border-radius: 6px; padding: 2px 8px;
+	    font-weight: 600; transition: all 0.15s ease; cursor: pointer;
+	}
+	.btn-detail:hover { background: rgba(37, 99, 235, 0.1); transform: translateY(-1px); }
+
+        /* ===== Category View ===== */
+        .category-section { margin-bottom: 28px; }
+        .category-header {
+            font-size: 17px; font-weight: 700; padding: 12px 20px;
+            border-radius: 16px 16px 0 0; display: flex;
+            justify-content: space-between; align-items: center;
+        }
+        .category-header.invest {
+            background: var(--c-invest-bg); color: var(--c-invest);
+            border: 1px solid var(--c-invest-border); border-bottom: none;
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        }
+        .category-header.keep {
+            background: var(--c-keep-bg); color: var(--c-keep);
+            border: 1px solid var(--c-keep-border); border-bottom: none;
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        }
+        .category-header.transfer {
+            background: var(--c-sell-bg); color: var(--c-sell);
+            border: 1px solid var(--c-sell-border); border-bottom: none;
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        }
+        .category-body {
+            border: 1px solid rgba(0,0,0,0.04); border-top: none;
+            border-radius: 0 0 16px 16px; padding: 0;
+            background: rgba(255,255,255,0.4);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        }
+
+        /* ===== Table ===== */
+        table thead tr { background: rgba(0,0,0,0.02); }
+        table tbody tr:hover { background: rgba(255,255,255,0.5); }
+
+        /* ===== Modal Backdrop ===== */
+        .modal-backdrop {
+            background: rgba(0,0,0,0.25);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+
+        /* ===== V2 Sidebar ===== */
+        .sidebar {
+            width: 200px; min-height: 100vh;
+            background: rgba(255,255,255,0.55);
+            backdrop-filter: blur(20px) saturate(140%);
+            -webkit-backdrop-filter: blur(20px) saturate(140%);
+            border-right: 1px solid var(--c-border);
+            position: fixed; left: 0; top: 0; z-index: 30;
+            display: flex; flex-direction: column;
+        }
+        .sidebar-nav { flex: 1; padding: 20px 12px; }
+        .sidebar-nav-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 12px; margin-bottom: 4px;
+            border-radius: 12px; font-size: 14px; font-weight: 500;
+            color: var(--c-text-secondary); cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .sidebar-nav-item:hover { background: rgba(0,0,0,0.04); color: var(--c-text-primary); }
+        .sidebar-nav-item.active {
+            background: var(--c-accent-bg); color: var(--c-accent);
+            font-weight: 600;
+        }
+        .sidebar-footer { padding: 12px; border-top: 1px solid var(--c-border); }
+        .main-content { margin-left: 200px; min-height: 100vh; }
+        .module-panel { display: none; }
+        .module-panel.active { display: block; }
+
+        /* ===== Dashboard Cards ===== */
+        .stat-card {
+            background: var(--c-surface-glass);
+            backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255,255,255,0.5);
+            border-radius: 18px; padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 8px 24px rgba(0,0,0,0.05);
+        }
+        .stat-card .stat-label { font-size: 12px; color: var(--c-text-secondary); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-card .stat-value { font-size: 24px; font-weight: 700; margin-top: 4px; }
+        .stat-card .stat-sub { font-size: 12px; color: var(--c-text-secondary); margin-top: 2px; }
+
+        /* ===== Loan Card ===== */
+        .loan-card {
+            background: rgba(255,255,255,0.55);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--c-border); border-radius: 14px;
+            padding: 14px; transition: all 0.2s ease;
+        }
+        .loan-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+        .loan-card.overdue { border-left: 3px solid var(--c-danger); }
+        .loan-card.due-soon { border-left: 3px solid var(--c-warning); }
+
+        /* ===== Car Card ===== */
+        .car-card {
+            background: rgba(255,255,255,0.55);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--c-border); border-radius: 14px;
+            padding: 14px; transition: all 0.2s ease;
+        }
+        .car-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+        .car-card.sold { opacity: 0.6; }
+
+        /* ===== Bar Chart (Vertical + Wave) ===== */
+        .chart-wrap { position: relative; height: 160px; display: flex; align-items: flex-end; justify-content: space-around; padding: 0 8px; }
+        .chart-bar-group { display: flex; flex-direction: column; align-items: center; gap: 2px; flex: 1; }
+        .chart-bar-pair { display: flex; gap: 3px; align-items: flex-end; height: 120px; }
+        .chart-bar-exp { width: 14px; border-radius: 3px 3px 0 0; background: var(--c-invest); opacity: 0.6; transition: height 0.4s; }
+        .chart-bar-inc { width: 14px; border-radius: 3px 3px 0 0; background: var(--c-keep); opacity: 0.6; transition: height 0.4s; }
+        .chart-bar-label { font-size: 10px; color: var(--c-text-secondary); margin-top: 2px; }
+        .chart-val { font-size: 9px; font-weight: 600; }
+        .chart-wave { position: absolute; top: 0; left: 0; width: 100%; height: 140px; pointer-events: none; }
+
+        /* ===== Accordion ===== */
+        .accordion-toggle { cursor: pointer; user-select: none; }
+        .accordion-body { overflow: hidden; transition: max-height 0.3s ease; }
+        .accordion-body.collapsed { max-height: 0; }
+        .accordion-body.expanded { max-height: 2000px; }
+
+        /* ===== Transaction type badges ===== */
+        .badge-income { background: var(--c-keep-bg); color: var(--c-keep); border-radius: 8px; padding: 2px 8px; font-size: 11px; }
+        .badge-expense { background: var(--c-invest-bg); color: var(--c-invest); border-radius: 8px; padding: 2px 8px; font-size: 11px; }
+
+        /* ===== Modal ===== */
+        .modal-backdrop {
+            background: rgba(0,0,0,0.25);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+    </style>
+</head>
+<body class="text-gray-800 antialiased min-h-screen relative z-10">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="px-4 py-5 border-b border-black/5">
+            <h1 class="text-lg font-bold flex items-center gap-2">
+                <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                记账管理
+            </h1>
+            <div class="text-[10px] text-gray-400 mt-1" id="appVersion">v2.0.1</div>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="sidebar-nav-item active" data-module="dashboard" onclick="switchModule('dashboard')">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Payton's 数据
+            </div>
+            <div class="sidebar-nav-item" data-module="daily" onclick="switchModule('daily')">
+                <i data-lucide="wallet" class="w-5 h-5"></i> 日常消费
+            </div>
+            <div class="sidebar-nav-item" data-module="invest" onclick="switchModule('invest')">
+                <i data-lucide="trending-up" class="w-5 h-5"></i> 投资小车
+            </div>
+            <div class="sidebar-nav-item" data-module="inventory" onclick="switchModule('inventory')">
+                <i data-lucide="warehouse" class="w-5 h-5"></i> 小车库存
+            </div>
+        </nav>
+        <div class="sidebar-footer space-y-2">
+<button onclick="exportData()" class="w-full text-xs px-3 py-1.5 text-gray-400 hover:text-gray-600 transition-colors text-left">导出 JSON</button>
+            <label class="w-full text-xs px-3 py-1.5 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer text-left block">
+                <input type="file" class="hidden" accept=".json" onchange="importData(event)">
+                导入 JSON
+            </label>
+<button onclick="toggleLogPanel()" class="w-full text-xs px-3 py-1.5 text-gray-400 hover:text-gray-600 transition-colors text-left">操作日志</button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content p-6">
+        <div id="moduleDashboard" class="module-panel active"></div>
+        <div id="moduleDaily" class="module-panel"></div>
+        <div id="moduleInvest" class="module-panel"></div>
+        <div id="moduleInventory" class="module-panel"></div>
+    </main>
+
+    <!-- Modal Container -->
+    <div id="modalContainer"></div>
+
+    <!-- Operation Log Drawer -->
+    <div id="logDrawer" class="fixed right-0 top-0 h-full w-[380px] glass-strong shadow-2xl z-40 flex flex-col translate-x-full transition-transform duration-300">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-black/5">
+        <h3 class="font-bold text-base">📋 操作日志</h3>
+        <div class="flex gap-2">
+          <button onclick="clearOperationLogs()" class="text-xs px-2 py-1 text-gray-400 hover:text-invest transition-colors">清空</button>
+          <button onclick="toggleLogPanel()" class="text-gray-400 hover:text-gray-700 text-lg leading-none">&times;</button>
+        </div>
+      </div>
+      <div id="logList" class="flex-1 overflow-y-auto p-4 space-y-2"></div>
+    </div>
+
+    <!-- Expected Price Updater Floating Button -->
+    <button id="expectedBtn" onclick="openExpectedUpdater()" class="stat-card fixed right-5 top-1/2 -translate-y-1/2 z-20 cursor-pointer hover:shadow-md transition-all text-center" title="预期价格更新">
+      <i data-lucide="diamond" class="w-6 h-6 text-accent"></i>
+      <div class="text-[10px] text-gray-400 mt-1">估值</div>
+    </button>
+
+    <script>
+    // ==================== 数据层 ====================
+    let carAppData = getDefaultData();
+
+    // 默认空数据结构
+    function getDefaultData() {
+      return {
+        version: '2.0.1',
+        accounts: {
+          pocket: {
+            id: 'pocket', name: '零花钱账户', monthlyAllowance: 200, allowanceDay: 1,
+            transactions: [], loans: []
+          },
+          invest: {
+            id: 'invest', name: '投资账户', monthlyAllowance: null, allowanceDay: null,
+            transactions: [], loans: []
+          }
+        },
+        cars: [],
+        transferPairs: []
+      };
+    }
+
+    // ID 生成
+    function genId(prefix) {
+      return prefix + '_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    }
+
+    // UUID 生成 (v4)
+    function genUUID() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = Math.random() * 16 | 0;
+        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+      });
+    }
+
+    // 品牌列表
+    const ALL_BRANDS = ['Hotwheels', 'MINIGT', 'TLV', 'Kyosho', 'Tomica', 'Matchbox', 'ARBOX', 'KingModel', 'Mortal', '其它'];
+    const HW_SUBCATS = ['', 'RLC', '文化', '超宝', '普卡', '礼盒'];
+    const HW_SUBCAT_LABEL = { 'RLC':'RLC', '文化':'文化', '超宝':'超宝', '普卡':'普卡', '礼盒':'礼盒' };
+    // Hotwheels子类别排序顺序
+    const HW_SUBCAT_ORDER = ['超宝', 'RLC', '礼盒', '文化', '普卡'];
+
+    function renderBrandSelect(id, selected, onChange) {
+      const handler = onChange ? ` onchange="${onChange}"` : '';
+      return `<select id="${id}" class="w-full glass-input p-2 text-sm"${handler}>
+        <option value="">选择品牌</option>
+        ${ALL_BRANDS.map(b => `<option value="${b}" ${b === selected ? 'selected' : ''}>${b}</option>`).join('')}
+      </select>`;
+    }
+
+    // 品牌→颜色/车型 强联想
+    function getBrandNames(brand) {
+      if (!brand) return [];
+      const names = new Set();
+      carAppData.cars.forEach(c => {
+        if (c.brand === brand && c.name) names.add(c.name);
+      });
+      return Array.from(names).sort();
+    }
+
+    function populateNameDatalist(brand, datalistId) {
+      const dl = document.getElementById(datalistId);
+      if (!dl) return;
+      const names = getBrandNames(brand);
+      dl.innerHTML = names.map(n => `<option value="${esc(n)}">`).join('');
+    }
+
+    function onCarBrandChange() {
+      const brand = document.getElementById('carBrand')?.value || document.getElementById('editCarBrand')?.value || '';
+      populateNameDatalist(brand, 'carNameList');
+      populateNameDatalist(brand, 'editCarNameList');
+    }
+
+    // ==================== 操作日志 ====================
+    function addOperationLog(type, message, detail) {
+      if (!carAppData.operationLogs) carAppData.operationLogs = [];
+      carAppData.operationLogs.unshift({
+        id: Date.now() + Math.floor(Math.random() * 1000),
+        time: new Date().toISOString(),
+        type, message, detail: detail || {}
+      });
+      if (carAppData.operationLogs.length > 200) carAppData.operationLogs.length = 200;
+    }
+
+    const LOG_COLORS = {
+      car_buy: 'badge-keep', car_sell: 'badge-transfer', car_edit: 'bg-blue-100 text-blue-700',
+      car_delete: 'badge-invest', car_convert: 'bg-purple-100 text-purple-700',
+      txn_add: 'badge-keep', txn_edit: 'bg-blue-100 text-blue-700', txn_delete: 'badge-invest',
+      loan_new: 'bg-orange-100 text-orange-700', loan_repay: 'bg-orange-100 text-orange-700', loan_edit: 'bg-blue-100 text-blue-700',
+      transfer: 'bg-purple-100 text-purple-700', allowance: 'badge-income',
+      expected_update: 'bg-blue-100 text-blue-700', import: 'bg-gray-100 text-gray-600', export: 'bg-gray-100 text-gray-600'
+    };
+    const LOG_LABELS = {
+      car_buy: '买车', car_sell: '卖出', car_edit: '编辑', car_delete: '删除', car_convert: '转库',
+      txn_add: '新增', txn_edit: '编辑', txn_delete: '删除',
+      loan_new: '贷款', loan_repay: '归还', loan_edit: '编辑',
+      transfer: '互转', allowance: '零花钱', expected_update: '更新', import: '导入', export: '导出'
+    };
+
+    // 预期价格历史
+    function appendExpectedHistory(car, value, date) {
+      if (!car.expectedHistory) car.expectedHistory = [];
+      car.expectedHistory.unshift({ date: date || getToday(), value: value || car.expectedValue || car.buyPrice });
+      car.expectedValue = car.expectedHistory[0].value;
+    }
+
+    function migrateExpectedHistory() {
+      carAppData.cars.forEach(car => {
+        if (!car.expectedHistory || car.expectedHistory.length === 0) {
+          car.expectedHistory = [{ date: car.buyDate || getToday(), value: car.expectedValue || car.buyPrice }];
+        }
+      });
+    }
+
+    // 日期工具
+    const getToday = () => new Date().toISOString().split('T')[0];
+
+    // 账户余额计算
+    function calcBalance(account) {
+      return account.transactions.reduce((sum, t) => {
+        return sum + (t.type === 'income' ? t.amount : -t.amount);
+      }, 0);
+    }
+
+    // HTML 转义
+    function esc(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>'"]/g, tag => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+      }[tag] || tag));
+    }
+
+    // 金额格式化
+    function fmt(amount) {
+      const n = parseFloat(amount) || 0;
+      const sign = n >= 0 ? '' : '-';
+      return sign + '¥' + Math.abs(n).toFixed(2);
+    }
+
+    // 加载数据（含迁移检测）
+    function loadData() {
+      const raw = localStorage.getItem('carAppData');
+      if (raw) {
+        try {
+          carAppData = JSON.parse(raw);
+          if (!carAppData.version) carAppData.version = '2.0.1';
+          migrateExpectedHistory();
+          return true;
+        } catch (e) {
+          console.error('数据解析失败，使用默认数据', e);
+        }
+      }
+      // 检查旧格式
+      const oldData = localStorage.getItem('accountingData');
+      if (oldData) {
+        try {
+          const parsed = JSON.parse(oldData);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            carAppData = migrateV1toV2(parsed);
+            saveData();
+            return true;
+          }
+        } catch (e) { console.error('旧数据迁移失败', e); }
+      }
+      carAppData = getDefaultData();
+      return false;
+    }
+
+    function saveData() {
+      localStorage.setItem('carAppData', JSON.stringify(carAppData));
+      if (typeof renderCurrentModule === 'function') renderCurrentModule();
+    }
+
+    // V1 → V2 数据迁移
+    function migrateV1toV2(oldAppData) {
+      const data = getDefaultData();
+
+      oldAppData.forEach(group => {
+        group.bills.forEach(bill => {
+          // 解析 bill name: [收入/支出][类别] 描述
+          const nameMatch = bill.name.match(/^\[(收入|支出)\]\[(.+?)\]\s*(.+)/);
+          const direction = nameMatch ? nameMatch[1] : null;
+          const categoryRaw = nameMatch ? nameMatch[2] : '';
+          const carName = nameMatch ? nameMatch[3] : bill.name;
+
+          let targetAccount = data.accounts.pocket;
+          let txnType = 'expense';
+          let txnCategory = 'other';
+          let carCategory = 'keep';
+
+          if (direction === '收入') {
+            txnType = 'income';
+          }
+
+          // 分类映射
+          if (categoryRaw.includes('零花钱')) {
+            txnCategory = 'allowance';
+          } else if (categoryRaw.includes('卖小车')) {
+            txnCategory = 'car_sell';
+          } else if (categoryRaw.includes('买小车')) {
+            txnCategory = 'car_buy';
+          } else {
+            txnCategory = 'other';
+          }
+
+          // 提取品牌（从旧 brand 字段）
+          const brand = bill.brand || '';
+
+          // 投资/自留判断
+          if (bill.type === '投资') {
+            carCategory = 'invest';
+            targetAccount = data.accounts.invest;
+          } else if (bill.type === '自留') {
+            carCategory = 'keep';
+            targetAccount = data.accounts.pocket;
+          } else if (bill.type === '转账') {
+            targetAccount = data.accounts.pocket;
+          }
+
+          // 小车买入 → 创建 Car + Transaction
+          if (txnCategory === 'car_buy') {
+            const sid = genUUID();
+            const car = {
+              sid: sid,
+              brand: brand,
+              name: carName,
+              buyDate: bill.date,
+              buyPrice: bill.price || bill.amount || 0,
+              expectedValue: bill.expectedValue || bill.price || 0,
+              category: carCategory,
+              sellPrice: null,
+              soldDate: null,
+              isSold: bill.isSold || false,
+              note: ''
+            };
+            data.cars.push(car);
+
+            const txn = {
+              id: genId('txn'),
+              type: 'expense',
+              category: 'car_buy',
+              amount: bill.price || bill.amount || 0,
+              date: bill.date,
+              carSid: sid,
+              loanId: null,
+              transferPairId: null,
+              note: carName
+            };
+            targetAccount.transactions.push(txn);
+          }
+
+          // 小车卖出
+          else if (txnCategory === 'car_sell') {
+            const sellName = carName.replace(/^卖/, '').replace(/ x\d+$/, '');
+            const existingCar = data.cars.find(c =>
+              c.name === sellName && !c.isSold
+            );
+            if (existingCar) {
+              existingCar.isSold = true;
+              existingCar.sellPrice = bill.amount || bill.sellPrice || 0;
+              existingCar.soldDate = bill.date;
+            }
+
+            const txn = {
+              id: genId('txn'),
+              type: 'income',
+              category: 'car_sell',
+              amount: bill.amount || bill.sellPrice || 0,
+              date: bill.date,
+              carSid: existingCar ? existingCar.sid : null,
+              loanId: null,
+              transferPairId: null,
+              note: carName
+            };
+            const targetAcct = existingCar && existingCar.category === 'invest'
+              ? data.accounts.invest : data.accounts.pocket;
+            targetAcct.transactions.push(txn);
+          }
+
+          // 零花钱
+          else if (txnCategory === 'allowance') {
+            const txn = {
+              id: genId('txn'),
+              type: 'income',
+              category: 'allowance',
+              amount: bill.amount || 0,
+              date: bill.date,
+              carSid: null, loanId: null, transferPairId: null,
+              note: carName
+            };
+            data.accounts.pocket.transactions.push(txn);
+          }
+
+          // 其它（生活消费等）
+          else {
+            const txn = {
+              id: genId('txn'),
+              type: txnType,
+              category: 'other',
+              amount: bill.amount || 0,
+              date: bill.date,
+              carSid: null, loanId: null, transferPairId: null,
+              note: carName
+            };
+            targetAccount.transactions.push(txn);
+          }
+        });
+      });
+
+      return data;
+    }
+
+    // 导出
+    function exportData() {
+      try {
+        const jsonStr = JSON.stringify(carAppData, null, 2);
+        const blob = new Blob(['\ufeff' + jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'car_backup_' + getToday() + '.json';
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        // 延后移除DOM元素，确保浏览器完成下载启动
+        setTimeout(() => {
+          document.body.removeChild(a);
+        }, 5000);
+        addOperationLog('export', '导出JSON ' + carAppData.cars.length + '车·' + (carAppData.accounts.pocket.transactions.length + carAppData.accounts.invest.transactions.length) + '笔', {});
+      } catch (e) {
+        alert('导出失败: ' + e.message);
+      }
+    }
+
+    // 导入
+    function importData(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const parsed = JSON.parse(ev.target.result);
+          if (parsed.version && parsed.accounts && parsed.cars && confirm('导入将覆盖当前所有数据，确认继续？')) {
+            carAppData = parsed;
+            addOperationLog('import', '导入JSON ' + parsed.cars.length + '车·' + (parsed.accounts.pocket.transactions.length + parsed.accounts.invest.transactions.length) + '笔', {});
+            saveData();
+            alert('导入成功！');
+          } else {
+            alert('无效的 v2.0 数据格式');
+          }
+        } catch (err) { alert('JSON 解析失败: ' + err.message); }
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    }
+
+    // ==================== 模块路由 ====================
+    let currentModule = 'dashboard';
+
+    function switchModule(moduleName) {
+      currentModule = moduleName;
+
+      // 更新侧边栏 active 状态
+      document.querySelectorAll('.sidebar-nav-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.module === moduleName);
+      });
+
+      // 切换主内容区
+      document.querySelectorAll('.module-panel').forEach(el => {
+        el.classList.toggle('active', el.id === 'module' + moduleName.charAt(0).toUpperCase() + moduleName.slice(1));
+      });
+
+      // 估值按钮：面板1不显示，面板2/3/4各自显示
+      const btn = document.getElementById('expectedBtn');
+      if (btn) btn.style.display = moduleName === 'dashboard' ? 'none' : '';
+
+      renderCurrentModule();
+    }
+
+    // ==================== Dashboard ====================
+    function getDashboardStats() {
+      const pocket = carAppData.accounts.pocket;
+      const invest = carAppData.accounts.invest;
+      const allCars = carAppData.cars;
+
+      const pocketBalance = calcBalance(pocket);
+      const investBalance = calcBalance(invest);
+
+      const investCars = allCars.filter(c => c.category === 'invest' && !c.isSold);
+      const investTotal = investCars.reduce((s, c) => s + c.buyPrice, 0);
+      const investCount = investCars.length;
+      const expectedTotal = investCars.reduce((s, c) => s + (c.expectedValue || c.buyPrice), 0);
+
+      return { pocketBalance, investBalance, investTotal, investCount, expectedTotal, unsoldCount: investCount };
+    }
+
+    function getActiveLoans() {
+      return carAppData.accounts.invest.loans
+        .filter(l => l.status === 'active' || l.status === 'overdue')
+        .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
+    }
+
+    function getMonthlySpending() {
+      const now = new Date();
+      const months = [];
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        months.push({
+          label: (d.getMonth() + 1) + '月',
+          key: d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
+        });
+      }
+
+      return months.map(m => {
+        const txns = carAppData.accounts.pocket.transactions.filter(t => {
+          return t.date.startsWith(m.key + '-') || t.date.startsWith(m.key);
+        });
+        const income = txns.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+        const expense = txns.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+        return { label: m.label, key: m.key, income, expense };
+      });
+    }
+
+    // ==================== Dashboard 操作 ====================
+    function openNewLoanModal(loanId) {
+      let loan = null;
+      if (loanId) {
+        loan = carAppData.accounts.invest.loans.find(l => l.id === loanId);
+      }
+
+      const html = `
+        <div id="loanModal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-50">
+          <div class="glass-strong rounded-2xl-apple w-full max-w-sm p-6">
+            <h3 class="font-bold text-lg mb-4">${loan ? '编辑贷款' : '新增贷款'}</h3>
+            <div class="space-y-3">
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">贷款名称</label>
+                <input type="text" id="loanName" value="${esc(loan ? loan.name : '')}" placeholder="如：老爸借款" class="w-full glass-input p-2.5 text-sm">
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">贷款总额</label>
+                <input type="number" id="loanAmount" value="${loan ? loan.amount : ''}" step="0.01" class="w-full glass-input p-2.5 text-sm">
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1">借款日期</label>
+                  <input type="date" id="loanStartDate" value="${loan ? loan.startDate : getToday()}" class="w-full glass-input p-2.5 text-sm">
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1">到期日期</label>
+                  <input type="date" id="loanDueDate" value="${loan ? loan.dueDate : ''}" class="w-full glass-input p-2.5 text-sm">
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">备注</label>
+                <input type="text" id="loanNote" value="${esc(loan ? loan.note : '')}" class="w-full glass-input p-2.5 text-sm">
+              </div>
+              <input type="hidden" id="loanId" value="${loan ? loan.id : ''}">
+            </div>
+            <div class="mt-6 flex justify-end space-x-2">
+              <button onclick="hideModal()" class="px-4 py-2 glass-light rounded-xl-apple hover:bg-white/60 text-sm btn-glass">取消</button>
+              <button onclick="saveLoan()" class="px-4 py-2 bg-accent/85 backdrop-blur text-white rounded-xl-apple hover:bg-accent/90 text-sm btn-glass">保存</button>
+            </div>
+          </div>
+        </div>`;
+      showModal(html);
+    }
+
+    function saveLoan() {
+      const id = document.getElementById('loanId').value;
+      const name = document.getElementById('loanName').value.trim();
+      const amount = parseFloat(document.getElementById('loanAmount').value) || 0;
+      const startDate = document.getElementById('loanStartDate').value;
+      const dueDate = document.getElementById('loanDueDate').value;
+      const note = document.getElementById('loanNote').value.trim();
+
+      if (!name) return alert('请输入贷款名称');
+      if (!amount) return alert('请输入贷款金额');
+
+      const invest = carAppData.accounts.invest;
+
+      if (id) {
+        const loan = invest.loans.find(l => l.id === id);
+        const amountDelta = amount - loan.amount;
+        loan.name = name; loan.amount = amount; loan.startDate = startDate;
+        loan.dueDate = dueDate; loan.note = note;
+        if (amountDelta !== 0) {
+          loan.remaining = Math.max(0, (loan.remaining || 0) + amountDelta);
+        }
+      } else {
+        const newLoan = {
+          id: genId('loan'),
+          name, amount, remaining: amount,
+          startDate, dueDate,
+          status: 'active',
+          note
+        };
+        invest.loans.push(newLoan);
+        invest.transactions.push({
+          id: genId('txn'),
+          type: 'income',
+          category: 'loan_new',
+          amount: amount,
+          date: startDate,
+          carSid: null,
+          loanId: newLoan.id,
+          transferPairId: null,
+          note: '新增贷款: ' + name
+        });
+      }
+
+      hideModal();
+      addOperationLog(id ? 'loan_edit' : 'loan_new', (id ? '编辑' : '新增') + '贷款 ' + name + ' ' + fmt(amount), { name, amount });
+      saveData();
+    }
+
+    function openRepayLoanModal(loanId) {
+      const activeLoans = getActiveLoans();
+      if (activeLoans.length === 0) {
+        alert('无进行中的贷款');
+        return;
+      }
+
+      const options = activeLoans.map(l => `
+        <option value="${l.id}" ${loanId === l.id ? 'selected' : ''}>
+          ${esc(l.name)} — 剩余 ${fmt(l.remaining)}
+        </option>`).join('');
+
+      const selectedLoan = loanId ? activeLoans.find(l => l.id === loanId) : activeLoans[0];
+
+      const html = `
+        <div id="repayModal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-50">
+          <div class="glass-strong rounded-2xl-apple w-full max-w-sm p-6">
+            <h3 class="font-bold text-lg mb-4">归还贷款</h3>
+            <div class="space-y-3">
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">选择贷款</label>
+                <select id="repayLoanId" class="w-full glass-input p-2.5 text-sm">${options}</select>
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">归还金额 (剩余: ${fmt(selectedLoan ? selectedLoan.remaining : 0)})</label>
+                <input type="number" id="repayAmount" value="${selectedLoan ? selectedLoan.remaining : ''}" step="0.01" class="w-full glass-input p-2.5 text-sm">
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">归还日期</label>
+                <input type="date" id="repayDate" value="${getToday()}" class="w-full glass-input p-2.5 text-sm">
+              </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-2">
+              <button onclick="hideModal()" class="px-4 py-2 glass-light rounded-xl-apple hover:bg-white/60 text-sm btn-glass">取消</button>
+              <button onclick="confirmRepay()" class="px-4 py-2 bg-sell/85 backdrop-blur text-white rounded-xl-apple hover:bg-sell/90 text-sm font-bold btn-glass">确认归还</button>
+            </div>
+          </div>
+        </div>`;
+      showModal(html);
+    }
+
+    function confirmRepay() {
+      const loanId = document.getElementById('repayLoanId').value;
+      const amount = parseFloat(document.getElementById('repayAmount').value) || 0;
+      const date = document.getElementById('repayDate').value;
+
+      if (!amount) return alert('请输入归还金额');
+
+      const invest = carAppData.accounts.invest;
+      const loan = invest.loans.find(l => l.id === loanId);
+      if (!loan) return;
+
+      loan.remaining -= amount;
+      if (loan.remaining <= 0) {
+        loan.remaining = 0;
+        loan.status = 'repaid';
+      }
+
+      invest.transactions.push({
+        id: genId('txn'),
+        type: 'expense',
+        category: 'loan_repay',
+        amount: amount,
+        date: date,
+        carSid: null,
+        loanId: loan.id,
+        transferPairId: null,
+        note: '归还贷款: ' + loan.name
+      });
+
+      hideModal();
+      addOperationLog('loan_repay', '归还贷款 ' + loan.name + ' ' + fmt(amount) + '（剩余' + fmt(loan.remaining) + '）', { name: loan.name, amount, remaining: loan.remaining });
+      saveData();
+    }
+
+    // ==================== 账户互转 ====================
+    function openTransferModal() {
+      const pocket = carAppData.accounts.pocket;
+      const invest = carAppData.accounts.invest;
+      const pocketBal = calcBalance(pocket);
+      const investBal = calcBalance(invest);
+
+      const html = `
+        <div id="transferModal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-50">
+          <div class="glass-strong rounded-2xl-apple w-full max-w-sm p-6">
+            <h3 class="font-bold text-lg mb-4"><i data-lucide="arrow-left-right" class="w-5 h-5 inline-block align-middle mr-1"></i> 账户互转</h3>
+            <div class="space-y-3">
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">转出账户</label>
+                <select id="transferFrom" onchange="updateTransferToOptions()" class="w-full glass-input p-2.5 text-sm">
+                  <option value="pocket">零花钱账户 (余额 ${fmt(pocketBal)})</option>
+                  <option value="invest">投资账户 (余额 ${fmt(investBal)})</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">转入账户</label>
+                <select id="transferTo" class="w-full glass-input p-2.5 text-sm">
+                  <option value="invest">投资账户 (余额 ${fmt(investBal)})</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">转账金额</label>
+                <input type="number" id="transferAmount" step="0.01" placeholder="0.00" class="w-full glass-input p-2.5 text-sm">
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">转账日期</label>
+                <input type="date" id="transferDate" value="${getToday()}" class="w-full glass-input p-2.5 text-sm">
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">备注（可选）</label>
+                <input type="text" id="transferNote" placeholder="转账说明" class="w-full glass-input p-2.5 text-sm">
+              </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-2">
+              <button onclick="hideModal()" class="px-4 py-2 glass-light rounded-xl-apple hover:bg-white/60 text-sm btn-glass">取消</button>
+              <button onclick="confirmTransfer()" class="px-4 py-2 bg-accent/85 text-white rounded-xl-apple hover:bg-accent/90 text-sm btn-glass">确认转账</button>
+            </div>
+          </div>
+        </div>`;
+      showModal(html);
+    }
+
+    function updateTransferToOptions() {
+      const from = document.getElementById('transferFrom').value;
+      const to = document.getElementById('transferTo');
+      const pocketBal = calcBalance(carAppData.accounts.pocket);
+      const investBal = calcBalance(carAppData.accounts.invest);
+      if (from === 'pocket') {
+        to.innerHTML = `<option value="invest">投资账户 (余额 ${fmt(investBal)})</option>`;
+      } else {
+        to.innerHTML = `<option value="pocket">零花钱账户 (余额 ${fmt(pocketBal)})</option>`;
+      }
+    }
+
+    function confirmTransfer() {
+      const from = document.getElementById('transferFrom').value;
+      const to = document.getElementById('transferTo').value;
+      const amount = parseFloat(document.getElementById('transferAmount').value) || 0;
+      const date = document.getElementById('transferDate').value || getToday();
+      const note = document.getElementById('transferNote').value.trim();
+
+      if (!amount || amount <= 0) return alert('请输入有效的转账金额');
+      if (from === to) return alert('转出和转入账户不能相同');
+
+      const fromBal = calcBalance(carAppData.accounts[from]);
+      if (amount > fromBal) {
+        if (!confirm(`转出账户余额不足（当前 ${fmt(fromBal)}，转出 ${fmt(amount)}）。\n\n确认后余额将为负值，继续转账？`)) return;
+      }
+
+      const pairId = genId('tp');
+
+      // 转出
+      carAppData.accounts[from].transactions.push({
+        id: genId('txn'), type: 'expense', category: 'transfer_out',
+        amount, date, carSid: null, loanId: null,
+        transferPairId: pairId,
+        note: note || '转出至' + (to === 'pocket' ? '零花钱' : '投资')
+      });
+
+      // 转入
+      carAppData.accounts[to].transactions.push({
+        id: genId('txn'), type: 'income', category: 'transfer_in',
+        amount, date, carSid: null, loanId: null,
+        transferPairId: pairId,
+        note: note || '从' + (from === 'pocket' ? '零花钱' : '投资') + '转入'
+      });
+
+      // 记录配对
+      carAppData.transferPairs.push({
+        id: pairId,
+        fromAccount: from,
+        toAccount: to,
+        amount, date,
+        note: note || (from === 'pocket' ? '零花钱→投资' : '投资→零花钱')
+      });
+
+      addOperationLog('transfer', (from === 'pocket' ? '零花钱→投资' : '投资→零花钱') + ' ' + fmt(amount), { from, to, amount });
+      hideModal();
+      saveData();
+    }
+
+    function depositAllowance() {
+      const pocket = carAppData.accounts.pocket;
+      if (!pocket.monthlyAllowance) return alert('请先设置每月零花钱额度');
+
+      const now = new Date();
+      const monthKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+      const alreadyDeposited = pocket.transactions.some(t =>
+        t.category === 'allowance' && t.date.startsWith(monthKey)
+      );
+      if (alreadyDeposited) return alert('本月零花钱已存入');
+
+      pocket.transactions.push({
+        id: genId('txn'),
+        type: 'income',
+        category: 'allowance',
+        amount: pocket.monthlyAllowance,
+        date: getToday(),
+        carSid: null, loanId: null, transferPairId: null,
+        note: monthKey + ' 零花钱'
+      });
+
+      addOperationLog('allowance', '存入' + monthKey + '零花钱 ' + fmt(pocket.monthlyAllowance), { amount: pocket.monthlyAllowance });
+      saveData();
+    }
+
+    function renderDashboard() {
+      const stats = getDashboardStats();
+      const loans = getActiveLoans();
+      const monthly = getMonthlySpending();
+      const html = `
+        <div class="max-w-6xl mx-auto space-y-6">
+
+          <!-- Header -->
+
+          <!-- 账户余额 + 互转 -->
+          <div class="flex items-stretch gap-3">
+            <div class="stat-card flex-1">
+              <div class="stat-label"><i data-lucide="wallet" class="w-4 h-4 inline-block align-middle mr-1"></i> 零花钱余量</div>
+              <div class="stat-value text-positive">${fmt(stats.pocketBalance)}</div>
+              <div class="stat-sub">月额 ¥${carAppData.accounts.pocket.monthlyAllowance || 0}</div>
+            </div>
+            <div class="flex flex-col items-center justify-center px-2">
+              <button onclick="openTransferModal()" class="stat-card hover:shadow-md transition-all cursor-pointer text-center min-w-[72px]" title="账户互转">
+                <i data-lucide="arrow-left-right" class="w-5 h-5 text-accent mb-1"></i>
+                <div class="text-[10px] text-gray-400 mt-1">互转</div>
+              </button>
+            </div>
+            <div class="stat-card flex-1">
+              <div class="stat-label"><i data-lucide="trending-up" class="w-4 h-4 inline-block align-middle mr-1"></i> 投资款余额</div>
+              <div class="stat-value text-negative">${fmt(stats.investBalance)}</div>
+              <div class="stat-sub">含贷款融资</div>
+            </div>
+          </div>
+
+          <!-- 投资 & 库存卡片 -->
+          <div class="grid grid-cols-2 gap-4">
+            <div class="stat-card">
+              <div class="stat-label"><i data-lucide="car" class="w-4 h-4 inline-block align-middle mr-1"></i> 已投资小车</div>
+              <div class="stat-value text-gray-800">${fmt(stats.investTotal)}</div>
+              <div class="stat-sub">共 ${stats.investCount} 辆</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label"><i data-lucide="diamond" class="w-4 h-4 inline-block align-middle mr-1"></i> 投资库存预期价值</div>
+              <div class="stat-value text-gray-800">${fmt(stats.expectedTotal)}</div>
+              <div class="stat-sub">共计 ${stats.unsoldCount} 辆</div>
+            </div>
+          </div>
+
+          <!-- 贷款倒计时 -->
+          <div class="glass rounded-2xl-apple p-5">
+            <h3 class="font-bold text-base mb-3"><i data-lucide="hourglass" class="w-4 h-4 inline-block align-middle mr-1"></i> 贷款倒计时</h3>
+            ${loans.length === 0 ? '<p class="text-gray-400 text-sm">无进行中的贷款</p>' : loans.map(loan => {
+              const daysLeft = Math.ceil((new Date(loan.dueDate) - new Date()) / (1000 * 60 * 60 * 24));
+              const isOverdue = daysLeft < 0;
+              const isSoon = daysLeft >= 0 && daysLeft <= 7;
+              return `
+                <div class="loan-card ${isOverdue ? 'overdue' : ''} ${isSoon ? 'due-soon' : ''} mb-2 flex justify-between items-center">
+                  <div>
+                    <div class="font-semibold text-sm">${esc(loan.name)}</div>
+                    <div class="text-xs text-gray-500">剩余 ${fmt(loan.remaining)} / 总额 ${fmt(loan.amount)}</div>
+                    <div class="text-xs ${isOverdue ? 'text-invest font-bold' : isSoon ? 'text-sell font-semibold' : 'text-gray-400'}">
+                      ${isOverdue ? '⚠ 已逾期 ' + Math.abs(daysLeft) + ' 天' : '到期: ' + loan.dueDate + ' (' + daysLeft + ' 天)'}
+                    </div>
+                  </div>
+                </div>`;
+            }).join('')}
+          </div>
+
+          <!-- 近六月收支平衡 -->
+          <div class="glass rounded-2xl-apple p-5">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-bold text-base"><i data-lucide="bar-chart-3" class="w-4 h-4 inline-block align-middle mr-1"></i> 近六月零花钱收支平衡</h3>
+              <div class="text-xs text-gray-400">零花钱余量 <span class="font-bold ${stats.pocketBalance >= 0 ? 'text-keep' : 'text-invest'} text-sm">${fmt(stats.pocketBalance)}</span></div>
+            </div>
+            <div class="flex items-center gap-3 text-[11px] text-gray-400 mb-2">
+              <span style="color:#c44b3d">▮ 支出</span>
+              <span style="color:#5b8c5a">▮ 收入</span>
+              <span style="color:#7a9cc6">～ 平衡趋势</span>
+            </div>
+            <svg class="chart-svg" viewBox="0 0 ${400} ${120}">
+              ${(() => {
+  const n=monthly.length,W=400,H=120,L=36,R=4,T=12,B=18;
+  const cW=W-L-R,cH=H-T-B;
+  const maxV=Math.max(...monthly.map(m=>Math.max(m.expense,m.income)),300);
+  const niceM=Math.ceil(maxV/100)*100,xS=cW/n,bW=Math.max(8,xS*0.22);
+  const pts=monthly.map((m,i)=>({x:L+xS*(i+0.5),eH:(m.expense/niceM)*cH,iH:(m.income/niceM)*cH,n:m.income-m.expense,l:m.label}));
+  const maxN=Math.max(...pts.map(p=>Math.abs(p.n)),1);
+  const zY=T+cH/2,wA=cH/2-8;
+  let s="";
+  for(let v=0;v<=niceM;v+=100){let gy=T+cH-(v/niceM)*cH;
+    s+="<line x1=\""+L+"\" y1=\""+gy+"\" x2=\""+(W-R)+"\" y2=\""+gy+"\" stroke=\"var(--c-border)\" stroke-width=\"0.5\"/>";
+    s+="<text x=\""+(L-4)+"\" y=\""+(gy+3)+"\" text-anchor=\"end\" font-size=\"6\" fill=\"var(--c-text-tertiary)\">"+v+"</text>"}
+  pts.forEach(p=>{s+="<rect x=\""+(p.x-bW-2)+"\" y=\""+(T+cH-p.eH)+"\" width=\""+bW+"\" height=\""+Math.max(1,p.eH)+"\" rx=\"2\" fill=\"var(--c-invest)\" opacity=\"0.55\"/>"});
+  pts.forEach(p=>{s+="<rect x=\""+(p.x+2)+"\" y=\""+(T+cH-p.iH)+"\" width=\""+bW+"\" height=\""+Math.max(1,p.iH)+"\" rx=\"2\" fill=\"var(--c-keep)\" opacity=\"0.55\"/>"});
+  let wPts=pts.map(p=>({x:p.x,y:zY-(p.n/maxN)*wA}));
+  let wd="M"+wPts[0].x.toFixed(1)+","+wPts[0].y.toFixed(1);
+  for(let i=0;i<wPts.length-1;i++){let cx=(wPts[i].x+wPts[i+1].x)/2;wd+=" C"+cx.toFixed(1)+","+wPts[i].y.toFixed(1)+" "+cx.toFixed(1)+","+wPts[i+1].y.toFixed(1)+" "+wPts[i+1].x.toFixed(1)+","+wPts[i+1].y.toFixed(1)}
+  s+="<line x1=\""+L+"\" y1=\""+zY+"\" x2=\""+(W-R)+"\" y2=\""+zY+"\" stroke=\"var(--c-text-tertiary)\" stroke-width=\"0.5\" stroke-dasharray=\"3,3\" opacity=\"0.3\"/>";
+  s+="<path d=\""+wd+"\" fill=\"none\" stroke=\"var(--c-allowance)\" stroke-width=\"2\" opacity=\"0.75\"/>";
+  wPts.forEach(p=>{s+="<circle cx=\""+p.x.toFixed(1)+"\" cy=\""+p.y.toFixed(1)+"\" r=\"3.5\" fill=\"white\" stroke=\"var(--c-allowance)\" stroke-width=\"1.5\"/>"});
+  wPts.forEach((p,i)=>{s+="<text x=\""+p.x.toFixed(1)+"\" y=\""+(p.y-8)+"\" text-anchor=\"middle\" font-size=\"6\" font-weight=\"bold\" fill=\""+(pts[i].n>=0?"var(--c-keep)":"var(--c-invest)")+"\">"+(pts[i].n>=0?"+":"")+pts[i].n.toFixed(0)+"</text>"});
+  pts.forEach(p=>{s+="<text x=\""+p.x.toFixed(1)+"\" y=\""+(H-4)+"\" text-anchor=\"middle\" font-size=\"6\" fill=\"var(--c-text-secondary)\">"+p.l+"</text>"});
+  return s;
+})()}
+            </svg>
+
+
+        </div>`;
+
+      document.getElementById('moduleDashboard').innerHTML = html;
+    }
+
+    // ==================== 日常消费 ====================
+    function renderTransactionTable(transactions, accountId) {
+      if (transactions.length === 0) {
+        return '<div class="text-center py-6 text-gray-400">暂无交易记录</div>';
+      }
+
+      const categoryLabels = {
+        car_buy: '买车', car_sell: '卖车', allowance: '零花钱',
+        loan_new: '新贷款', loan_repay: '还贷',
+        transfer_in: '转入', transfer_out: '转出', daily: '日常消费', other: '其它'
+      };
+
+      // 按月分组
+      const sorted = transactions.slice().sort((a, b) => b.date.localeCompare(a.date));
+      const groups = {};
+      sorted.forEach(t => {
+        const month = t.date.slice(0, 7); // YYYY-MM
+        if (!groups[month]) groups[month] = [];
+        groups[month].push(t);
+      });
+
+      const monthNames = Object.keys(groups).sort().reverse(); // newest first
+
+      return monthNames.map((month, idx) => {
+        const txns = groups[month];
+        const expSum = txns.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+        const incSum = txns.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+        const groupId = 'txn_' + accountId + '_' + month.replace('-', '_');
+        const isFirst = idx === 0; // expand latest month
+
+        return `
+        <div class="border-b border-black/5 last:border-0">
+          <div class="flex items-center px-4 py-2.5 hover:bg-white/30 cursor-pointer accordion-toggle" onclick="toggleAccordion('${groupId}')">
+            <span class="w-5 text-gray-400 text-xs mr-2" id="${groupId}_icon">${isFirst ? '▼' : '▶'}</span>
+            <span class="font-semibold text-sm flex-1">${month}</span>
+            <span class="text-xs text-invest mr-3">支出 ${fmt(expSum)}</span>
+            <span class="text-xs text-keep mr-3">收入 ${fmt(incSum)}</span>
+            <span class="text-xs text-gray-400">${txns.length} 笔</span>
+          </div>
+          <div id="${groupId}_body" class="accordion-body ${isFirst ? 'expanded' : 'collapsed'}">
+            <table class="w-full text-left text-sm whitespace-nowrap table-fixed">
+              <colgroup>
+                <col style="width:70px">
+                <col style="width:72px">
+                <col style="width:80px">
+                <col>
+                <col style="width:72px">
+              </colgroup>
+              <tbody class="divide-y divide-gray-100">
+                ${txns.map(t => `
+                  <tr class="hover:bg-white/50">
+                    <td class="px-3 py-1.5 text-gray-500 text-xs">${t.date.slice(5)}</td>
+                    <td class="px-3 py-1.5">
+                      <span class="${t.type === 'income' ? 'badge-income' : 'badge-expense'}">${categoryLabels[t.category] || t.category}</span>
+                    </td>
+                    <td class="px-3 py-1.5 font-semibold text-xs ${t.type === 'income' ? 'text-negative' : 'text-positive'} text-right">${fmt(t.amount)}</td>
+                    <td class="px-3 py-1.5 text-xs text-gray-600 truncate">${esc(t.note || '')}</td>
+                    <td class="px-3 py-1.5 text-right">
+                      <button onclick="editTransaction('${accountId}', '${t.id}')" class="text-accent hover:underline text-xs mr-1"><i data-lucide="pencil-line" class="w-3 h-3 inline-block"></i></button>
+                      <button onclick="deleteTransaction('${accountId}', '${t.id}')" class="text-invest hover:underline text-xs"><i data-lucide="trash-2" class="w-3 h-3 inline-block"></i></button>
+                    </td>
+                  </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function renderCarCards(cars, accountType) {
+      const filtered = cars.filter(c => c.category === accountType && !c.isSold);
+      if (filtered.length === 0) {
+        return '<div class="text-center py-6 text-gray-400 text-sm">暂无小车</div>';
+      }
+
+      const sortMode = accountType === 'keep' ? garageSortKeep : garageSortInvest;
+
+      // 根据视图模式分组
+      function getGroupKey(c) {
+        switch (sortMode) {
+          case 'brand-subcat': return (c.brand || '?') + '|' + (c.subCategory || '') + '|' + c.name;
+          case 'month': return c.buyDate.slice(0, 7) + '|' + c.name;
+          case 'price-desc': case 'price-asc': return c.name;
+          default: return c.name;
+        }
+      }
+      function getGroupLabel(keys) {
+        if (sortMode === 'month') return keys[0].split('|')[0];
+        if (sortMode === 'brand-subcat') {
+          const parts = keys[0].split('|');
+          return parts[0] + (parts[1] ? ' / ' + parts[1] : '');
+        }
+        return '';
+      }
+
+      const groups = {};
+      filtered.forEach(c => {
+        const key = getGroupKey(c);
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(c);
+      });
+
+      // 排序：价格模式按买入价排序，其他按标签字母序
+      let sortedEntries = Object.entries(groups);
+      if (sortMode === 'price-desc') {
+        sortedEntries.sort(([, a], [, b]) => (b[0].buyPrice || 0) - (a[0].buyPrice || 0));
+      } else if (sortMode === 'price-asc') {
+        sortedEntries.sort(([, a], [, b]) => (a[0].buyPrice || 0) - (b[0].buyPrice || 0));
+      } else {
+        sortedEntries.sort(([a], [b]) => a.localeCompare(b));
+      }
+
+      // 按标签再分组
+      const labelGroups = {};
+      if (sortMode === 'brand-subcat') {
+        sortedEntries.forEach(([key, items]) => {
+          const label = getGroupLabel([key]);
+          if (!labelGroups[label]) labelGroups[label] = [];
+          labelGroups[label].push({ key, items });
+        });
+      }
+
+      const hasLabelGroups = Object.keys(labelGroups).length > 0;
+
+      return (hasLabelGroups ? Object.entries(labelGroups).map(([label, entries]) => {
+        const labelCount = entries.reduce((s, e) => s + e.items.length, 0);
+        const labelId = 'gl_' + label.replace(/[^a-zA-Z0-9\u4e00-\u9fff]/g, '_');
+        return `
+        <div class="border-b border-black/5 last:border-0">
+          <div class="flex items-center px-3 py-1.5 bg-gray-50/50 cursor-pointer accordion-toggle" onclick="toggleAccordion('${labelId}')">
+            <span class="w-4 text-gray-400 text-xs mr-1" id="${labelId}_icon">▼</span>
+            <span class="font-semibold text-xs text-gray-700">${esc(label)}</span>
+            <span class="text-xs text-gray-400 ml-2">${labelCount} 辆</span>
+          </div>
+          <div id="${labelId}_body" class="accordion-body expanded">
+            ${entries.map(({ key, items }) => renderCarGroup(items, key, accountType)).join('')}
+          </div>
+        </div>`;
+      }).join('') :
+      sortedEntries.map(([key, items]) => renderCarGroup(items, key, accountType)).join(''))
+      ;
+    }
+
+    function renderCarGroup(items, groupKey, accountType) {
+      const first = items[0];
+      const count = items.length;
+      const avgPrice = items.reduce((s, c) => s + c.buyPrice, 0) / count;
+
+      if (count === 1) {
+        const car = items[0];
+        return `
+        <div class="flex items-center justify-between px-3 py-1.5 hover:bg-white/50 whitespace-nowrap">
+          <div class="flex items-center gap-3 flex-1 min-w-0">
+            <span class="font-semibold text-xs">${esc(car.brand || '?')}</span>
+            ${car.manual ? '<span class="text-xs text-gray-400 bg-gray-100 px-1 rounded">手动</span>' : ''}
+            ${car.subCategory ? `<span class="text-xs px-1 py-0.5 rounded ${car.subCategory === 'RLC' ? 'bg-yellow-100 text-yellow-700' : car.subCategory === '文化' ? 'bg-purple-100 text-purple-700' : car.subCategory === '超宝' ? 'bg-green-100 text-green-700' : car.subCategory === '礼盒' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}">${car.subCategory}</span>` : ''}
+            <span class="text-gray-600 text-xs truncate">${esc(car.name)}</span>
+            <span class="text-xs text-gray-400">${car.buyDate}</span>
+            <span class="text-xs font-semibold text-positive">${fmt(car.buyPrice)}</span>
+            <span class="text-xs text-gray-400">预期 ${fmt(car.expectedValue || car.buyPrice)}</span>
+          </div>
+          <div class="flex gap-1 flex-shrink-0 ml-2">
+            <button onclick="sellCar('${car.sid}')" class="btn-sell text-xs">卖出</button>
+            <button onclick="convertCar('${car.sid}')" class="btn-convert text-xs ${accountType === 'invest' ? 'btn-to-keep' : 'btn-to-invest'}">→${accountType === 'invest' ? '自留' : '投资'}</button>
+            <button onclick="openCarEditModal('${car.sid}')" class="text-accent hover:underline text-xs mr-0.5"><i data-lucide="pencil-line" class="w-3 h-3 inline-block"></i></button>
+            <button onclick="deleteCar('${car.sid}')" class="text-invest hover:underline text-xs"><i data-lucide="trash-2" class="w-3 h-3 inline-block"></i></button>
+          </div>
+        </div>`;
+      } else {
+        const dates = items.map(c => c.buyDate).sort();
+        const dateLabel = dates[0] === dates[dates.length-1] ? dates[0] : dates[0] + '~' + dates[dates.length-1];
+        const avgExpected = items.reduce((s, c) => s + (c.expectedValue || c.buyPrice), 0) / count;
+        return `
+        <div class="flex items-center justify-between px-3 py-1.5 hover:bg-white/50 whitespace-nowrap">
+          <div class="flex items-center gap-3 flex-1 min-w-0">
+            <span class="font-semibold text-xs">${esc(first.brand || '?')}</span>
+            ${first.manual ? '<span class="text-xs text-gray-400 bg-gray-100 px-1 rounded">手动</span>' : ''}
+            ${first.subCategory ? `<span class="text-xs px-1 py-0.5 rounded ${first.subCategory === 'RLC' ? 'bg-yellow-100 text-yellow-700' : first.subCategory === '文化' ? 'bg-purple-100 text-purple-700' : first.subCategory === '超宝' ? 'bg-green-100 text-green-700' : first.subCategory === '礼盒' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}">${first.subCategory}</span>` : ''}
+            <span class="text-gray-600 text-xs truncate">${esc(items[0].name)}</span>
+            <span class="text-xs text-gray-400">${dateLabel}</span>
+            <span class="text-xs font-semibold text-positive">均价 ${fmt(avgPrice)}</span>
+            <span class="text-xs text-gray-400">预期 ${fmt(avgExpected)}</span>
+          </div>
+          <div class="flex gap-1 flex-shrink-0 ml-2 items-center">
+            <span class="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full font-medium">×${count}</span>
+            <button data-group-name="${esc(items[0].name)}" onclick="openCarGroupDetail(this.dataset.groupName, '${accountType}')" class="btn-detail text-xs">详情</button>
+          </div>
+        </div>`;
+      }
+    }
+
+    function openCarGroupDetail(groupName, accountType) {
+      const cars = carAppData.cars.filter(c => c.name === groupName && c.category === accountType && !c.isSold);
+      if (cars.length === 0) return;
+      const totalCost = cars.reduce((s, c) => s + c.buyPrice, 0);
+      const avgPrice = totalCost / cars.length;
+      const brand = esc(cars[0].brand || '?');
+      const html = `
+        <div id="carGroupModal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-50" onclick="if(event.target===this)hideModal()">
+          <div class="glass-strong rounded-2xl-apple w-full max-w-lg p-5 max-h-[80vh] flex flex-col">
+            <div class="flex justify-between items-center mb-3 pb-2 border-b border-black/5">
+              <h3 class="font-bold text-sm"><i data-lucide="layers" class="w-4 h-4 inline-block align-middle mr-1"></i> ${esc(groupName)} <span class="text-xs font-normal text-gray-400 ml-1">×${cars.length}</span></h3>
+              <button onclick="hideModal()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-4 h-4"></i></button>
+            </div>
+            <div class="overflow-y-auto flex-1">
+              <div class="divide-y divide-black/5">
+        ${cars.map(car => `
+        <div class="flex items-center justify-between px-2 py-1.5 hover:bg-white/30 whitespace-nowrap">
+          <div class="flex items-center gap-3 flex-1 min-w-0">
+            <span class="text-xs text-gray-400 w-20 shrink-0">${car.buyDate}</span>
+            <span class="text-xs font-semibold text-positive w-16 shrink-0">${fmt(car.buyPrice)}</span>
+            ${car.manual ? '<span class="text-xs text-gray-400 bg-gray-100 px-1 rounded">手动</span>' : ''}
+            ${car.subCategory ? `<span class="text-xs px-1 py-0.5 rounded ${car.subCategory === 'RLC' ? 'bg-yellow-100 text-yellow-700' : car.subCategory === '文化' ? 'bg-purple-100 text-purple-700' : car.subCategory === '超宝' ? 'bg-green-100 text-green-700' : car.subCategory === '礼盒' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}">${car.subCategory}</span>` : ''}
+            <span class="text-xs text-gray-400">预期 ${fmt(car.expectedValue || car.buyPrice)}</span>
+            <span class="text-xs text-gray-400 font-mono">#${car.sid.slice(0, 8)}</span>
+          </div>
+          <div class="flex gap-1 flex-shrink-0">
+            <button onclick="sellCar('${car.sid}')" class="btn-sell text-xs">卖出</button>
+            <button onclick="convertCar('${car.sid}')" class="btn-convert text-xs ${accountType === 'invest' ? 'btn-to-keep' : 'btn-to-invest'}">→${accountType === 'invest' ? '自留' : '投资'}</button>
+            <button onclick="openCarEditModal('${car.sid}')" class="text-accent hover:underline text-xs"><i data-lucide="pencil-line" class="w-3 h-3 inline-block"></i></button>
+            <button onclick="deleteCar('${car.sid}')" class="text-invest hover:underline text-xs"><i data-lucide="trash-2" class="w-3 h-3 inline-block"></i></button>
+          </div>
+        </div>`).join('')}
+              </div>
+            </div>
+            <div class="mt-3 pt-2 border-t border-black/5 flex justify-between text-xs text-gray-500">
+              <span>品牌: ${brand}</span>
+              <span>均价 ${fmt(avgPrice)}</span>
+              <span>总价 ${fmt(totalCost)}</span>
+            </div>
+          </div>
+        </div>`;
+      showModal(html);
+    }
+
+    function renderDaily() {
+      const pocket = carAppData.accounts.pocket;
+      const balance = calcBalance(pocket);
+
+      const html = `
+        <div class="max-w-6xl mx-auto space-y-4">
+          <div class="flex items-center justify-end">
+            <div class="flex gap-2">
+              <button onclick="openTransactionModal('pocket', null, 'car_buy')" class="bg-invest/10 text-invest px-3 py-2 rounded-xl-apple text-sm hover:bg-invest/20 btn-glass"><i data-lucide="car" class="w-4 h-4 inline-block align-middle mr-1"></i> 买小车</button>
+              <button onclick="openTransactionModal('pocket', null, null, 'expense')" class="bg-accent/85 backdrop-blur text-white px-3 py-2 rounded-xl-apple text-sm hover:bg-accent/90 btn-glass"><i data-lucide="minus-circle" class="w-4 h-4 inline-block align-middle mr-1"></i> 支出</button>
+              <button onclick="openTransactionModal('pocket', null, null, 'income')" class="bg-keep/85 backdrop-blur text-white px-3 py-2 rounded-xl-apple text-sm hover:bg-keep/90 btn-glass"><i data-lucide="plus-circle" class="w-4 h-4 inline-block align-middle mr-1"></i> 收入</button>
+            </div>
+          </div>
+
+          <div class="glass rounded-2xl-apple p-4 flex gap-6 text-sm">
+            <div>账户: <span class="font-bold">${esc(pocket.name)}</span></div>
+            <div>余额: <span class="font-bold ${balance >= 0 ? 'text-negative' : 'text-positive'}">${fmt(balance)}</span></div>
+            <div>月额: ¥${pocket.monthlyAllowance || 0}</div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="glass rounded-2xl-apple overflow-hidden">
+              <div class="glass-light p-3 border-b border-black/5 font-semibold text-sm"><i data-lucide="list" class="w-4 h-4 inline-block align-middle mr-1"></i> 收支明细</div>
+              ${renderTransactionTable(pocket.transactions, 'pocket')}
+            </div>
+
+            <div class="glass rounded-2xl-apple overflow-hidden">
+              <div class="glass-light p-3 border-b border-black/5 font-semibold text-sm flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                  <span><i data-lucide="car" class="w-4 h-4 inline-block align-middle mr-1"></i> 自留车库</span>
+                  ${(() => { const kc = carAppData.cars.filter(c => c.category === 'keep' && !c.isSold); if (!kc.length) return ''; const cost = kc.reduce((s,c) => s + c.buyPrice, 0); const ev = kc.reduce((s,c) => s + (c.expectedValue || c.buyPrice), 0); return '<span class=\"text-xs text-gray-400\">成本 ' + fmt(cost) + '  /  预期 ' + fmt(ev) + '</span>'; })()}
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-0.5">
+                    <button onclick="setGarageSort('keep','brand-subcat')" class="text-xs px-2 py-1 rounded-md transition font-medium ${garageSortKeep === 'brand-subcat' ? 'bg-accent/10 text-accent' : 'glass-light text-gray-500 hover:text-gray-700'} btn-glass">品牌-类型</button>
+                    <button onclick="setGarageSort('keep','month')" class="text-xs px-2 py-1 rounded-md transition font-medium ${garageSortKeep === 'month' ? 'bg-accent/10 text-accent' : 'glass-light text-gray-500 hover:text-gray-700'} btn-glass">月份</button>
+                    <button onclick="setGarageSort('keep','price-desc')" class="text-xs px-2 py-1 rounded-md transition font-medium ${garageSortKeep === 'price-desc' ? 'bg-accent/10 text-accent' : 'glass-light text-gray-500 hover:text-gray-700'} btn-glass">↓价格</button>
+                    <button onclick="setGarageSort('keep','price-asc')" class="text-xs px-2 py-1 rounded-md transition font-medium ${garageSortKeep === 'price-asc' ? 'bg-accent/10 text-accent' : 'glass-light text-gray-500 hover:text-gray-700'} btn-glass">↑价格</button>
+                  </div>
+                  <button onclick="openManualCarModal('keep')" class="text-xs px-2 py-1 rounded-md bg-keep/10 text-keep hover:bg-keep/20 transition font-medium btn-glass" title="手动添加（不计收支）">+手动</button>
+                  <span class="text-xs bg-keep/20 text-keep px-2 py-0.5 rounded-full">${carAppData.cars.filter(c => c.category === 'keep' && !c.isSold).length} 辆</span>
+                </div>
+              </div>
+              <div class="p-3">
+                ${renderCarCards(carAppData.cars, 'keep')}
+              </div>
+            </div>
+          </div>
+        </div>`;
+      document.getElementById('moduleDaily').innerHTML = html;
+    }
+
+    // 车库排序状态
+    let garageSortKeep = 'brand-subcat';
+    let garageSortInvest = 'brand-subcat';
+
+    function setGarageSort(accountType, mode) {
+      if (accountType === 'keep') garageSortKeep = mode;
+      else garageSortInvest = mode;
+      const fn = accountType === 'keep' ? renderDaily : renderInvest;
+      fn();
+    }
+
+    // ==================== 投资小车 ====================
+    function renderLoanCards() {
+      const loans = carAppData.accounts.invest.loans.filter(l => l.status === 'active');
+      if (loans.length === 0) {
+        return '<div class="text-center py-4 text-gray-400 text-sm">无进行中的贷款</div>';
+      }
+
+      return loans.map(loan => {
+        const daysLeft = Math.ceil((new Date(loan.dueDate) - new Date()) / (1000 * 60 * 60 * 24));
+        const isOverdue = daysLeft < 0;
+        const isSoon = daysLeft >= 0 && daysLeft <= 7;
+        return `
+          <div class="loan-card ${isOverdue ? 'overdue' : ''} ${isSoon ? 'due-soon' : ''} mb-2">
+            <div class="flex justify-between items-center">
+              <div>
+                <div class="font-semibold text-sm">${esc(loan.name)}</div>
+                <div class="text-xs text-gray-500">剩余 ${fmt(loan.remaining)} / 总额 ${fmt(loan.amount)}</div>
+                <div class="text-xs ${isOverdue ? 'text-invest font-bold' : 'text-gray-400'}">
+                  ${isOverdue ? '⚠ 已逾期 ' + Math.abs(daysLeft) + ' 天' : '到期: ' + loan.dueDate}
+                </div>
+              </div>
+              <button onclick="openNewLoanModal('${loan.id}')" class="text-accent hover:underline text-xs"><i data-lucide="pencil-line" class="w-3 h-3 inline-block"></i></button>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    function renderInvest() {
+      const invest = carAppData.accounts.invest;
+      const balance = calcBalance(invest);
+
+      const html = `
+        <div class="max-w-6xl mx-auto space-y-4">
+          <div class="flex items-center justify-end">
+            <div class="flex gap-2">
+              <button onclick="openTransactionModal('invest', null, 'car_buy')" class="bg-invest/10 text-invest px-4 py-2 rounded-xl-apple text-sm font-medium hover:bg-invest/20 btn-glass"><i data-lucide="car" class="w-4 h-4 inline-block align-middle mr-1"></i> 买小车</button>
+              <button onclick="openTransactionModal('invest')" class="btn-glass text-gray-500 px-3 py-2 rounded-xl-apple text-sm hover:text-gray-700"><i data-lucide="ellipsis" class="w-4 h-4 inline-block align-middle mr-1"></i> 其它</button>
+            </div>
+          </div>
+
+          <div class="glass rounded-2xl-apple p-4 flex gap-6 text-sm">
+            <div>账户: <span class="font-bold">${esc(invest.name)}</span></div>
+            <div>余额: <span class="font-bold ${balance >= 0 ? 'text-negative' : 'text-positive'}">${fmt(balance)}</span></div>
+            <div>贷款数: ${invest.loans.filter(l => l.status === 'active').length} 笔</div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="glass rounded-2xl-apple overflow-hidden">
+              <div class="glass-light p-3 border-b border-black/5 font-semibold text-sm"><i data-lucide="list" class="w-4 h-4 inline-block align-middle mr-1"></i> 投资明细</div>
+              ${renderTransactionTable(invest.transactions, 'invest')}
+            </div>
+
+            <div class="glass rounded-2xl-apple overflow-hidden">
+              <div class="glass-light p-3 border-b border-black/5 font-semibold text-sm flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                  <span><i data-lucide="car" class="w-4 h-4 inline-block align-middle mr-1"></i> 投资车库</span>
+                  ${(() => { const ic = carAppData.cars.filter(c => c.category === 'invest' && !c.isSold); if (!ic.length) return ''; const cost = ic.reduce((s,c) => s + c.buyPrice, 0); const ev = ic.reduce((s,c) => s + (c.expectedValue || c.buyPrice), 0); return '<span class=\"text-xs text-gray-400\">成本 ' + fmt(cost) + '  /  预期 ' + fmt(ev) + '</span>'; })()}
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-0.5">
+                    <button onclick="setGarageSort('invest','brand-subcat')" class="text-xs px-2 py-1 rounded-md transition font-medium ${garageSortInvest === 'brand-subcat' ? 'bg-accent/10 text-accent' : 'glass-light text-gray-500 hover:text-gray-700'} btn-glass">品牌-类型</button>
+                    <button onclick="setGarageSort('invest','month')" class="text-xs px-2 py-1 rounded-md transition font-medium ${garageSortInvest === 'month' ? 'bg-accent/10 text-accent' : 'glass-light text-gray-500 hover:text-gray-700'} btn-glass">月份</button>
+                    <button onclick="setGarageSort('invest','price-desc')" class="text-xs px-2 py-1 rounded-md transition font-medium ${garageSortInvest === 'price-desc' ? 'bg-accent/10 text-accent' : 'glass-light text-gray-500 hover:text-gray-700'} btn-glass">↓价格</button>
+                    <button onclick="setGarageSort('invest','price-asc')" class="text-xs px-2 py-1 rounded-md transition font-medium ${garageSortInvest === 'price-asc' ? 'bg-accent/10 text-accent' : 'glass-light text-gray-500 hover:text-gray-700'} btn-glass">↑价格</button>
+                  </div>
+                  <button onclick="openManualCarModal('invest')" class="text-xs px-2 py-1 rounded-md bg-invest/10 text-invest hover:bg-invest/20 transition font-medium btn-glass" title="手动添加（不计收支）">+手动</button>
+                  <span class="text-xs bg-invest/20 text-invest px-2 py-0.5 rounded-full">${carAppData.cars.filter(c => c.category === 'invest' && !c.isSold).length} 辆</span>
+                </div>
+              </div>
+              <div class="p-3">
+                ${renderCarCards(carAppData.cars, 'invest')}
+              </div>
+            </div>
+
+            <div class="glass rounded-2xl-apple overflow-hidden">
+              <div class="glass-light p-3 border-b border-black/5 font-semibold text-sm flex justify-between items-center">
+                <span><i data-lucide="banknote" class="w-4 h-4 inline-block align-middle mr-1"></i> 贷款管理</span>
+                <div class="flex gap-1">
+                  <button onclick="openNewLoanModal()" class="btn-glass text-xs px-2 py-1 bg-sell/10 text-sell rounded-lg hover:bg-sell/20"><i data-lucide="plus-circle" class="w-3 h-3 inline-block align-middle mr-0.5"></i>新增</button>
+                  <button onclick="openRepayLoanModal()" class="btn-glass text-xs px-2 py-1 bg-sell/10 text-sell rounded-lg hover:bg-sell/20"><i data-lucide="banknote" class="w-3 h-3 inline-block align-middle mr-0.5"></i>归还</button>
+                </div>
+              </div>
+              <div class="p-3">
+                ${renderLoanCards()}
+              </div>
+            </div>
+          </div>
+        </div>`;
+      document.getElementById('moduleInvest').innerHTML = html;
+    }
+
+    // ==================== 通用弹窗 ====================
+    function openTransactionModal(accountId, txnId, presetCategory, presetType) {
+      const account = carAppData.accounts[accountId];
+      let txn = null;
+      let car = null;
+      if (txnId) {
+        txn = account.transactions.find(t => t.id === txnId);
+        if (txn && txn.carSid) car = carAppData.cars.find(c => c.sid === txn.carSid);
+      }
+
+      // 当前账户对应的默认小车类别
+      const defaultCarCat = accountId === 'invest' ? 'invest' : 'keep';
+      const carCatLabel = defaultCarCat === 'invest' ? '投资' : '自留';
+      const newSid = genUUID();
+      const isCarBuy = presetCategory === 'car_buy' || (txn && txn.category === 'car_buy');
+      const isCarSell = presetCategory === 'car_sell' || (txn && txn.category === 'car_sell');
+      const isPresetType = presetType === 'expense' || presetType === 'income';
+      const hideToggle = isCarBuy || isCarSell || isPresetType;
+      const modalTitle = isCarBuy ? '买小车' : isCarSell ? '卖小车' : (txn ? '编辑交易' : '新增记录');
+
+      const html = `
+        <div id="txnModal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-50">
+          <div class="glass-strong rounded-2xl-apple w-full max-w-md p-6 max-h-[90vh] overflow-y-auto">
+            <h3 class="font-bold text-lg mb-4">${modalTitle}</h3>
+            <input type="hidden" id="txnAccountId" value="${accountId}">
+            <input type="hidden" id="txnId" value="${txn ? txn.id : ''}">
+            <input type="hidden" id="carSid" value="${car ? car.sid : newSid}">
+            <input type="hidden" id="carCategory" value="${car ? car.category : defaultCarCat}">
+            <div class="space-y-3">
+              ${hideToggle ? '' : `
+              <div class="flex gap-2">
+                <button onclick="setTxnType('expense')" id="btnExpense" class="flex-1 py-2 rounded-xl text-sm font-bold ${(!txn || txn.type === 'expense') ? 'bg-invest/10 text-invest' : 'glass-light text-gray-500'}">支出</button>
+                <button onclick="setTxnType('income')" id="btnIncome" class="flex-1 py-2 rounded-xl text-sm font-bold ${txn && txn.type === 'income' ? 'bg-keep/10 text-keep' : 'glass-light text-gray-500'}">收入</button>
+              </div>
+              `}
+              <input type="hidden" id="txnType" value="${txn ? txn.type : (presetType || 'expense')}">
+              ${isCarBuy || isCarSell ? '' : `
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">类别</label>
+                <select id="txnCategory" onchange="onTxnCategoryChange()" class="w-full glass-input p-2.5 text-sm">
+                </select>
+              </div>
+              `}
+              ${isCarBuy || isCarSell ? `<input type="hidden" id="txnCategory" value="${isCarBuy ? 'car_buy' : 'car_sell'}">` : ''}
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">金额</label>
+                <input type="number" id="txnAmount" oninput="onTxnAmountChange()" value="${txn ? txn.amount : ''}" step="0.01" class="w-full glass-input p-2.5 text-sm">
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">日期</label>
+                <input type="date" id="txnDate" onchange="onTxnDateChange()" value="${txn ? txn.date : getToday()}" class="w-full glass-input p-2.5 text-sm">
+              </div>
+              ${isCarBuy || isCarSell ? `
+
+              <!-- === 小车属性（买小车/卖小车时显示） === -->
+              <div id="carFields" class="space-y-3 border-t border-dashed border-gray-200 pt-4 mt-2" style="display:${isCarBuy || isCarSell ? 'block' : 'none'}">
+                <div class="flex items-center gap-2 text-sm font-semibold text-accent">
+                  <i data-lucide="car" class="w-4 h-4"></i> 小车属性
+                </div>
+
+                <!-- 买小车字段 -->
+                <div id="carBuyFields">
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-sm text-gray-600 mb-1">品牌</label>
+                      ${renderBrandSelect('carBrand', car ? car.brand : '', 'onCarBrandChange()')}
+                    </div>
+                    <div>
+                      <label class="block text-sm text-gray-600 mb-1">颜色/车型 <span class="text-invest">*</span></label>
+                      <input type="text" id="carName" list="carNameList" value="${esc(car ? car.name : '')}" placeholder="如：红奔驰AMG瓦罐" class="w-full glass-input p-2 text-sm">
+                      <datalist id="carNameList"></datalist>
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-2 gap-3 mt-3">
+                    <div>
+                      <label class="block text-sm text-gray-600 mb-1">购买日期</label>
+                      <input type="date" id="carBuyDate" value="${car ? car.buyDate : getToday()}" class="w-full glass-input p-2 text-sm">
+                    </div>
+                    <div>
+                      <label class="block text-sm text-gray-600 mb-1">购买价格</label>
+                      <input type="number" id="carBuyPrice" step="0.01" value="${car ? car.buyPrice : ''}" class="w-full glass-input p-2 text-sm">
+                    </div>
+                  </div>
+                  <div class="mt-3">
+                    <label class="block text-sm text-gray-600 mb-1">子类别（Hotwheels分类）</label>
+                    <select id="carSubCategory" class="w-full glass-input p-2 text-sm">
+                      ${HW_SUBCATS.map(s => `<option value="${s}" ${(car && car.subCategory === s) ? 'selected' : ''}>${s || '-- 无 --'}</option>`).join('')}
+                    </select>
+                  </div>
+                  <div class="mt-3">
+                    <label class="block text-sm text-gray-600 mb-1">预期价值</label>
+                    <input type="number" id="carExpected" step="0.01" value="${car ? car.expectedValue : ''}" placeholder="手动估值" class="w-full glass-input p-2 text-sm">
+                  </div>
+                  <div class="mt-3 flex items-center gap-4 text-xs">
+                    <span class="text-gray-500">类别: <strong class="${defaultCarCat === 'invest' ? 'text-invest' : 'text-keep'}">${carCatLabel}</strong></span>
+                    <span class="text-gray-400 font-mono">SID: ${car ? car.sid.slice(0, 8) + '...' : '自动生成'}</span>
+                  </div>
+                  <div class="mt-3">
+                    <label class="block text-sm text-gray-600 mb-1">小车备注</label>
+                    <input type="text" id="carNote" value="${esc(car ? car.note : '')}" class="w-full glass-input p-2 text-sm">
+                  </div>
+                </div>
+
+                <!-- 卖小车字段 -->
+                <div id="carSellFields" class="hidden">
+                  <div>
+                    <label class="block text-sm text-gray-600 mb-1">选择小车</label>
+                    <select id="sellCarSelect" onchange="onSellCarSelect()" class="w-full glass-input p-2 text-sm">
+                    </select>
+                  </div>
+                  <div class="mt-3">
+                    <label class="block text-sm text-gray-600 mb-1">卖出价格</label>
+                    <input type="number" id="sellCarPriceInput" step="0.01" class="w-full glass-input p-2 text-sm">
+                  </div>
+                  <div class="mt-3">
+                    <label class="block text-sm text-gray-600 mb-1">卖出日期</label>
+                    <input type="date" id="sellCarDateInput" value="${getToday()}" class="w-full glass-input p-2 text-sm">
+                  </div>
+                </div>
+              </div>
+              ` : ''}
+              ${isCarBuy || isCarSell ? '' : `
+              <div class="mt-3">
+                <label class="block text-sm text-gray-600 mb-1">备注</label>
+                <input type="text" id="txnNote" value="${esc(txn ? txn.note : '')}" class="w-full glass-input p-2.5 text-sm">
+              </div>
+              `}
+            </div>
+            <div class="mt-6 flex justify-end space-x-2">
+              <button onclick="hideModal()" class="px-4 py-2 glass-light rounded-xl-apple hover:bg-white/60 text-sm btn-glass">取消</button>
+              <button onclick="saveTransaction()" class="px-4 py-2 bg-accent/85 text-white rounded-xl-apple hover:bg-accent/90 text-sm btn-glass">保存</button>
+            </div>
+          </div>
+        </div>`;
+      showModal(html);
+
+      // 初始化
+      if (isCarBuy || isCarSell) {
+        // 买卖小车：直接展开小车属性，无需填充下拉
+        const carFields = document.getElementById('carFields');
+        const carBuyFields = document.getElementById('carBuyFields');
+        const carSellFields = document.getElementById('carSellFields');
+        if (carFields) carFields.style.display = "block";
+        if (isCarBuy && carBuyFields) {
+          carBuyFields.style.display = "block";
+          onCarBrandChange();
+        }
+        if (isCarSell && carSellFields) {
+          carSellFields.style.display = "block";
+          populateSellCarDropdown();
+        }
+      } else {
+        // 普通交易：填充类别下拉，默认取列表第一个
+        let initType = 'expense';
+        let initCat = accountId === 'pocket' ? 'daily' : 'other';
+        if (presetType === 'income') { initType = 'income'; initCat = accountId === 'pocket' ? 'allowance' : 'other'; }
+        else if (presetType === 'expense') { initType = 'expense'; initCat = accountId === 'pocket' ? 'daily' : 'other'; }
+        else if (txn) { initType = txn.type; initCat = txn.category; }
+        populateCategoryDropdown(initType, accountId, initCat);
+      }
+    }
+
+    function setTxnType(type) {
+      document.getElementById('txnType').value = type;
+      document.getElementById('btnExpense').className = type === 'expense'
+        ? 'flex-1 py-2 rounded-xl text-sm font-bold bg-invest/10 text-invest'
+        : 'flex-1 py-2 rounded-xl text-sm font-bold glass-light text-gray-500';
+      document.getElementById('btnIncome').className = type === 'income'
+        ? 'flex-1 py-2 rounded-xl text-sm font-bold bg-keep/10 text-keep'
+        : 'flex-1 py-2 rounded-xl text-sm font-bold glass-light text-gray-500';
+      const accountId = document.getElementById('txnAccountId').value;
+      populateCategoryDropdown(type, accountId, document.getElementById('txnCategory').value);
+    }
+
+    function onTxnCategoryChange() {
+      const catEl = document.getElementById('txnCategory');
+      if (!catEl) return;
+      const cat = catEl.value;
+      const carFields = document.getElementById('carFields');
+      const carBuyFields = document.getElementById('carBuyFields');
+      const carSellFields = document.getElementById('carSellFields');
+
+      if (cat === 'car_buy') {
+        carFields.style.display = "block";
+        carBuyFields.style.display = "block";
+        carSellFields.classList.add('hidden');
+        // 金额同步
+        onTxnAmountChange();
+        onTxnDateChange();
+      } else if (cat === 'car_sell') {
+        carFields.style.display = "block";
+        carBuyFields.classList.add('hidden');
+        carSellFields.style.display = "block";
+        populateSellCarDropdown();
+      } else {
+        carFields.style.display = "none";
+      }
+    }
+
+    function onTxnAmountChange() {
+      const cat = document.getElementById('txnCategory').value;
+      if (cat === 'car_buy') {
+        const amt = document.getElementById('txnAmount').value;
+        document.getElementById('carBuyPrice').value = amt;
+      }
+    }
+
+    function onTxnDateChange() {
+      const cat = document.getElementById('txnCategory').value;
+      if (cat === 'car_buy') {
+        const date = document.getElementById('txnDate').value;
+        document.getElementById('carBuyDate').value = date;
+      }
+    }
+
+    function populateSellCarDropdown() {
+      const accountId = document.getElementById('txnAccountId').value;
+      const sel = document.getElementById('sellCarSelect');
+      const unsoldCars = carAppData.cars.filter(c =>
+        !c.isSold && c.category === (accountId === 'invest' ? 'invest' : 'keep')
+      );
+      if (unsoldCars.length === 0) {
+        sel.innerHTML = '<option value="">— 无可售小车 —</option>';
+        return;
+      }
+      sel.innerHTML = unsoldCars.map(c =>
+        `<option value="${c.sid}" data-expected="${c.expectedValue || c.buyPrice}">
+          ${esc(c.brand ? c.brand + ' ' : '')}${esc(c.name)} (${fmt(c.buyPrice)})
+        </option>`
+      ).join('');
+      // 预填卖出价格
+      onSellCarSelect();
+    }
+
+    function onSellCarSelect() {
+      const sel = document.getElementById('sellCarSelect');
+      const opt = sel.options[sel.selectedIndex];
+      if (opt && opt.dataset.expected) {
+        document.getElementById('sellCarPriceInput').value = opt.dataset.expected;
+      }
+    }
+
+    // 按收支类型过滤类别下拉
+    function getCategoriesByType(type, accountId) {
+      if (accountId === 'pocket') {
+        // 日常消费：买小车走专用入口，支出不含买车
+        if (type === 'expense') return [
+          { value: 'daily', label: '日常消费' },
+          { value: 'other', label: '其它' }
+        ];
+        return [
+          { value: 'allowance', label: '存入零花钱' },
+          { value: 'other', label: '其它' }
+        ];
+      }
+      // 投资：买车走「新车」按钮，卖车从车库，此处只留通用
+      if (type === 'expense') return [
+        { value: 'other', label: '其它' }
+      ];
+      return [
+        { value: 'other', label: '其它' }
+      ];
+    }
+
+    function populateCategoryDropdown(type, accountId, selectedValue) {
+      const sel = document.getElementById('txnCategory');
+      const cats = getCategoriesByType(type, accountId);
+      sel.innerHTML = cats.map(c =>
+        `<option value="${c.value}" ${c.value === selectedValue ? 'selected' : ''}>${c.label}</option>`
+      ).join('');
+    }
+
+    function onTxnCategoryChange() {
+      // placeholder for future category-specific logic
+    }
+
+    function saveTransaction() {
+      const accountId = document.getElementById('txnAccountId').value;
+      const txnId = document.getElementById('txnId').value;
+      const type = document.getElementById('txnType').value;
+      const category = document.getElementById('txnCategory').value;
+      const amount = parseFloat(document.getElementById('txnAmount').value) || 0;
+      const date = document.getElementById('txnDate').value;
+      const noteEl = document.getElementById('txnNote');
+      let note = noteEl ? noteEl.value.trim() : '';
+      // 买车/卖车时备注输入框不存在，编辑已有记录时保留原备注
+      if (!noteEl && txnId) {
+        const oldTxn = carAppData.accounts[accountId].transactions.find(t => t.id === txnId);
+        if (oldTxn) note = oldTxn.note || '';
+      }
+
+      if (!amount) return alert('请输入金额');
+
+      // === 处理小车关联 ===
+      let carSid = null;
+
+      if (category === 'car_buy') {
+        const carNameEl = document.getElementById('carName');
+        const carName = carNameEl ? carNameEl.value.trim() : '';
+        if (!carName && !txnId) return alert('请填写颜色/车型');
+        const sid = document.getElementById('carSid').value;
+        const brand = document.getElementById('carBrand').value.trim();
+        const buyDate = document.getElementById('carBuyDate').value || date;
+        const buyPrice = parseFloat(document.getElementById('carBuyPrice').value) || amount;
+        const expectedValue = parseFloat(document.getElementById('carExpected').value) || 0;
+        const carCat = document.getElementById('carCategory').value;
+        const carNote = document.getElementById('carNote').value.trim();
+        const subCategory = document.getElementById('carSubCategory')?.value || '';
+
+        const existingCar = carAppData.cars.find(c => c.sid === sid);
+        if (existingCar) {
+          // 更新已有小车（名称非空才覆盖，防止误清空）
+          existingCar.brand = brand;
+          if (carName) existingCar.name = carName;
+          existingCar.buyDate = buyDate;
+          existingCar.buyPrice = buyPrice;
+          existingCar.note = carNote;
+          existingCar.subCategory = subCategory;
+          if (expectedValue !== existingCar.expectedValue) {
+            appendExpectedHistory(existingCar, expectedValue, date);
+          }
+        } else {
+          // 新建小车
+          const newCar = {
+            sid, brand, name: carName,
+            buyDate, buyPrice, subCategory,
+            category: carCat,
+            sellPrice: null, soldDate: null,
+            isSold: false, note: carNote,
+            expectedHistory: [{ date: date, value: expectedValue }],
+            expectedValue
+          };
+          carAppData.cars.push(newCar);
+        }
+        carSid = sid;
+        if (carName) note = carName; // 收支备注同步为车名
+      }
+
+      else if (category === 'car_sell') {
+        const sel = document.getElementById('sellCarSelect');
+        const selectedSid = sel.value;
+        if (!selectedSid) return alert('请选择要卖出的小车');
+        const sellPrice = parseFloat(document.getElementById('sellCarPriceInput').value) || 0;
+        const sellDate = document.getElementById('sellCarDateInput').value || date;
+
+        const car = carAppData.cars.find(c => c.sid === selectedSid);
+        if (car) {
+          car.isSold = true;
+          car.sellPrice = sellPrice;
+          car.soldDate = sellDate;
+        }
+        carSid = selectedSid;
+        if (car) note = '卖出: ' + (car.brand ? car.brand + ' ' : '') + car.name;
+      }
+
+      // === 创建/更新交易记录 ===
+      const txn = {
+        id: txnId || genId('txn'),
+        type, category, amount, date,
+        carSid, loanId: null, transferPairId: null, note
+      };
+
+      const account = carAppData.accounts[accountId];
+      if (txnId) {
+        account.transactions = account.transactions.map(t => t.id === txnId ? txn : t);
+      } else {
+        account.transactions.push(txn);
+      }
+
+      hideModal();
+      saveData();
+
+      // 联动提示 & 操作日志
+      if (category === 'car_buy') {
+        if (carSid) {
+          const updatedCar = carAppData.cars.find(c => c.sid === carSid);
+          if (updatedCar) {
+            const isNew = !txnId;
+            addOperationLog('car_buy', `买小车 ${esc(updatedCar.brand)} ${esc(updatedCar.name)} ${fmt(amount)}`, { name: updatedCar.name, brand: updatedCar.brand, amount, account: accountId });
+            alert(`✅ 已同步更新车库小车: ${updatedCar.brand} ${updatedCar.name}`);
+          }
+        }
+      } else if (category === 'car_sell' && carSid) {
+        const soldCar = carAppData.cars.find(c => c.sid === carSid);
+        if (soldCar) {
+          addOperationLog('car_sell', `卖出 ${esc(soldCar.brand || '')} ${esc(soldCar.name)} 售价 ${fmt(amount)}`, { name: soldCar.name, brand: soldCar.brand, sellPrice: amount, account: accountId });
+        }
+        alert('✅ 小车已标记为售出，卖车收入已计入收支');
+      } else if (category !== 'car_buy' && category !== 'car_sell') {
+        const logType = txnId ? 'txn_edit' : 'txn_add';
+        addOperationLog(logType, `${type === 'income' ? '收入' : '支出'} ${category} ${fmt(amount)}`, { type, category, amount, account: accountId });
+      }
+    }
+
+    function editTransaction(accountId, txnId) {
+      openTransactionModal(accountId, txnId);
+    }
+
+    function deleteTransaction(accountId, txnId) {
+      const account = carAppData.accounts[accountId];
+      const txn = account.transactions.find(t => t.id === txnId);
+      if (!txn) return;
+
+      // 检查是否关联小车
+      const linkedCar = txn.carSid ? carAppData.cars.find(c => c.sid === txn.carSid) : null;
+      let msg = `确定删除此交易记录？\n\n  ${txn.date}  ${txn.category}  ${fmt(txn.amount)}`;
+      if (linkedCar) {
+        msg += `\n\n⚠ 此记录关联小车: ${esc(linkedCar.brand)} ${esc(linkedCar.name)}`;
+        msg += `\n   该小车及其其它关联收支也将被删除。`;
+      }
+
+      if (!confirm(msg)) return;
+
+      // 如果关联小车，删除小车及其全部关联交易
+      if (linkedCar) {
+        ['pocket', 'invest'].forEach(accId => {
+          carAppData.accounts[accId].transactions =
+            carAppData.accounts[accId].transactions.filter(t => t.carSid !== linkedCar.sid);
+        });
+        carAppData.cars = carAppData.cars.filter(c => c.sid !== linkedCar.sid);
+        addOperationLog('car_delete', `删除小车 ${esc(linkedCar.brand)} ${esc(linkedCar.name)}（含关联收支）`, { name: linkedCar.name, brand: linkedCar.brand });
+      } else {
+        account.transactions = account.transactions.filter(t => t.id !== txnId);
+        addOperationLog('txn_delete', `删除${txn.type === 'income' ? '收入' : '支出'} ${txn.category} ${fmt(txn.amount)}`, { type: txn.type, category: txn.category, amount: txn.amount });
+      }
+
+      saveData();
+    }
+
+    // ==================== 小车删除 ====================
+    function deleteCar(sid) {
+      const car = carAppData.cars.find(c => c.sid === sid);
+      if (!car) return;
+
+      // 查找关联的收支记录
+      const allTxns = [
+        ...carAppData.accounts.pocket.transactions,
+        ...carAppData.accounts.invest.transactions
+      ];
+      const linkedTxns = allTxns.filter(t => t.carSid === sid);
+      const txnDetails = linkedTxns.map(t =>
+        `  · ${t.date}  ${t.type === 'income' ? '收入' : '支出'} ${t.category}  ${fmt(t.amount)}  [${t.id.slice(0, 8)}]`
+      ).join('\n');
+
+      const msg = `确定删除 "${esc(car.brand)} ${esc(car.name)}"？\n\n` +
+        `关联的收支记录将被同步删除：\n${txnDetails || '无关联收支'}`;
+
+      if (!confirm(msg)) return;
+
+      // 删除关联交易
+      ['pocket', 'invest'].forEach(accId => {
+        carAppData.accounts[accId].transactions =
+          carAppData.accounts[accId].transactions.filter(t => t.carSid !== sid);
+      });
+      // 删除小车
+      carAppData.cars = carAppData.cars.filter(c => c.sid !== sid);
+      addOperationLog('car_delete', `删除小车 ${esc(car.brand)} ${esc(car.name)}${linkedTxns.length > 0 ? '（含' + linkedTxns.length + '条收支）' : ''}`, { name: car.name, brand: car.brand, txnCount: linkedTxns.length });
+      saveData();
+    }
+
+    // ==================== 手动添加小车 ====================
+    function openManualCarModal(accountType) {
+      const catLabel = accountType === 'invest' ? '投资' : '自留';
+      const html = `
+        <div id="manualCarModal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-50" onclick="if(event.target===this)hideModal()">
+          <div class="glass-strong rounded-2xl-apple w-full max-w-sm p-6">
+            <div class="flex justify-between items-center mb-3">
+              <h3 class="font-bold text-lg"><i data-lucide="plus-square" class="w-4 h-4 inline-block align-middle mr-1"></i> 手动添加小车</h3>
+              <button onclick="hideModal()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <div class="text-xs text-gray-400 mb-4">添加至 <strong class="${accountType === 'invest' ? 'text-invest' : 'text-keep'}">${catLabel}库</strong>，不计入收支流水</div>
+            <div class="space-y-3">
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1">品牌</label>
+                  ${renderBrandSelect('manualCarBrand', '', '')}
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1">颜色/车型 <span class="text-invest">*</span></label>
+                  <input type="text" id="manualCarName" placeholder="如：红奔驰AMG瓦罐" class="w-full glass-input p-2 text-sm">
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1">购买日期</label>
+                  <input type="date" id="manualCarBuyDate" value="${getToday()}" class="w-full glass-input p-2 text-sm">
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1">购买价格</label>
+                  <input type="number" id="manualCarBuyPrice" step="0.01" class="w-full glass-input p-2 text-sm">
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">子类别（Hotwheels分类）</label>
+                <select id="manualCarSubCategory" class="w-full glass-input p-2 text-sm">
+                  ${HW_SUBCATS.map(s => `<option value="${s}">${s || '-- 无 --'}</option>`).join('')}
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">预期价值</label>
+                <input type="number" id="manualCarExpected" step="0.01" placeholder="手动估值" class="w-full glass-input p-2 text-sm">
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">备注</label>
+                <input type="text" id="manualCarNote" class="w-full glass-input p-2 text-sm">
+              </div>
+            </div>
+            <div class="mt-5 flex justify-end space-x-2">
+              <button onclick="hideModal()" class="px-4 py-2 glass-light rounded-xl-apple hover:bg-white/60 text-sm btn-glass">取消</button>
+              <button onclick="saveManualCar('${accountType}')" class="px-4 py-2 bg-accent/85 text-white rounded-xl-apple hover:bg-accent/90 text-sm btn-glass">保存</button>
+            </div>
+          </div>
+        </div>`;
+      showModal(html);
+      initIcons();
+    }
+
+    function saveManualCar(accountType) {
+      const name = document.getElementById('manualCarName').value.trim();
+      if (!name) return alert('请填写颜色/车型');
+      const brand = document.getElementById('manualCarBrand').value.trim();
+      const buyDate = document.getElementById('manualCarBuyDate').value || getToday();
+      const buyPrice = parseFloat(document.getElementById('manualCarBuyPrice').value) || 0;
+      if (!buyPrice) return alert('请填写购买价格');
+      const expectedValue = parseFloat(document.getElementById('manualCarExpected').value) || buyPrice;
+      const subCategory = document.getElementById('manualCarSubCategory').value;
+      const note = document.getElementById('manualCarNote').value.trim();
+
+      const newCar = {
+        sid: genUUID(),
+        brand: brand || 'Hotwheels',
+        name,
+        buyDate,
+        buyPrice,
+        expectedValue,
+        category: accountType,
+        subCategory,
+        sellPrice: null,
+        soldDate: null,
+        isSold: false,
+        note,
+        manual: true,
+        expectedHistory: [{ date: buyDate, value: expectedValue }]
+      };
+      carAppData.cars.push(newCar);
+      addOperationLog('car_manual', '手动添加 ' + esc(name) + ' → ' + (accountType === 'invest' ? '投资' : '自留') + '库 ' + fmt(buyPrice), { name, category: accountType, amount: buyPrice });
+      saveData();
+      hideModal();
+    }
+
+    // ==================== 小车编辑弹窗 ====================
+    function openCarEditModal(sid) {
+      const car = carAppData.cars.find(c => c.sid === sid);
+      if (!car) return;
+
+      const html = `
+        <div id="carEditModal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-50">
+          <div class="glass-strong rounded-2xl-apple w-full max-w-sm p-6">
+            <h3 class="font-bold text-lg mb-4"><i data-lucide="car" class="w-4 h-4 inline-block align-middle mr-1"></i> 编辑小车</h3>
+            <input type="hidden" id="editCarSid" value="${car.sid}">
+            <div class="space-y-3">
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1">品牌</label>
+                  ${renderBrandSelect('editCarBrand', car.brand, 'onCarBrandChange()')}
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1">颜色/车型</label>
+                  <input type="text" id="editCarName" list="editCarNameList" value="${esc(car.name)}" class="w-full glass-input p-2 text-sm">
+                  <datalist id="editCarNameList"></datalist>
+                </div>
+              </div>
+              <div class="mt-3">
+                <label class="block text-sm text-gray-600 mb-1">子类别（Hotwheels分类）</label>
+                <select id="editCarSubCategory" class="w-full glass-input p-2 text-sm">
+                  ${HW_SUBCATS.map(s => `<option value="${s}" ${(car.subCategory === s) ? 'selected' : ''}>${s || '-- 无 --'}</option>`).join('')}
+                </select>
+              </div>
+              <div class="mt-3">
+                <label class="block text-sm text-gray-600 mb-1">预期价值</label>
+                <input type="number" id="editCarExpected" step="0.01" value="${car.expectedValue || ''}" class="w-full glass-input p-2 text-sm">
+              </div>
+              <div class="text-xs text-gray-400 flex gap-4">
+                <span>购入: ${car.buyDate} · ${fmt(car.buyPrice)}</span>
+              </div>
+              <div class="flex items-center gap-4 text-xs text-gray-400">
+                <span>类别: <strong class="${car.category === 'invest' ? 'text-invest' : 'text-keep'}">${car.category === 'invest' ? '投资' : '自留'}</strong></span>
+                <span class="font-mono">SID: ${car.sid.slice(0, 8)}</span>
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">备注</label>
+                <input type="text" id="editCarNote" value="${esc(car.note)}" class="w-full glass-input p-2 text-sm">
+              </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-2">
+              <button onclick="hideModal()" class="px-4 py-2 glass-light rounded-xl-apple hover:bg-white/60 text-sm btn-glass">取消</button>
+              <button onclick="saveCarEdit()" class="px-4 py-2 bg-accent/85 text-white rounded-xl-apple hover:bg-accent/90 text-sm btn-glass">保存</button>
+            </div>
+          </div>
+        </div>`;
+      showModal(html);
+      onCarBrandChange(); // 强联想：填充该品牌的颜色/车型建议
+    }
+
+    function saveCarEdit() {
+      const sid = document.getElementById('editCarSid').value;
+      const car = carAppData.cars.find(c => c.sid === sid);
+      if (!car) return;
+
+      const oldExpected = car.expectedValue;
+      car.brand = document.getElementById('editCarBrand').value.trim();
+      const editCarName = document.getElementById('editCarName').value.trim();
+      if (editCarName) car.name = editCarName;
+      car.subCategory = document.getElementById('editCarSubCategory').value || '';
+      const newExpected = parseFloat(document.getElementById('editCarExpected').value) || 0;
+      if (newExpected !== oldExpected) {
+        appendExpectedHistory(car, newExpected, getToday());
+      }
+      car.note = document.getElementById('editCarNote').value.trim();
+
+      hideModal();
+      addOperationLog('car_edit', `编辑小车 ${esc(car.brand)} ${esc(car.name)}`, { name: car.name, brand: car.brand, expected: newExpected !== oldExpected ? fmt(oldExpected) + '→' + fmt(newExpected) : '' });
+      saveData();
+
+      // 联动提示：查找关联收支
+      const linkedTxns = [
+        ...carAppData.accounts.pocket.transactions,
+        ...carAppData.accounts.invest.transactions
+      ].filter(t => t.carSid === car.sid);
+      if (linkedTxns.length > 0) {
+        const summary = linkedTxns.map(t => `  · ${t.date} ${t.category} ${fmt(t.amount)}`).join('\n');
+        alert(`✅ 小车属性已保存\n\n关联收支（未改动）:\n${summary}`);
+      }
+    }
+
+    function sellCar(sid) {
+      const car = carAppData.cars.find(c => c.sid === sid);
+      if (!car) return;
+
+      const html = `
+        <div id="sellCarModal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-50">
+          <div class="glass-strong rounded-2xl-apple w-full max-w-sm p-6 border-t-4 border-sell/60">
+            <h3 class="font-bold text-lg mb-4">登记卖出</h3>
+            <p class="text-sm text-gray-500 mb-3">${esc(car.brand)} ${esc(car.name)} · 买入价 ${fmt(car.buyPrice)}</p>
+            <input type="hidden" id="sellCarSid" value="${car.sid}">
+            <div class="space-y-3">
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">卖出净价</label>
+                <input type="number" id="sellCarPrice" value="${car.expectedValue || car.buyPrice}" step="0.01" class="w-full glass-input p-2.5 text-sm">
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">售出日期</label>
+                <input type="date" id="sellCarDate" value="${getToday()}" class="w-full glass-input p-2.5 text-sm">
+              </div>
+            </div>
+            <div class="mt-6 flex justify-end space-x-2">
+              <button onclick="hideModal()" class="px-4 py-2 glass-light rounded-xl-apple hover:bg-white/60 text-sm btn-glass">取消</button>
+              <button onclick="confirmSellCar()" class="px-4 py-2 bg-sell/85 text-white rounded-xl-apple hover:bg-sell/90 text-sm font-bold btn-glass">确认卖出</button>
+            </div>
+          </div>
+        </div>`;
+      showModal(html);
+    }
+
+    function confirmSellCar() {
+      const sid = document.getElementById('sellCarSid').value;
+      const sellPrice = parseFloat(document.getElementById('sellCarPrice').value) || 0;
+      const sellDate = document.getElementById('sellCarDate').value;
+
+      const car = carAppData.cars.find(c => c.sid === sid);
+      if (!car) return;
+
+      car.isSold = true;
+      car.sellPrice = sellPrice;
+      car.soldDate = sellDate;
+
+      const account = car.category === 'invest' ? carAppData.accounts.invest : carAppData.accounts.pocket;
+      account.transactions.push({
+        id: genId('txn'),
+        type: 'income',
+        category: 'car_sell',
+        amount: sellPrice,
+        date: sellDate,
+        carSid: car.sid,
+        loanId: null, transferPairId: null,
+        note: '卖出: ' + (car.brand ? car.brand + ' ' : '') + car.name
+      });
+
+      addOperationLog('car_sell', '卖出 ' + (car.brand ? esc(car.brand) + ' ' : '') + esc(car.name) + ' 售价 ' + fmt(sellPrice), { name: car.name, brand: car.brand, sellPrice });
+      hideModal();
+      saveData();
+    }
+
+    function convertCar(sid) {
+      const car = carAppData.cars.find(c => c.sid === sid);
+      if (!car) return;
+
+      const oldCategory = car.category;
+      const newCategory = oldCategory === 'invest' ? 'keep' : 'invest';
+      const oldLabel = oldCategory === 'invest' ? '投资' : '自留';
+      const newLabel = newCategory === 'invest' ? '投资' : '自留';
+
+      if (!confirm(`确定将 "${car.name}" 从${oldLabel}库移至${newLabel}库？\n\n买入价 ${fmt(car.buyPrice)} — 关联收支将同步转移。`)) return;
+
+      car.category = newCategory;
+
+      const fromAccId = oldCategory === 'invest' ? 'invest' : 'pocket';
+      const toAccId = newCategory === 'invest' ? 'invest' : 'pocket';
+
+      // 转移关联的买车/卖车交易
+      const fromAcc = carAppData.accounts[fromAccId];
+      const toAcc = carAppData.accounts[toAccId];
+      const linkedTxns = fromAcc.transactions.filter(t => t.carSid === sid);
+      linkedTxns.forEach(t => toAcc.transactions.push(t));
+      carAppData.accounts[fromAccId].transactions =
+        fromAcc.transactions.filter(t => t.carSid !== sid);
+
+      // 生成转账配对记录
+      const transferPairId = genId('tp');
+      const date = getToday();
+
+      carAppData.transferPairs.push({
+        id: transferPairId,
+        fromAccount: fromAccId,
+        toAccount: toAccId,
+        amount: car.buyPrice,
+        date: date,
+        note: `${oldLabel}→${newLabel}: ${car.name}`
+      });
+
+      addOperationLog('car_convert', esc(car.name) + ' ' + oldLabel + '→' + newLabel + ' 按 ' + fmt(car.buyPrice), { name: car.name, from: oldLabel, to: newLabel, amount: car.buyPrice });
+      saveData();
+    }
+
+    // ==================== 小车库存 ====================
+    let invSortMode = 'brand';
+    let invSearchText = '';
+    let invSubCatFilter = '';
+
+    function onInvSubCatFilter() {
+      invSubCatFilter = document.getElementById('invSubCatFilter')?.value || '';
+      renderInventory();
+    }
+
+    function renderInventory() {
+      const unsoldCars = carAppData.cars.filter(c => !c.isSold);
+
+      let filtered = unsoldCars;
+      if (invSearchText) {
+        const q = invSearchText.toLowerCase();
+        filtered = unsoldCars.filter(c =>
+          c.name.toLowerCase().includes(q) ||
+          c.brand.toLowerCase().includes(q) ||
+          c.sid.toLowerCase().includes(q) ||
+          (c.subCategory || '').toLowerCase().includes(q)
+        );
+      }
+      if (invSubCatFilter) {
+        filtered = filtered.filter(c => c.subCategory === invSubCatFilter);
+      }
+
+      let groups;
+      if (invSortMode === 'brand') {
+        groups = groupBy(filtered, c => (c.brand || '未知品牌') + '|' + c.name);
+        // 对分组进行排序
+        const sortedGroups = {};
+        const hwGroups = [];
+        const otherGroups = [];
+        
+        // 分离Hotwheels和其他品牌
+        Object.entries(groups).forEach(([key, cars]) => {
+          if (cars[0].brand === 'Hotwheels') {
+            hwGroups.push([key, cars]);
+          } else {
+            otherGroups.push([key, cars]);
+          }
+        });
+        
+        // Hotwheels内部按子类别排序
+        hwGroups.sort(([keyA, carsA], [keyB, carsB]) => {
+          const subCatA = carsA[0].subCategory || '';
+          const subCatB = carsB[0].subCategory || '';
+          const indexA = HW_SUBCAT_ORDER.indexOf(subCatA);
+          const indexB = HW_SUBCAT_ORDER.indexOf(subCatB);
+          return indexA - indexB;
+        });
+        
+        // 其他品牌按ALL_BRANDS顺序排序
+        otherGroups.sort(([keyA, carsA], [keyB, carsB]) => {
+          const brandA = carsA[0].brand || '';
+          const brandB = carsB[0].brand || '';
+          const indexA = ALL_BRANDS.indexOf(brandA);
+          const indexB = ALL_BRANDS.indexOf(brandB);
+          return indexA - indexB;
+        });
+        
+        // 合并排序结果
+        [...hwGroups, ...otherGroups].forEach(([key, cars]) => {
+          sortedGroups[key] = cars;
+        });
+        groups = sortedGroups;
+      } else {
+        groups = groupBy(filtered, c => c.buyDate.slice(0, 7));
+      }
+
+      const investCount = unsoldCars.filter(c => c.category === 'invest').length;
+      const keepCount = unsoldCars.filter(c => c.category === 'keep').length;
+
+      const html = `
+        <div class="max-w-6xl mx-auto space-y-4">
+
+          <div class="glass rounded-2xl-apple p-3 flex flex-wrap gap-3 items-center">
+            <div class="flex gap-1">
+              <button onclick="setInvSort('brand')" class="px-3 py-1.5 rounded-lg text-xs font-medium ${invSortMode === 'brand' ? 'bg-blue-100 text-accent' : 'glass-light'} btn-glass">按品牌</button>
+              <button onclick="setInvSort('month')" class="px-3 py-1.5 rounded-lg text-xs font-medium ${invSortMode === 'month' ? 'bg-blue-100 text-accent' : 'glass-light'} btn-glass">按月</button>
+            </div>
+            <input type="text" id="invSearch" placeholder="搜索品牌/名称/SID..." value="${esc(invSearchText)}"
+                   oninput="onInvSearch()" class="flex-1 glass-input p-2 text-sm max-w-xs">
+            <select id="invSubCatFilter" onchange="onInvSubCatFilter()" class="glass-input p-1.5 text-xs max-w-[100px]">
+              <option value="">全部分类</option>
+              ${HW_SUBCATS.filter(s => s).map(s => `<option value="${s}">${s}</option>`).join('')}
+            </select>
+            <div class="text-xs text-gray-500 ml-auto">
+              总投资 ${investCount} + 自留 ${keepCount} = 共 ${unsoldCars.length} 辆
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            ${Object.entries(groups).map(([key, cars]) => {
+              const label = invSortMode === 'brand'
+                ? (cars[0].brand || '未知品牌') + ' ' + cars[0].name
+                : key;
+              const avgPrice = cars.reduce((s, c) => s + c.buyPrice, 0) / cars.length;
+              const groupId = 'group_' + key.replace(/[^a-zA-Z0-9\\u4e00-\\u9fff]/g, '_');
+
+              return `
+                <div class="glass rounded-2xl-apple overflow-hidden">
+                  <div class="glass-light p-4 flex justify-between items-center accordion-toggle" onclick="toggleAccordion('${groupId}')">
+                    <div>
+                      <span class="font-bold">${esc(label)}</span>
+                      <span class="text-sm text-gray-500 ml-2">${cars.length} 辆 · 均价 ${fmt(avgPrice)}</span>
+                      <span class="text-xs ml-2 ${cars[0].category === 'invest' ? 'text-invest' : 'text-keep'}">
+                        ${cars[0].category === 'invest' ? '投资' : '自留'}
+                      </span>
+                    </div>
+                    <span class="text-gray-400 text-sm" id="${groupId}_icon">▶</span>
+                  </div>
+                  <div id="${groupId}_body" class="accordion-body collapsed">
+                    <div class="divide-y divide-black/5 border-t border-black/5">
+                      ${cars.map(c => `
+                        <div class="flex items-center justify-between px-4 py-2.5 hover:bg-white/30 text-sm">
+                          <div class="flex items-center gap-4 flex-1 min-w-0">
+                            <span class="font-semibold text-xs truncate">${esc(c.brand || '?')}</span>
+                            ${c.manual ? '<span class="text-xs text-gray-400 bg-gray-100 px-1 rounded">手动</span>' : ''}
+                            ${c.subCategory ? `<span class="text-xs px-1 py-0.5 rounded ${c.subCategory === 'RLC' ? 'bg-yellow-100 text-yellow-700' : c.subCategory === '文化' ? 'bg-purple-100 text-purple-700' : c.subCategory === '超宝' ? 'bg-green-100 text-green-700' : c.subCategory === '礼盒' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'}">${c.subCategory}</span>` : ''}
+                            <span class="text-gray-600 text-xs truncate">${esc(c.name)}</span>
+                            <span class="text-xs text-gray-400">${c.buyDate}</span>
+                            <span class="text-xs font-mono text-gray-500">${fmt(c.buyPrice)}</span>
+                            <span class="text-xs text-gray-400">预期 ${fmt(c.expectedValue || c.buyPrice)}</span>
+                          </div>
+                          <div class="flex gap-1">
+                            <button onclick="sellCar('${c.sid}')" class="btn-sell text-xs">卖出</button>
+                            <button onclick="convertCar('${c.sid}')" class="btn-convert ${c.category === 'invest' ? 'btn-to-keep' : 'btn-to-invest'} text-xs">
+                              → ${c.category === 'invest' ? '自留' : '投资'}
+                            </button>
+                            <button onclick="openCarEditModal('${c.sid}')" class="text-accent hover:underline text-xs mr-1"><i data-lucide="pencil-line" class="w-3 h-3 inline-block"></i></button>
+                            <button onclick="deleteCar('${c.sid}')" class="text-invest hover:underline text-xs"><i data-lucide="trash-2" class="w-3 h-3 inline-block"></i></button>
+                          </div>
+                        </div>`).join('')}
+                    </div>
+                  </div>
+                </div>`;
+            }).join('')}
+            ${Object.keys(groups).length === 0 ? '<div class="text-center py-10 text-gray-400">无匹配的小车</div>' : ''}
+          </div>
+        </div>`;
+      document.getElementById('moduleInventory').innerHTML = html;
+    }
+
+    function groupBy(arr, fn) {
+      const map = {};
+      arr.forEach(item => {
+        const key = typeof fn === 'function' ? fn(item) : item[fn];
+        if (!map[key]) map[key] = [];
+        map[key].push(item);
+      });
+      return map;
+    }
+
+    function toggleAccordion(groupId) {
+      const body = document.getElementById(groupId + '_body');
+      const icon = document.getElementById(groupId + '_icon');
+      if (!body || !icon) return;
+      const isCollapsed = body.classList.contains('collapsed');
+      body.classList.toggle('collapsed', !isCollapsed);
+      body.classList.toggle('expanded', isCollapsed);
+      icon.textContent = isCollapsed ? '▼' : '▶';
+    }
+
+    function setInvSort(mode) {
+      invSortMode = mode;
+      renderCurrentModule();
+    }
+
+    function onInvSearch() {
+      invSearchText = document.getElementById('invSearch') ? document.getElementById('invSearch').value.trim().toLowerCase() : '';
+      renderCurrentModule();
+    }
+
+    // ==================== 预期价格更新器 ====================
+    function openExpectedUpdater() {
+      let unsoldCars = carAppData.cars.filter(c => !c.isSold);
+      if (currentModule === 'daily') unsoldCars = unsoldCars.filter(c => c.category === 'keep');
+      else if (currentModule === 'invest') unsoldCars = unsoldCars.filter(c => c.category === 'invest');
+
+      if (unsoldCars.length === 0) {
+        alert('当前版面无可更新小车');
+        return;
+      }
+
+      // 按车型名称合并分组
+      function groupCars(list) {
+        const groups = {};
+        list.forEach(c => {
+          const key = c.name;
+          if (!groups[key]) groups[key] = [];
+          groups[key].push(c);
+        });
+        return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b));
+      }
+
+      const investGroups = groupCars(unsoldCars.filter(c => c.category === 'invest'));
+      const keepGroups = groupCars(unsoldCars.filter(c => c.category === 'keep'));
+
+      const groupRow = ([name, items]) => {
+        const first = items[0];
+        const count = items.length;
+        const avgExpected = items.reduce((s, c) => s + (c.expectedValue || c.buyPrice), 0) / count;
+        return `
+        <label class="flex items-center gap-3 px-4 py-2.5 hover:bg-white/30 text-sm cursor-pointer">
+          <input type="checkbox" value="${name}" class="expected-check rounded" checked>
+          <span class="text-xs ${first.category === 'invest' ? 'text-invest' : 'text-keep'} font-semibold">${first.category === 'invest' ? '投资' : '自留'}</span>
+          <span class="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full font-medium mr-1">×${count}</span>
+          <span class="font-medium truncate flex-1">${esc(first.brand || '?')} ${esc(name)}</span>
+          <span class="text-xs text-gray-500">均价预期 ${fmt(avgExpected)}</span>
+        </label>`;
+      };
+
+      const html = `
+        <div id="expectedModal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-50">
+          <div class="glass-strong rounded-2xl-apple w-full max-w-lg max-h-[85vh] overflow-y-auto p-6">
+            <div class="flex justify-between items-center mb-3">
+              <h3 class="font-bold text-lg"><i data-lucide="diamond" class="w-4 h-4 inline-block align-middle mr-1 text-accent"></i> 预期价格更新</h3>
+              <button onclick="closeExpectedSafe()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <p class="text-xs text-gray-400 mb-4">选择车型（合并显示），赋值为该车型<strong>所有</strong>小车统一设置预期价格</p>
+
+            <div id="expectedStep1">
+              ${investGroups.length > 0 ? `
+                <div class="text-xs text-invest font-semibold mb-2 mt-2">投资库 (${unsoldCars.filter(c => c.category === 'invest').length} 辆)</div>
+                <div class="divide-y divide-black/5 glass rounded-xl-apple overflow-hidden mb-3">
+                  ${investGroups.map(groupRow).join('')}
+                </div>` : ''}
+              ${keepGroups.length > 0 ? `
+                <div class="text-xs text-keep font-semibold mb-2 mt-2">自留库 (${unsoldCars.filter(c => c.category === 'keep').length} 辆)</div>
+                <div class="divide-y divide-black/5 glass rounded-xl-apple overflow-hidden mb-3">
+                  ${keepGroups.map(groupRow).join('')}
+                </div>` : ''}
+              <div class="flex justify-end gap-2 mt-4">
+                <button onclick="hideModal()" class="px-4 py-2 glass-light rounded-xl-apple hover:bg-white/60 text-sm btn-glass">取消</button>
+                <button onclick="startExpectedUpdate()" class="px-4 py-2 bg-accent/85 text-white rounded-xl-apple hover:bg-accent/90 text-sm btn-glass">开始更新</button>
+              </div>
+            </div>
+
+            <div id="expectedStep2" class="hidden"></div>
+          </div>
+        </div>`;
+      showModal(html);
+      initIcons();
+    }
+
+    function startExpectedUpdate() {
+      const checked = document.querySelectorAll('.expected-check:checked');
+      if (checked.length === 0) { alert('请至少选择一辆小车'); return; }
+
+      // 选中车型名称 → 展开为所有对应sid
+      const names = Array.from(checked).map(cb => cb.value);
+      let allCars = carAppData.cars.filter(c => !c.isSold);
+      if (currentModule === 'daily') allCars = allCars.filter(c => c.category === 'keep');
+      else if (currentModule === 'invest') allCars = allCars.filter(c => c.category === 'invest');
+
+      const sids = [];
+      names.forEach(name => {
+        allCars.filter(c => c.name === name).forEach(c => sids.push(c.sid));
+      });
+
+      window._expectedSids = sids;
+      window._expectedIdx = 0;
+      window._expectedChanges = {};
+      renderExpectedFill();
+    }
+
+    function renderExpectedFill() {
+      const sids = window._expectedSids;
+      const idx = window._expectedIdx;
+      if (idx >= sids.length) {
+        showExpectedSummary();
+        return;
+      }
+
+      const car = carAppData.cars.find(c => c.sid === sids[idx]);
+      if (!car) { window._expectedIdx++; renderExpectedFill(); return; }
+
+      const html = `
+        <div class="space-y-3">
+          <div class="flex justify-between items-center">
+            <div class="text-xs text-gray-400">${idx + 1} / ${sids.length}</div>
+          </div>
+          <div class="glass rounded-xl-apple p-4 text-center">
+            <div class="text-sm font-semibold">${esc(car.brand || '?')} ${esc(car.name)}</div>
+            <div class="text-xs text-gray-400 mt-1">当前预期: ${fmt(car.expectedValue || car.buyPrice)}</div>
+            ${car.expectedHistory && car.expectedHistory.length > 1 ? `<div class="text-[10px] text-gray-400 mt-0.5">历史: ${car.expectedHistory.map(h => h.date + ' ' + fmt(h.value)).join(' → ')}</div>` : ''}
+          </div>
+          <div>
+            <label class="block text-sm text-gray-600 mb-1">新预期价格（同名称所有小车统一设置）</label>
+            <input type="number" id="expectedNewVal" step="0.01" value="${car.expectedValue || car.buyPrice}" class="w-full glass-input p-2.5 text-sm" autofocus onkeydown="if(event.key==='Enter')confirmExpectedFill()">
+          </div>
+          <div class="flex justify-between gap-2">
+            <button onclick="skipExpectedFill()" class="px-4 py-2 glass-light rounded-xl-apple hover:bg-white/60 text-sm btn-glass">跳过</button>
+            <button onclick="confirmExpectedFill()" class="px-4 py-2 bg-accent/85 text-white rounded-xl-apple hover:bg-accent/90 text-sm btn-glass">下一步</button>
+          </div>
+          <div class="text-center mt-2">
+            <button onclick="abortExpectedUpdate()" class="text-xs text-gray-400 hover:text-invest">退出更新</button>
+          </div>
+        </div>`;
+      document.getElementById('expectedStep1').classList.add('hidden');
+      document.getElementById('expectedStep2').classList.remove('hidden');
+      document.getElementById('expectedStep2').innerHTML = html;
+      initIcons();
+    }
+
+    function confirmExpectedFill() {
+      const sids = window._expectedSids;
+      const idx = window._expectedIdx;
+      const car = carAppData.cars.find(c => c.sid === sids[idx]);
+      const newVal = parseFloat(document.getElementById('expectedNewVal').value);
+      if (!newVal || newVal <= 0) { alert('请输入有效价格'); return; }
+
+      // 同名称所有未处理小车统一赋值并跳过
+      const carName = car.name;
+      window._expectedChanges[sids[idx]] = newVal;
+      for (let i = sids.length - 1; i > idx; i--) {
+        const c = carAppData.cars.find(x => x.sid === sids[i]);
+        if (c && c.name === carName) {
+          window._expectedChanges[sids[i]] = newVal;
+          sids.splice(i, 1);
+        }
+      }
+      window._expectedIdx++;
+      renderExpectedFill();
+    }
+
+    function skipExpectedFill() {
+      const sids = window._expectedSids;
+      const idx = window._expectedIdx;
+      const car = carAppData.cars.find(c => c.sid === sids[idx]);
+      if (!car) { window._expectedIdx++; renderExpectedFill(); return; }
+      // 同名称所有未处理小车全部跳过
+      const carName = car.name;
+      for (let i = sids.length - 1; i > idx; i--) {
+        const c = carAppData.cars.find(x => x.sid === sids[i]);
+        if (c && c.name === carName) sids.splice(i, 1);
+      }
+      window._expectedIdx++;
+      renderExpectedFill();
+    }
+
+    function abortExpectedUpdate() {
+      safeExitExpected();
+    }
+
+    function closeExpectedSafe() {
+      const step2 = document.getElementById('expectedStep2');
+      if (step2 && !step2.classList.contains('hidden')) {
+        safeExitExpected();
+      } else {
+        hideModal();
+      }
+    }
+
+    function safeExitExpected() {
+      const changes = window._expectedChanges || {};
+      const count = Object.keys(changes).length;
+      if (count === 0) { hideModal(); return; }
+      if (confirm('已填写 ' + count + ' 辆车的估值。\n\n确定 = 保存并退出\n取消 = 丢弃数据并退出')) {
+        saveExpectedChanges();
+      } else {
+        if (confirm('确定丢弃已填写的 ' + count + ' 条估值并退出？')) {
+          hideModal();
+        }
+      }
+    }
+
+    function showExpectedSummary() {
+      const changes = window._expectedChanges;
+      const sids = Object.keys(changes);
+      if (sids.length === 0) { hideModal(); return; }
+
+      const rows = sids.map(sid => {
+        const car = carAppData.cars.find(c => c.sid === sid);
+        const newVal = changes[sid];
+        return `<div class="flex justify-between text-sm px-3 py-2">
+          <span>${esc(car.brand || '?')} ${esc(car.name)}</span>
+          <span class="text-gray-400">${fmt(car.expectedValue || car.buyPrice)} → <strong class="${newVal > (car.expectedValue || car.buyPrice) ? 'text-keep' : 'text-invest'}">${fmt(newVal)}</strong></span>
+        </div>`;
+      }).join('');
+
+      const html = `
+        <div class="space-y-3">
+          <div class="text-sm font-semibold">确认更新 ${sids.length} 辆小车</div>
+          <div class="divide-y divide-black/5 glass rounded-xl-apple overflow-hidden max-h-60 overflow-y-auto">
+            ${rows}
+          </div>
+          <div class="flex justify-end gap-2">
+            <button onclick="closeExpectedSafe()" class="px-4 py-2 glass-light rounded-xl-apple hover:bg-white/60 text-sm btn-glass">取消</button>
+            <button onclick="saveExpectedChanges()" class="px-4 py-2 bg-accent/85 text-white rounded-xl-apple hover:bg-accent/90 text-sm btn-glass">确认保存</button>
+          </div>
+        </div>`;
+      document.getElementById('expectedStep2').innerHTML = html;
+    }
+
+    function saveExpectedChanges() {
+      const changes = window._expectedChanges;
+      const date = getToday();
+      Object.entries(changes).forEach(([sid, value]) => {
+        const car = carAppData.cars.find(c => c.sid === sid);
+        if (car) appendExpectedHistory(car, value, date);
+      });
+      addOperationLog('expected_update', '更新' + Object.keys(changes).length + '辆小车预期价格', { count: Object.keys(changes).length });
+      hideModal();
+      saveData();
+    }
+
+    // ==================== 操作日志面板 ====================
+    function toggleLogPanel() {
+      const drawer = document.getElementById('logDrawer');
+      drawer.classList.toggle('translate-x-full');
+      if (!drawer.classList.contains('translate-x-full')) renderLogs();
+    }
+
+    function clearOperationLogs() {
+      if (!confirm('确定清空所有操作日志？')) return;
+      if (carAppData.operationLogs) carAppData.operationLogs.length = 0;
+      saveData();
+      renderLogs();
+    }
+
+    function renderLogs() {
+      const logs = carAppData.operationLogs || [];
+      if (logs.length === 0) {
+        document.getElementById('logList').innerHTML = '<div class="text-center text-gray-400 py-8 text-sm">暂无日志</div>';
+        return;
+      }
+      document.getElementById('logList').innerHTML = logs.slice(0, 100).map(log => {
+        const pillClass = LOG_COLORS[log.type] || 'bg-gray-100 text-gray-600';
+        const label = LOG_LABELS[log.type] || log.type;
+        const time = new Date(log.time).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+        const detailKeys = log.detail && Object.keys(log.detail).length > 0
+          ? Object.entries(log.detail).filter(([k]) => !k.startsWith('_')).map(([k, v]) => `<span class="text-gray-500">${k}:</span> <span class="text-gray-700">${esc(String(v))}</span>`).join('&emsp;')
+          : '';
+        return `
+        <div class="glass-light rounded-xl-apple p-3 text-sm cursor-pointer hover:shadow-sm transition-shadow" onclick="this.classList.toggle('ring-2'); this.querySelector('.log-detail').classList.toggle('hidden')">
+          <div class="flex items-center justify-between gap-2">
+            <span class="inline-block px-2 py-0.5 rounded text-xs font-medium ${pillClass}">${label}</span>
+            <span class="text-xs text-gray-400 ml-auto shrink-0">${time}</span>
+          </div>
+          <div class="text-sm text-gray-800 mt-1">${esc(log.message)}</div>
+          ${detailKeys ? `<div class="log-detail hidden mt-2 pt-2 border-t border-black/5 text-xs">${detailKeys}</div>` : ''}
+        </div>`;
+      }).join('');
+    }
+
+    // ==================== 旧格式导入 ====================
+    function openOldFormatImport() {
+      const html = `
+        <div id="oldImportModal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-50">
+          <div class="glass-strong rounded-2xl-apple w-full max-w-2xl max-h-[90vh] flex flex-col">
+            <div class="p-5 border-b border-black/5 flex justify-between items-center">
+              <h3 class="font-bold text-lg">导入旧格式数据</h3>
+              <button onclick="hideModal()" class="text-gray-400 hover:text-gray-700 text-lg">&times;</button>
+            </div>
+            <div class="p-5 space-y-3 flex-1 overflow-y-auto">
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">粘贴旧数据（日 收支 [类别] 名称 金额）</label>
+                <textarea id="oldImportText" rows="8" placeholder="31    支出    [买小车] 普卡黑法拉利F40    儿童手表    -79.60" class="w-full glass-input p-3 text-sm font-mono"></textarea>
+              </div>
+              <div class="flex gap-2">
+                <button onclick="parseOldImport()" class="px-4 py-2 bg-accent/85 text-white rounded-xl-apple text-sm btn-glass">解析</button>
+                <span class="text-xs text-gray-400 self-center">品牌默认 Hotwheels，月份默认当前月</span>
+              </div>
+              <div id="oldImportPreview" class="text-xs"></div>
+            </div>
+          </div>
+        </div>`;
+      showModal(html);
+    }
+
+    let _oldImportItems = [];
+
+    function parseOldImport() {
+      const raw = document.getElementById('oldImportText').value.trim();
+      if (!raw) return alert('请粘贴数据');
+      const lines = raw.split('\n').filter(l => l.trim());
+      const items = [];
+      let month = String(new Date().getMonth() + 1).padStart(2, '0');
+      let year = String(new Date().getFullYear());
+
+      lines.forEach((line, i) => {
+        const parts = line.trim().split(/\s{2,}|\t+/);
+        if (parts.length < 4) return;
+        const day = parts[0].trim().padStart(2, '0');
+        const type = parts[1].includes('支出') ? 'expense' : 'income';
+        const catRaw = (parts[2] || '').replace(/[\[\]]/g, '');
+        let category = 'other', isCarBuy = false, isCarSell = false;
+        if (catRaw.includes('买小车')) { category = 'car_buy'; isCarBuy = true; }
+        else if (catRaw.includes('卖小车')) { category = 'car_sell'; isCarSell = true; }
+        else if (catRaw.includes('零花钱')) category = 'allowance';
+        const name = (parts[3] || '').replace(/^卖/, '').replace(/ x\d+$/, '');
+        const amountStr = (parts[parts.length - 1] || '').replace(/[+¥,]/g, '');
+        const amount = Math.abs(parseFloat(amountStr)) || 0;
+        items.push({ idx: i, day, date: year + '-' + month + '-' + day, type, category, isCarBuy, isCarSell, name, amount, origLine: line.trim() });
+      });
+
+      if (items.length === 0) return alert('未解析到有效数据');
+
+      _oldImportItems = items;
+
+      let expenseTotal = 0, incomeTotal = 0;
+      items.forEach(it => { if (it.type === 'expense') expenseTotal += it.amount; else incomeTotal += it.amount; });
+
+      const preview = items.map((it, i) => `
+        <div class="flex items-center gap-2 py-1.5 border-b border-black/5 text-xs">
+          <span class="w-6 text-gray-400">${i + 1}</span>
+          <span class="w-10">${it.date}</span>
+          <span class="w-8 ${it.type === 'expense' ? 'text-invest' : 'text-keep'} font-semibold">${it.type === 'expense' ? '出' : '入'}</span>
+          <span class="w-14">${it.category}</span>
+          <span class="flex-1 truncate">${esc(it.name)}</span>
+          <span class="w-20 text-right font-mono ${it.type === 'expense' ? 'text-invest' : 'text-keep'}">${it.type === 'expense' ? '-' : '+'}${fmt(it.amount)}</span>
+          <select id="oldAcc_${i}" class="glass-input text-xs p-1 rounded-lg" onchange="updateOldImportStats()">
+            <option value="invest" ${it.category === 'car_sell' ? 'selected' : ''}>投资</option>
+            <option value="pocket" ${it.category === 'allowance' ? 'selected' : ''}>零花</option>
+          </select>
+        </div>`).join('');
+
+      document.getElementById('oldImportPreview').innerHTML = `
+        <div class="font-semibold mb-2">解析 ${items.length} 条 · 支出 ${fmt(expenseTotal)} · 收入 ${fmt(incomeTotal)}</div>
+        <div class="glass rounded-xl-apple overflow-hidden divide-y divide-black/5 mb-3">
+          ${preview}
+        </div>
+        <div id="oldImportStats" class="text-gray-500 mb-2"></div>
+        <button onclick="executeOldImport()" class="px-4 py-2 bg-accent/85 text-white rounded-xl-apple text-sm btn-glass">确认导入</button>
+      `;
+      setTimeout(updateOldImportStats, 100);
+    }
+
+    function updateOldImportStats() {
+      let pCount = 0, iCount = 0, pSum = 0, iSum = 0;
+      document.querySelectorAll('[id^="oldAcc_"]').forEach(sel => {
+        const val = sel.value;
+        const row = sel.closest('.flex');
+        const amtText = row?.querySelector('.font-mono')?.textContent?.replace(/[+¥,]/g, '') || '0';
+        const amt = Math.abs(parseFloat(amtText)) || 0;
+        if (val === 'pocket') { pCount++; pSum += amt; }
+        else { iCount++; iSum += amt; }
+      });
+      const el = document.getElementById('oldImportStats');
+      if (el) el.innerHTML = '💰 零花钱 ' + pCount + '条 ' + fmt(pSum) + ' &emsp; 📈 投资 ' + iCount + '条 ' + fmt(iSum);
+    }
+
+    function executeOldImport() {
+      const items = _oldImportItems;
+      const year = String(new Date().getFullYear());
+      const month = String(new Date().getMonth() + 1).padStart(2, '0');
+      let carCount = 0, txnCount = 0;
+
+      items.forEach((it, i) => {
+        const sel = document.getElementById('oldAcc_' + i);
+        const accountId = sel ? sel.value : (it.category === 'car_sell' ? 'invest' : 'invest');
+        const account = carAppData.accounts[accountId];
+        let carSid = null;
+
+        if (it.isCarBuy) {
+          carSid = genUUID();
+          carAppData.cars.push({
+            sid: carSid, brand: 'Hotwheels', name: it.name,
+            buyDate: it.date, buyPrice: it.amount,
+            expectedValue: it.amount, category: accountId === 'invest' ? 'invest' : 'keep',
+            sellPrice: null, soldDate: null, isSold: false, note: '',
+            expectedHistory: [{ date: it.date, value: it.amount }]
+          });
+          carCount++;
+        }
+
+        if (it.isCarSell) {
+          const sellName = it.name;
+          const existingCar = carAppData.cars.find(c =>
+            c.name === sellName && !c.isSold && c.category === (accountId === 'invest' ? 'invest' : 'keep')
+          );
+          if (existingCar) {
+            existingCar.isSold = true;
+            existingCar.sellPrice = it.amount;
+            existingCar.soldDate = it.date;
+            carSid = existingCar.sid;
+          }
+        }
+
+        account.transactions.push({
+          id: genId('txn'), type: it.type, category: it.category,
+          amount: it.amount, date: it.date,
+          carSid, loanId: null, transferPairId: null, note: it.name
+        });
+        txnCount++;
+      });
+
+      hideModal();
+      addOperationLog('import', '导入旧格式 ' + txnCount + '笔·' + carCount + '辆车', { txnCount, carCount });
+      saveData();
+      alert('✅ 导入完成！' + txnCount + '条收支 · ' + carCount + '辆车');
+    }
+
+    function renderCurrentModule() {
+      switch (currentModule) {
+        case 'dashboard': if (typeof renderDashboard === 'function') renderDashboard(); break;
+        case 'daily': if (typeof renderDaily === 'function') renderDaily(); break;
+        case 'invest': if (typeof renderInvest === 'function') renderInvest(); break;
+        case 'inventory': if (typeof renderInventory === 'function') renderInventory(); break;
+      }
+      initIcons();
+    }
+
+    // ==================== 弹窗容器 ====================
+    function showModal(html) {
+      document.getElementById('modalContainer').innerHTML = html;
+      initIcons();
+    }
+
+    function hideModal() {
+      document.getElementById('modalContainer').innerHTML = '';
+    }
+
+    // ==================== Lucide图标初始化 ====================
+    function initIcons() {
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
+    }
+
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('hidden');
+    }
+
+    // ==================== 示例数据 ====================
+    function seedDemoData() {
+      const pocket = carAppData.accounts.pocket;
+      const invest = carAppData.accounts.invest;
+
+      // 示例零花钱交易
+      pocket.transactions.push(
+        { id: genId('txn'), type: 'income', category: 'allowance', amount: 200, date: '2026-06-01', carSid: null, loanId: null, transferPairId: null, note: '6月零花钱' },
+        { id: genId('txn'), type: 'expense', category: 'other', amount: 35, date: '2026-06-05', carSid: null, loanId: null, transferPairId: null, note: '午餐外卖' },
+        { id: genId('txn'), type: 'expense', category: 'other', amount: 18.5, date: '2026-06-10', carSid: null, loanId: null, transferPairId: null, note: '奶茶' }
+      );
+
+      // 示例投资账户交易
+      invest.transactions.push(
+        { id: genId('txn'), type: 'expense', category: 'car_buy', amount: 19.9, date: '2026-06-08', carSid: null, loanId: null, transferPairId: null, note: '示例: 普卡F1' }
+      );
+
+      // 示例小车 1: 投资类
+      const demoCar1 = {
+        sid: genUUID(),
+        brand: 'Hotwheels', name: '普卡F1迈凯伦',
+        buyDate: '2026-06-08', buyPrice: 19.9, expectedValue: 39,
+        category: 'invest', sellPrice: null, soldDate: null, isSold: false, note: ''
+      };
+      invest.transactions[invest.transactions.length - 1].carSid = demoCar1.sid;
+
+      // 示例小车 2: 自留类
+      const demoCar2 = {
+        sid: genUUID(),
+        brand: 'MINI GT', name: '保时捷911GT3',
+        buyDate: '2026-06-15', buyPrice: 69, expectedValue: 120,
+        category: 'keep', sellPrice: null, soldDate: null, isSold: false, note: ''
+      };
+      pocket.transactions.push({
+        id: genId('txn'),
+        type: 'expense', category: 'car_buy', amount: 69, date: '2026-06-15',
+        carSid: demoCar2.sid, loanId: null, transferPairId: null, note: 'MINI GT 保时捷911GT3'
+      });
+
+      carAppData.cars.push(demoCar1, demoCar2);
+
+      // 示例贷款
+      invest.loans.push({
+        id: genId('loan'),
+        name: '老爸借款', amount: 500, remaining: 300,
+        startDate: '2026-06-01', dueDate: '2026-07-15',
+        status: 'active', note: '用于购买小车'
+      });
+      invest.transactions.push({
+        id: genId('txn'),
+        type: 'income', category: 'loan_new', amount: 500,
+        date: '2026-06-01', carSid: null,
+        loanId: invest.loans[0].id, transferPairId: null,
+        note: '新增贷款: 老爸借款'
+      });
+
+      saveData();
+    }
+
+    // ==================== 初始化 ====================
+    window.onload = () => {
+      loadData();
+
+      // 如果无数据，注入默认示例数据
+      if (carAppData.cars.length === 0 &&
+          carAppData.accounts.pocket.transactions.length === 0 &&
+          carAppData.accounts.invest.transactions.length === 0) {
+        seedDemoData();
+      }
+
+      document.getElementById('appVersion').innerText = 'v' + carAppData.version;
+      renderCurrentModule();
+    };
+    </script>
+</body>
+</html>

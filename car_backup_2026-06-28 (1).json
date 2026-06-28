@@ -1,0 +1,3347 @@
+{
+    "version": "2.0.0",
+    "accounts": {
+        "pocket": {
+            "id": "pocket",
+            "name": "零花钱账户",
+            "monthlyAllowance": 200,
+            "allowanceDay": 1,
+            "transactions": [
+                {
+                    "id": "txn_1782620372482_rw8yzo",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 174,
+                    "date": "2026-06-24",
+                    "carSid": "a41ca4d3-cefb-453b-96d7-ab8e956d9989",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "海湾车库"
+                },
+                {
+                    "id": "txn_1782620372482_pvb1z0",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 102.26,
+                    "date": "2026-06-20",
+                    "carSid": "02ba7ba2-a211-4e13-987b-1bde07961c8f",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "银奔驰SLR运输车"
+                },
+                {
+                    "id": "txn_1782620372482_bi7ihm",
+                    "type": "income",
+                    "category": "allowance",
+                    "amount": 200,
+                    "date": "2026-06-05",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "6月零花钱"
+                },
+                {
+                    "id": "txn_1782620372482_l298a5",
+                    "type": "income",
+                    "category": "allowance",
+                    "amount": 200,
+                    "date": "2026-06-05",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "5月零花钱"
+                },
+                {
+                    "id": "txn_1782620372482_v19m95",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 75.55,
+                    "date": "2026-06-02",
+                    "carSid": "a61bd6b6-0c8a-4709-8b1a-01390bdecfdc",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "Poprace 马自达787B"
+                },
+                {
+                    "id": "txn_1782620372482_lzzrdn",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 15.97,
+                    "date": "2026-06-02",
+                    "carSid": "ff53148d-984b-441b-9367-1d52aa825bbd",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "本田思域超宝"
+                },
+                {
+                    "id": "txn_1782620372482_h0mi0k",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 34,
+                    "date": "2026-06-01",
+                    "carSid": "152fe5e0-2277-47ca-b52f-26f25228d256",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "风火轮花园大道柯尼塞格银色"
+                },
+                {
+                    "id": "txn_1782620372482_18vm53",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 220,
+                    "date": "2026-05-19",
+                    "carSid": "6e015168-b06c-4e7e-91b4-5968cee664c8",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "RLC 21 Pagani Huayra R"
+                },
+                {
+                    "id": "txn_1782620372482_ji986n",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 116,
+                    "date": "2026-05-05",
+                    "carSid": "aab2924e-472c-41fe-9971-8f230ec4bb25",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "银标欧洲豪车六连包"
+                },
+                {
+                    "id": "txn_1782620372482_d3vmk2",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-04-30",
+                    "carSid": "38e9eb02-8a0b-49c4-89b8-76e385be97f5",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡F1法拉利"
+                },
+                {
+                    "id": "txn_1782620372482_6qdhol",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 27.5,
+                    "date": "2026-04-24",
+                    "carSid": "567b2637-8a88-47ce-b10a-181bfe66c9e1",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "现代经典丰田Soarer"
+                },
+                {
+                    "id": "txn_1782620372482_24gtkj",
+                    "type": "income",
+                    "category": "allowance",
+                    "amount": 200,
+                    "date": "2026-04-05",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "4月零花钱"
+                },
+                {
+                    "id": "txn_1782620372482_cvt9sc",
+                    "type": "income",
+                    "category": "allowance",
+                    "amount": 200,
+                    "date": "2026-04-05",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "3月零花钱"
+                },
+                {
+                    "id": "txn_1782620372482_21wf65",
+                    "type": "income",
+                    "category": "car_sell",
+                    "amount": 30,
+                    "date": "2026-04-05",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "速度与激情AcuraNSX"
+                },
+                {
+                    "id": "txn_1782620372482_kqwj9b",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 80,
+                    "date": "2026-04-04",
+                    "carSid": "4c62a660-05a2-40ce-8e8d-7a441df77926",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "单独法拉利的5连包"
+                },
+                {
+                    "id": "txn_1782620372482_ustm5i",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 0.01,
+                    "date": "2026-03-29",
+                    "carSid": "faa11716-65b2-4c0c-ba08-60ffcc490b31",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡F1 法拉利短卡设计师签名版"
+                },
+                {
+                    "id": "txn_1782620372482_srkho5",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 0.01,
+                    "date": "2026-03-29",
+                    "carSid": "3eea461d-6d22-4a52-a68c-54781ab208ef",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "火柴盒福特Shelby绿"
+                },
+                {
+                    "id": "txn_1782620372482_7yhwof",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 0.01,
+                    "date": "2026-03-29",
+                    "carSid": "1aa925e0-7b57-49ba-8dad-175fe24c9862",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "五连包法拉利"
+                },
+                {
+                    "id": "txn_1782620372482_yonpqt",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 42.24,
+                    "date": "2026-03-26",
+                    "carSid": "5664f975-24e9-4989-aadd-4638d9144046",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡F1威廉姆斯"
+                },
+                {
+                    "id": "txn_1782620372482_jbg8k5",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 230,
+                    "date": "2026-03-06",
+                    "carSid": "8735fdd5-033e-4416-966b-36a2b80b7508",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "斯巴鲁翼豹超宝散车"
+                },
+                {
+                    "id": "txn_1782620372482_p06uy5",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-03-03",
+                    "carSid": "a31646c9-8623-4b3e-ab21-13f3e713fa35",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡F1白小红牛"
+                },
+                {
+                    "id": "txn_1782620372482_b4ace9",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 14,
+                    "date": "2026-02-25",
+                    "carSid": "d805dca4-23a1-4fc9-af76-d96c6120f83f",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡白有行李箱丰田普锐斯"
+                },
+                {
+                    "id": "txn_1782620372482_8atsph",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 12,
+                    "date": "2026-02-15",
+                    "carSid": "9da2e061-76f6-4290-9f13-81e60f42632d",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡红法拉利Cilindr 12"
+                },
+                {
+                    "id": "txn_1782620372482_w0ge89",
+                    "type": "income",
+                    "category": "allowance",
+                    "amount": 200,
+                    "date": "2026-02-04",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "2月零花钱"
+                },
+                {
+                    "id": "txn_1782620372482_yceytg",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 34.6,
+                    "date": "2026-01-23",
+                    "carSid": "858e2e71-2c07-4e97-b2bd-c4b780b21af7",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "花园大道银奔驰SLC500"
+                },
+                {
+                    "id": "txn_1782620372482_cdc5pb",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-01-10",
+                    "carSid": "a6edd3c4-def8-47ad-9cd0-5e32f103b34b",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡黑法拉利F40"
+                },
+                {
+                    "id": "txn_1782620372482_4ch0uo",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-01-07",
+                    "carSid": "fec28b1b-d5b8-4d7c-870b-af203ac8f5f6",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡F1 迈凯伦"
+                },
+                {
+                    "id": "txn_1782620372482_aw89px",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 199.89,
+                    "date": "2026-01-06",
+                    "carSid": "6bdedd98-f8e3-4e23-9f6a-b9b910fbbc39",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "红法拉利250GTO运输车"
+                },
+                {
+                    "id": "txn_1782620372482_ioc18q",
+                    "type": "income",
+                    "category": "allowance",
+                    "amount": 200,
+                    "date": "2026-01-02",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "1月零花钱"
+                },
+                {
+                    "id": "txn_1782620372482_vu9osw",
+                    "type": "expense",
+                    "category": "daily",
+                    "amount": 50,
+                    "date": "2025-11-27",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "梅美美容养颜不知道啥"
+                },
+                {
+                    "id": "txn_1782620489777_9pltms",
+                    "type": "income",
+                    "category": "allowance",
+                    "amount": 321.61,
+                    "date": "2026-01-01",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "起始金额与EXCEL一致手表+余额宝"
+                },
+                {
+                    "id": "txn_1782620372482_7uktxs",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 184.28,
+                    "date": "2026-01-28",
+                    "carSid": "cd25a3a3-8dc2-4673-9b0f-b060b18c1f7c",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "精英ELITE法拉利330P"
+                }
+            ],
+            "loans": []
+        },
+        "invest": {
+            "id": "invest",
+            "name": "投资账户",
+            "monthlyAllowance": null,
+            "allowanceDay": null,
+            "transactions": [
+                {
+                    "id": "txn_1782620372482_7hpc8f",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.44,
+                    "date": "2026-01-02",
+                    "carSid": "15c9be89-fa7b-4ed9-bf45-7666eed66b7a",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "花园大道红奔驰AMG瓦罐"
+                },
+                {
+                    "id": "txn_1782620372482_pfl753",
+                    "type": "income",
+                    "category": "car_sell",
+                    "amount": 48,
+                    "date": "2026-01-06",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "花园大道白奔驰AMG瓦罐"
+                },
+                {
+                    "id": "txn_1782620372482_y02pkt",
+                    "type": "income",
+                    "category": "car_sell",
+                    "amount": 20,
+                    "date": "2026-01-16",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "火柴盒保时捷TARGA"
+                },
+                {
+                    "id": "txn_1782620372482_iqf829",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 21,
+                    "date": "2026-01-19",
+                    "carSid": "074ed1d9-c42c-4504-bfbf-2fddcd645140",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡F1 迈凯伦"
+                },
+                {
+                    "id": "txn_1782620372482_xq980c",
+                    "type": "income",
+                    "category": "car_sell",
+                    "amount": 28.06,
+                    "date": "2026-01-21",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "花园大道红奔驰AMG瓦罐"
+                },
+                {
+                    "id": "txn_1782620372482_fu4f1k",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-01-26",
+                    "carSid": "fdbe1e7a-db5a-445e-85e3-63838b287e42",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡红擎天柱"
+                },
+                {
+                    "id": "txn_1782620372482_uubipt",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-01-27",
+                    "carSid": "8db5b9e9-2ad5-4ae7-b03c-064f84517801",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡红擎天柱"
+                },
+                {
+                    "id": "txn_1782620372482_towbom",
+                    "type": "income",
+                    "category": "car_sell",
+                    "amount": 29.3,
+                    "date": "2026-01-30",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡黑保时捷911GT3"
+                },
+                {
+                    "id": "txn_9ad021ee178b4e8fb5f7",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-01-31",
+                    "carSid": "3c6894d3-4127-465f-a145-aafc03bddfaa",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡黑法拉利F40"
+                },
+                {
+                    "id": "txn_e0237704de8546fcb70e",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-01-31",
+                    "carSid": "39adaa3b-c12e-4165-aa37-c3831919eb83",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡黑法拉利F40"
+                },
+                {
+                    "id": "txn_4b27feb3c91c41a3992f",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-01-31",
+                    "carSid": "75489571-5d93-4729-a282-4d086f396e8d",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡黑法拉利F40"
+                },
+                {
+                    "id": "txn_179fe3822e8540ca9994",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-01-31",
+                    "carSid": "ef05c6f4-d722-4e7e-abb4-3e8c5ca8e2dc",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡黑法拉利F40"
+                },
+                {
+                    "id": "txn_e4b547342bc5457cb347",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-01-31",
+                    "carSid": "ec524ff6-e72d-41f3-b6a8-db848bcfd021",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡红法拉利Cilindr 12"
+                },
+                {
+                    "id": "txn_4ee90f4f47514217a015",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-01-31",
+                    "carSid": "b9f80eb5-94c8-4472-b20f-a8fc775d96a4",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡红法拉利Cilindr 12"
+                },
+                {
+                    "id": "txn_0127bbe7e7b548b29f3b",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-01-31",
+                    "carSid": "874ce4c0-3bb4-4077-ba32-fef8b71a1489",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡红法拉利Cilindr 12"
+                },
+                {
+                    "id": "txn_51527855088343bf8ebc",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-01-31",
+                    "carSid": "1201dc62-9821-44e1-b8e0-40c456f5da92",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡F1白小红牛"
+                },
+                {
+                    "id": "txn_6fc01c5f15724c9d8aaf",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-01-31",
+                    "carSid": "08fcb26c-c0d0-46a7-9a7c-ef812255a0d1",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡F1白小红牛"
+                },
+                {
+                    "id": "txn_1782620372482_knyyk7",
+                    "type": "income",
+                    "category": "car_sell",
+                    "amount": 18,
+                    "date": "2026-02-03",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡红擎天柱"
+                },
+                {
+                    "id": "txn_1782620372482_qrtedh",
+                    "type": "income",
+                    "category": "car_sell",
+                    "amount": 26,
+                    "date": "2026-02-03",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡红擎天柱"
+                },
+                {
+                    "id": "txn_1782620372482_qx3t95",
+                    "type": "income",
+                    "category": "car_sell",
+                    "amount": 10,
+                    "date": "2026-02-03",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "橘色野马谢尔比"
+                },
+                {
+                    "id": "txn_1782620372482_y9jhx2",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-02-07",
+                    "carSid": "2742663b-d66d-4898-9a4a-20383fa2299b",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡黑法拉利F40"
+                },
+                {
+                    "id": "txn_1782620372482_u28e2s",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 12,
+                    "date": "2026-02-09",
+                    "carSid": "a6842f9e-139f-49c1-a285-c61e949a5201",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡深蓝布加迪玻璃龙"
+                },
+                {
+                    "id": "txn_1782620372482_kjsnq8",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 12,
+                    "date": "2026-02-09",
+                    "carSid": "d8c37d75-0396-4c2f-a33c-31716ae3cfb1",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡灰色某车"
+                },
+                {
+                    "id": "txn_1782620372482_7y6m3b",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 12,
+                    "date": "2026-02-14",
+                    "carSid": "bec1865a-c54f-4a2d-a5ac-9b26e3d062a4",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡蓝迈凯伦W1"
+                },
+                {
+                    "id": "txn_1782620372482_9clh5f",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 12,
+                    "date": "2026-02-14",
+                    "carSid": "7b92d6e0-9fbf-479c-ae87-1977f67a7cfe",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡黄奥迪RS6瓦罐"
+                },
+                {
+                    "id": "txn_1782620372482_5vob6k",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 12,
+                    "date": "2026-02-14",
+                    "carSid": "7d07a729-d19f-4ad3-9640-a312c02037e5",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡白无行李箱丰田普锐斯"
+                },
+                {
+                    "id": "txn_1782620372482_pkqm6e",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 12,
+                    "date": "2026-02-15",
+                    "carSid": "fafa1b8d-e423-4e29-9687-9aa179bd8914",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡白法拉利356GT"
+                },
+                {
+                    "id": "txn_1782620372482_fw35kz",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 12,
+                    "date": "2026-02-15",
+                    "carSid": "6a0ead55-802b-47e5-936c-db366477460b",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡白法拉利356GT"
+                },
+                {
+                    "id": "txn_1782620372482_pg72vg",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 36,
+                    "date": "2026-02-15",
+                    "carSid": "913a04f0-a1c8-4015-b2d0-06c006f25e3b",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "火柴盒盒装白宝马1M"
+                },
+                {
+                    "id": "txn_1782620372482_mde3nq",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 14,
+                    "date": "2026-02-15",
+                    "carSid": "540d8c2f-eda2-43a3-bdc8-b085a5d170b5",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡黄奥迪RS6瓦罐"
+                },
+                {
+                    "id": "txn_1782620372482_hsa092",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 14,
+                    "date": "2026-02-15",
+                    "carSid": "9a242566-52b4-470c-aae3-a92fbf911530",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡白有行李箱丰田普锐斯"
+                },
+                {
+                    "id": "txn_1782620372482_1zi59e",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 14,
+                    "date": "2026-02-15",
+                    "carSid": "5c52a106-3a1a-4ec7-8804-9ce20a8b6c5b",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡红法拉利Cilindr 12"
+                },
+                {
+                    "id": "txn_1782620372482_fkjppp",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 14,
+                    "date": "2026-02-15",
+                    "carSid": "ca58f36d-cdfa-451f-9a35-715f5ad5b876",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡黑LBWORKS兰博基尼小牛"
+                },
+                {
+                    "id": "txn_1782620372482_qr95ck",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 12,
+                    "date": "2026-02-15",
+                    "carSid": "13422e3e-75bc-43fa-a4ec-78d269d13228",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡黑LBWORKS兰博基尼小牛"
+                },
+                {
+                    "id": "txn_1782620372482_bspo4z",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 12,
+                    "date": "2026-02-15",
+                    "carSid": "d5b2dc04-edcd-46ab-aa09-5852f733f587",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡黄奥迪RS6瓦罐"
+                },
+                {
+                    "id": "txn_1782620372482_n2mxrw",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-02-15",
+                    "carSid": "3711c054-88cf-43e7-bd95-cd027707e8c7",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡黑法拉利F40"
+                },
+                {
+                    "id": "txn_1782620372482_1d050a",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 12,
+                    "date": "2026-02-16",
+                    "carSid": "55549c01-069e-4806-b4be-c1dd4331a098",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡白法拉利356GT"
+                },
+                {
+                    "id": "txn_1782620372482_d913ak",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 28,
+                    "date": "2026-02-17",
+                    "carSid": "2e2ca580-722a-485b-9c5d-4a495113a8c2",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡深蓝布加迪玻璃龙"
+                },
+                {
+                    "id": "txn_1782620372482_ew18y1",
+                    "type": "income",
+                    "category": "car_sell",
+                    "amount": 57,
+                    "date": "2026-02-22",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "火柴盒盒装白宝马1M"
+                },
+                {
+                    "id": "txn_1782620372482_et8hth",
+                    "type": "income",
+                    "category": "car_sell",
+                    "amount": 17,
+                    "date": "2026-02-23",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡黑沃尔沃850瓦罐"
+                },
+                {
+                    "id": "txn_1782620372482_0clcwg",
+                    "type": "income",
+                    "category": "car_sell",
+                    "amount": 46,
+                    "date": "2026-02-24",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡黄奥迪RS6瓦罐"
+                },
+                {
+                    "id": "txn_1782620372482_as3wrq",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 20.5,
+                    "date": "2026-02-25",
+                    "carSid": "8be033d2-a6a4-4e81-b608-07c353497b70",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "火柴盒白宝马M1"
+                },
+                {
+                    "id": "txn_1782620372482_8io0jq",
+                    "type": "income",
+                    "category": "car_sell",
+                    "amount": 10,
+                    "date": "2026-02-25",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡蓝迈凯伦W1"
+                },
+                {
+                    "id": "txn_1782620372482_snoeup",
+                    "type": "income",
+                    "category": "car_sell",
+                    "amount": 25,
+                    "date": "2026-02-25",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡紫色柯尼塞格jesko"
+                },
+                {
+                    "id": "txn_1782620372482_9aid34",
+                    "type": "income",
+                    "category": "car_sell",
+                    "amount": 16,
+                    "date": "2026-02-25",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡深蓝布加迪玻璃龙"
+                },
+                {
+                    "id": "txn_1782620372482_9bhxy4",
+                    "type": "income",
+                    "category": "car_sell",
+                    "amount": 7,
+                    "date": "2026-02-25",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡灰色某车"
+                },
+                {
+                    "id": "txn_1782620372482_6d30w6",
+                    "type": "income",
+                    "category": "car_sell",
+                    "amount": 23,
+                    "date": "2026-02-25",
+                    "carSid": "6b92a811-728f-4f06-a83d-d0d99aa91bea",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡黑LBWORKS兰博基尼小牛"
+                },
+                {
+                    "id": "txn_1782620372482_pv840l",
+                    "type": "income",
+                    "category": "car_sell",
+                    "amount": 19,
+                    "date": "2026-02-25",
+                    "carSid": "e585a2e2-420a-4d14-a22a-a6e8492d6e4a",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡白法拉利356GT"
+                },
+                {
+                    "id": "txn_1782620372482_rzcjzu",
+                    "type": "income",
+                    "category": "car_sell",
+                    "amount": 29,
+                    "date": "2026-03-03",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "火柴盒白宝马M1"
+                },
+                {
+                    "id": "txn_1782620372482_od5rkf",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-03-03",
+                    "carSid": "20751838-6c7a-4a09-8579-ec1aeb7ea17a",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡黑法拉利F40"
+                },
+                {
+                    "id": "txn_1782620372482_4kh720",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 117,
+                    "date": "2026-03-06",
+                    "carSid": "7b252e3f-c27d-4d3c-908b-70e8308835bf",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "赛道传奇法拉利499P"
+                },
+                {
+                    "id": "txn_1782620372482_q4qgwj",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 90,
+                    "date": "2026-03-09",
+                    "carSid": "b4e43385-f1d9-44d6-a73f-63febbc64bb7",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "欧洲速度法拉利拉法La Ferrari"
+                },
+                {
+                    "id": "txn_1782620372482_x09dgf",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 456,
+                    "date": "2026-03-09",
+                    "carSid": "6e16aac5-009a-42ce-b107-6ab8e45c9f01",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "红法拉利250GTO运输车"
+                },
+                {
+                    "id": "txn_1782620372482_u5x1l4",
+                    "type": "income",
+                    "category": "car_sell",
+                    "amount": 26.5,
+                    "date": "2026-03-10",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "高普沃尔沃850瓦罐"
+                },
+                {
+                    "id": "txn_1782620372482_pbrosn",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 225,
+                    "date": "2026-03-13",
+                    "carSid": "5d2b0b4b-72c0-4c93-acc6-29b210e9ef97",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "红法拉利250GTO运输车"
+                },
+                {
+                    "id": "txn_1782620372482_5teoy8",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-03-14",
+                    "carSid": "669b8c52-727b-4874-9a46-eb2d6bcb5287",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡红法拉利Cilindr 12"
+                },
+                {
+                    "id": "txn_1782620372482_fvi4vh",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 75,
+                    "date": "2026-03-19",
+                    "carSid": "1632c283-e6a3-4a22-b6e5-3e68fb119233",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "欧洲速度日产R34"
+                },
+                {
+                    "id": "txn_7f677f0fa7114a71a93a",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 80,
+                    "date": "2026-03-19",
+                    "carSid": "cc2786b0-7e87-476f-8936-7cfaa6d66185",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "永恒经典法拉利F50"
+                },
+                {
+                    "id": "txn_52cd0838cd9f4b4bb2c9",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 80,
+                    "date": "2026-03-19",
+                    "carSid": "f96bfb6a-7439-4f35-8680-cdd2597a735c",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "永恒经典法拉利F50"
+                },
+                {
+                    "id": "txn_bc59921427af4076857c",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 80,
+                    "date": "2026-03-19",
+                    "carSid": "efd73d32-8918-4135-ada6-f763e6ebab65",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "永恒经典法拉利F50"
+                },
+                {
+                    "id": "txn_ad01d2f0c6fe4521b7e1",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 80,
+                    "date": "2026-03-19",
+                    "carSid": "6712f0c4-4fc9-4aad-be51-0d02e57217d3",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "永恒经典法拉利F50"
+                },
+                {
+                    "id": "txn_1f71e1aff46344eeb0be",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 80,
+                    "date": "2026-03-19",
+                    "carSid": "9a3ba499-0741-4a7c-86e9-0c35f1920b18",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "永恒经典法拉利F50"
+                },
+                {
+                    "id": "txn_1782620372482_cuwrly",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-03-19",
+                    "carSid": "442e980c-aeae-4fce-9ef7-d889b2740e7e",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡白法拉利356GT"
+                },
+                {
+                    "id": "txn_1782620372482_bp7imz",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-03-21",
+                    "carSid": "f0675113-1a68-4a25-b313-e4c3e6079f3c",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡红法拉利Cilindr 12"
+                },
+                {
+                    "id": "txn_1782620372482_sc8b6x",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 15.9,
+                    "date": "2026-03-22",
+                    "carSid": "eec743f9-7b4c-4b41-8a15-2bd8d6c08b8e",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "神秘包2号淑女"
+                },
+                {
+                    "id": "txn_1782620372482_qujg9h",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-03-23",
+                    "carSid": "6b92a811-728f-4f06-a83d-d0d99aa91bea",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡黑LBWORKS兰博基尼小牛"
+                },
+                {
+                    "id": "txn_1782620372482_udwyi2",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 99,
+                    "date": "2026-03-29",
+                    "carSid": "6da492ac-af3f-4ae3-8000-62f9d40c6128",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "五连包法拉利"
+                },
+                {
+                    "id": "txn_1782620372482_3m1mwn",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 99,
+                    "date": "2026-03-29",
+                    "carSid": "8d4d6004-38d4-47da-9b82-b4d73cb31478",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "五连包法拉利"
+                },
+                {
+                    "id": "txn_1782620372482_wdgki4",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-03-30",
+                    "carSid": "8123dde2-6bb4-4a8c-8007-c1672df2a05a",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡黑法拉利F40"
+                },
+                {
+                    "id": "txn_1782620372482_b2zly6",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-04-04",
+                    "carSid": "a8d8ee37-bac6-4257-b376-d83d1ce83383",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡白法拉利356GT"
+                },
+                {
+                    "id": "txn_1782620372482_hq3ah2",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 18,
+                    "date": "2026-04-05",
+                    "carSid": "fc418f81-0dae-4525-9934-e25342e77537",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡白法拉利356GT"
+                },
+                {
+                    "id": "txn_1782620372482_3xidty",
+                    "type": "income",
+                    "category": "car_sell",
+                    "amount": 19.5,
+                    "date": "2026-04-05",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡白有行李箱丰田普锐斯"
+                },
+                {
+                    "id": "txn_1782620372482_r0dvoa",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-04-07",
+                    "carSid": "35670dfd-8162-4c07-aa5f-9dd699626236",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡白法拉利356GT"
+                },
+                {
+                    "id": "txn_1782620372482_p0m8mq",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-04-07",
+                    "carSid": "0734bb88-7750-4430-a4f6-812c0b3c0f81",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡红法拉利Cilindr 12"
+                },
+                {
+                    "id": "txn_1782620372482_gqphqh",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-04-07",
+                    "carSid": "c1069b8f-f4ed-4df6-a1ed-545c8c1abc73",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡黑法拉利F40"
+                },
+                {
+                    "id": "txn_1782620372482_uezrss",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-04-10",
+                    "carSid": "bf5062b1-5960-4740-8014-f80508a51621",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡黑法拉利F40"
+                },
+                {
+                    "id": "txn_1782620372482_62gyeb",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-04-10",
+                    "carSid": "cced0220-de89-4e96-b86b-d8e1e54fc842",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡红法拉利Cilindr 12"
+                },
+                {
+                    "id": "txn_1782620372482_056ja5",
+                    "type": "income",
+                    "category": "car_sell",
+                    "amount": 23,
+                    "date": "2026-04-13",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡深蓝布加迪玻璃龙"
+                },
+                {
+                    "id": "txn_1782620372482_b28r7y",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-04-14",
+                    "carSid": "be2ad502-0cd6-4c18-b6be-d9ef20abc152",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡F1白小红牛"
+                },
+                {
+                    "id": "txn_1782620372482_jhosad",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-04-14",
+                    "carSid": "1246cea4-8b4f-487e-8bd5-93b4627a0e80",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡红法拉利Cilindr 12"
+                },
+                {
+                    "id": "txn_1782620372482_q0lynk",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-04-15",
+                    "carSid": "832eae49-b21f-4230-a948-eb514690a43e",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡黑法拉利F40"
+                },
+                {
+                    "id": "txn_1782620372482_ln2rkm",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-04-15",
+                    "carSid": "6de61042-1e06-457a-bbcb-da6edbcb2e94",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡白法拉利356GT"
+                },
+                {
+                    "id": "txn_1782620372482_q3ym2q",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-04-21",
+                    "carSid": "ec252698-448a-4c16-87f4-abe6cde4c918",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡白法拉利356GT"
+                },
+                {
+                    "id": "txn_1782620372482_sn86ce",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 29.9,
+                    "date": "2026-04-24",
+                    "carSid": "93a63f7a-67d0-413e-9658-491db3aee88f",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "风火轮钥匙包"
+                },
+                {
+                    "id": "txn_1782620372482_52hwkp",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 34.41,
+                    "date": "2026-04-25",
+                    "carSid": "d8145a56-966a-42e2-83ed-6069b49efae7",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡红法拉利SF90"
+                },
+                {
+                    "id": "txn_1782620372482_6j2bxd",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 90.42,
+                    "date": "2026-04-25",
+                    "carSid": "349f0faf-73d8-437e-83c7-1b7c8c825d30",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "高普保罗套R-34"
+                },
+                {
+                    "id": "txn_1782620372482_inlrej",
+                    "type": "income",
+                    "category": "car_sell",
+                    "amount": 29.9,
+                    "date": "2026-04-26",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "风火轮钥匙包"
+                },
+                {
+                    "id": "txn_1782620372482_aowjsq",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 18,
+                    "date": "2026-04-26",
+                    "carSid": "e585a2e2-420a-4d14-a22a-a6e8492d6e4a",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡白法拉利356GT"
+                },
+                {
+                    "id": "txn_1782620372482_mjlaoq",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 18,
+                    "date": "2026-04-26",
+                    "carSid": "4bfced06-7984-4e54-b783-899e298bd6d2",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡红法拉利Cilindr 12"
+                },
+                {
+                    "id": "txn_1782620372482_hwllof",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 18,
+                    "date": "2026-05-02",
+                    "carSid": "abfea680-1a08-407d-93ef-18722ec5e44f",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普宝福特GT RACE"
+                },
+                {
+                    "id": "txn_1782620372482_0bypq9",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 273.12,
+                    "date": "2026-05-05",
+                    "carSid": "d38d3a0d-e470-4d9b-80d7-4644c3320523",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "赛道日Rexy绿恐龙保时捷911GT3R"
+                },
+                {
+                    "id": "txn_1782620372482_7b4yny",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 96.12,
+                    "date": "2026-05-05",
+                    "carSid": "2b61c586-d719-4ffe-b02d-42ecebaf8a79",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "赛道传奇法拉利499P"
+                },
+                {
+                    "id": "txn_1782620372482_kke1tq",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-05-07",
+                    "carSid": "77362680-7854-4b5b-a0c4-5d097ade5943",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普宝福特GT RACE"
+                },
+                {
+                    "id": "txn_1782620372482_tf91pu",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-05-07",
+                    "carSid": "1303f67d-a51b-4a69-81fb-2648807226ea",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡F1法拉利"
+                },
+                {
+                    "id": "txn_1782620372482_nv77ac",
+                    "type": "income",
+                    "category": "car_sell",
+                    "amount": 120,
+                    "date": "2026-05-19",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "五连包法拉利"
+                },
+                {
+                    "id": "txn_1782620372482_x2jbl0",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 281.5,
+                    "date": "2026-05-21",
+                    "carSid": "6cf53e55-ca05-4da6-9567-b7a8834972f2",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "娱乐文化哥斯拉日产R34"
+                },
+                {
+                    "id": "txn_1782620372482_ktf2ea",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 110.45,
+                    "date": "2026-05-21",
+                    "carSid": "33d3f6b0-f49b-4d80-b88b-e3399a0fd0f4",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "赛博朋克保时捷911"
+                },
+                {
+                    "id": "txn_1782620372482_8chiap",
+                    "type": "income",
+                    "category": "car_sell",
+                    "amount": 15.73,
+                    "date": "2026-05-23",
+                    "carSid": null,
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "神秘包2号淑女"
+                },
+                {
+                    "id": "txn_1782620372482_dyg37j",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 283.2,
+                    "date": "2026-05-28",
+                    "carSid": "46ac3c02-6226-4f91-b109-397853011539",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "娱乐文化哥斯拉日产R34"
+                },
+                {
+                    "id": "txn_1782620372482_lkmpig",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 15.97,
+                    "date": "2026-06-02",
+                    "carSid": "7b853d17-0c39-4e24-8bc7-6e4995d72cf0",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普卡F1法拉利"
+                },
+                {
+                    "id": "txn_1782620372482_acqud1",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 19.9,
+                    "date": "2026-06-09",
+                    "carSid": "773a5708-4659-4b07-af02-4e08da91af1d",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普宝福特GT RACE"
+                },
+                {
+                    "id": "txn_1782620372482_e3q6oi",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 18,
+                    "date": "2026-06-13",
+                    "carSid": "46d10a16-6d51-4532-b608-4d1729aef5fe",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "普宝福特GT RACE"
+                },
+                {
+                    "id": "txn_1782620372482_67knc7",
+                    "type": "expense",
+                    "category": "car_buy",
+                    "amount": 21.9,
+                    "date": "2026-06-26",
+                    "carSid": "17a31ca0-e109-493c-af32-7f831294cb76",
+                    "loanId": null,
+                    "transferPairId": null,
+                    "note": "本田思域超宝"
+                }
+            ],
+            "loans": []
+        }
+    },
+    "cars": [
+        {
+            "sid": "17a31ca0-e109-493c-af32-7f831294cb76",
+            "brand": "Hotwheels",
+            "name": "本田思域超宝",
+            "buyDate": "2026-06-26",
+            "buyPrice": 21.9,
+            "expectedValue": 21.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-06-26",
+                    "value": 21.9
+                }
+            ],
+            "subCategory": "超宝"
+        },
+        {
+            "sid": "a41ca4d3-cefb-453b-96d7-ab8e956d9989",
+            "brand": "Hotwheels",
+            "name": "海湾车库",
+            "buyDate": "2026-06-24",
+            "buyPrice": 174,
+            "expectedValue": 174,
+            "category": "keep",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-06-24",
+                    "value": 174
+                }
+            ],
+            "subCategory": "文化"
+        },
+        {
+            "sid": "02ba7ba2-a211-4e13-987b-1bde07961c8f",
+            "brand": "Hotwheels",
+            "name": "银奔驰SLR运输车",
+            "buyDate": "2026-06-20",
+            "buyPrice": 102.26,
+            "expectedValue": 102.26,
+            "category": "keep",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-06-20",
+                    "value": 102.26
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "46d10a16-6d51-4532-b608-4d1729aef5fe",
+            "brand": "Hotwheels",
+            "name": "普宝福特GT RACE",
+            "buyDate": "2026-06-13",
+            "buyPrice": 18,
+            "expectedValue": 18,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-06-13",
+                    "value": 18
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "773a5708-4659-4b07-af02-4e08da91af1d",
+            "brand": "Hotwheels",
+            "name": "普宝福特GT RACE",
+            "buyDate": "2026-06-09",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-06-09",
+                    "value": 19.9
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "a61bd6b6-0c8a-4709-8b1a-01390bdecfdc",
+            "brand": "Hotwheels",
+            "name": "Poprace 马自达787B",
+            "buyDate": "2026-06-02",
+            "buyPrice": 75.55,
+            "expectedValue": 75.55,
+            "category": "keep",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-06-02",
+                    "value": 75.55
+                }
+            ],
+            "subCategory": "文化"
+        },
+        {
+            "sid": "7b853d17-0c39-4e24-8bc7-6e4995d72cf0",
+            "brand": "Hotwheels",
+            "name": "普卡F1法拉利",
+            "buyDate": "2026-06-02",
+            "buyPrice": 15.97,
+            "expectedValue": 15.97,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-06-02",
+                    "value": 15.97
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "ff53148d-984b-441b-9367-1d52aa825bbd",
+            "brand": "Hotwheels",
+            "name": "本田思域超宝",
+            "buyDate": "2026-06-02",
+            "buyPrice": 15.97,
+            "expectedValue": 15.97,
+            "category": "keep",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-06-02",
+                    "value": 15.97
+                }
+            ],
+            "subCategory": "超宝"
+        },
+        {
+            "sid": "152fe5e0-2277-47ca-b52f-26f25228d256",
+            "brand": "Hotwheels",
+            "name": "风火轮花园大道柯尼塞格银色",
+            "buyDate": "2026-06-01",
+            "buyPrice": 34,
+            "expectedValue": 34,
+            "category": "keep",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-06-01",
+                    "value": 34
+                }
+            ],
+            "subCategory": "文化"
+        },
+        {
+            "sid": "46ac3c02-6226-4f91-b109-397853011539",
+            "brand": "Hotwheels",
+            "name": "娱乐文化哥斯拉日产R34",
+            "buyDate": "2026-05-28",
+            "buyPrice": 283.2,
+            "expectedValue": 283.2,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-05-28",
+                    "value": 283.2
+                }
+            ],
+            "subCategory": "文化"
+        },
+        {
+            "sid": "6cf53e55-ca05-4da6-9567-b7a8834972f2",
+            "brand": "Hotwheels",
+            "name": "娱乐文化哥斯拉日产R34",
+            "buyDate": "2026-05-21",
+            "buyPrice": 281.5,
+            "expectedValue": 281.5,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-05-21",
+                    "value": 281.5
+                }
+            ],
+            "subCategory": "文化"
+        },
+        {
+            "sid": "33d3f6b0-f49b-4d80-b88b-e3399a0fd0f4",
+            "brand": "Hotwheels",
+            "name": "赛博朋克保时捷911",
+            "buyDate": "2026-05-21",
+            "buyPrice": 110.45,
+            "expectedValue": 110.45,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-05-21",
+                    "value": 110.45
+                }
+            ],
+            "subCategory": "文化"
+        },
+        {
+            "sid": "6e015168-b06c-4e7e-91b4-5968cee664c8",
+            "brand": "Hotwheels",
+            "name": "RLC 21 Pagani Huayra R",
+            "buyDate": "2026-05-19",
+            "buyPrice": 220,
+            "expectedValue": 220,
+            "category": "keep",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-05-19",
+                    "value": 220
+                }
+            ],
+            "subCategory": "RLC"
+        },
+        {
+            "sid": "77362680-7854-4b5b-a0c4-5d097ade5943",
+            "brand": "Hotwheels",
+            "name": "普宝福特GT RACE",
+            "buyDate": "2026-05-07",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-05-07",
+                    "value": 19.9
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "1303f67d-a51b-4a69-81fb-2648807226ea",
+            "brand": "Hotwheels",
+            "name": "普卡F1法拉利",
+            "buyDate": "2026-05-07",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-05-07",
+                    "value": 19.9
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "d38d3a0d-e470-4d9b-80d7-4644c3320523",
+            "brand": "Hotwheels",
+            "name": "赛道日Rexy绿恐龙保时捷911GT3R",
+            "buyDate": "2026-05-05",
+            "buyPrice": 273.12,
+            "expectedValue": 273.12,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-05-05",
+                    "value": 273.12
+                }
+            ],
+            "subCategory": "文化"
+        },
+        {
+            "sid": "2b61c586-d719-4ffe-b02d-42ecebaf8a79",
+            "brand": "Hotwheels",
+            "name": "赛道传奇法拉利499P",
+            "buyDate": "2026-05-05",
+            "buyPrice": 96.12,
+            "expectedValue": 96.12,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-05-05",
+                    "value": 96.12
+                }
+            ],
+            "subCategory": "文化"
+        },
+        {
+            "sid": "aab2924e-472c-41fe-9971-8f230ec4bb25",
+            "brand": "Hotwheels",
+            "name": "银标欧洲豪车六连包",
+            "buyDate": "2026-05-05",
+            "buyPrice": 116,
+            "expectedValue": 116,
+            "category": "keep",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-05-05",
+                    "value": 116
+                }
+            ],
+            "subCategory": "礼盒"
+        },
+        {
+            "sid": "abfea680-1a08-407d-93ef-18722ec5e44f",
+            "brand": "Hotwheels",
+            "name": "普宝福特GT RACE",
+            "buyDate": "2026-05-02",
+            "buyPrice": 18,
+            "expectedValue": 18,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-05-02",
+                    "value": 18
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "38e9eb02-8a0b-49c4-89b8-76e385be97f5",
+            "brand": "Hotwheels",
+            "name": "普卡F1法拉利",
+            "buyDate": "2026-04-30",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "keep",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-04-30",
+                    "value": 19.9
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "e585a2e2-420a-4d14-a22a-a6e8492d6e4a",
+            "brand": "Hotwheels",
+            "name": "普卡白法拉利356GT",
+            "buyDate": "2026-04-26",
+            "buyPrice": 18,
+            "expectedValue": 18,
+            "category": "invest",
+            "sellPrice": 19,
+            "soldDate": "2026-02-25",
+            "isSold": true,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-04-26",
+                    "value": 18
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "4bfced06-7984-4e54-b783-899e298bd6d2",
+            "brand": "Hotwheels",
+            "name": "普卡红法拉利Cilindr 12",
+            "buyDate": "2026-04-26",
+            "buyPrice": 18,
+            "expectedValue": 18,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-04-26",
+                    "value": 18
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "d8145a56-966a-42e2-83ed-6069b49efae7",
+            "brand": "Hotwheels",
+            "name": "普卡红法拉利SF90",
+            "buyDate": "2026-04-25",
+            "buyPrice": 34.41,
+            "expectedValue": 34.41,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-04-25",
+                    "value": 34.41
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "349f0faf-73d8-437e-83c7-1b7c8c825d30",
+            "brand": "Hotwheels",
+            "name": "高普保罗套R-34",
+            "buyDate": "2026-04-25",
+            "buyPrice": 90.42,
+            "expectedValue": 90.42,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-04-25",
+                    "value": 90.42
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "567b2637-8a88-47ce-b10a-181bfe66c9e1",
+            "brand": "Hotwheels",
+            "name": "现代经典丰田Soarer",
+            "buyDate": "2026-04-24",
+            "buyPrice": 27.5,
+            "expectedValue": 27.5,
+            "category": "keep",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-04-24",
+                    "value": 27.5
+                }
+            ],
+            "subCategory": "文化"
+        },
+        {
+            "sid": "ec252698-448a-4c16-87f4-abe6cde4c918",
+            "brand": "Hotwheels",
+            "name": "普卡白法拉利356GT",
+            "buyDate": "2026-04-21",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-04-21",
+                    "value": 19.9
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "832eae49-b21f-4230-a948-eb514690a43e",
+            "brand": "Hotwheels",
+            "name": "普卡黑法拉利F40",
+            "buyDate": "2026-04-15",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-04-15",
+                    "value": 19.9
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "6de61042-1e06-457a-bbcb-da6edbcb2e94",
+            "brand": "Hotwheels",
+            "name": "普卡白法拉利356GT",
+            "buyDate": "2026-04-15",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-04-15",
+                    "value": 19.9
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "be2ad502-0cd6-4c18-b6be-d9ef20abc152",
+            "brand": "Hotwheels",
+            "name": "普卡F1白小红牛",
+            "buyDate": "2026-04-14",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-04-14",
+                    "value": 19.9
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "1246cea4-8b4f-487e-8bd5-93b4627a0e80",
+            "brand": "Hotwheels",
+            "name": "普卡红法拉利Cilindr 12",
+            "buyDate": "2026-04-14",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-04-14",
+                    "value": 19.9
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "bf5062b1-5960-4740-8014-f80508a51621",
+            "brand": "Hotwheels",
+            "name": "普卡黑法拉利F40",
+            "buyDate": "2026-04-10",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-04-10",
+                    "value": 19.9
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "cced0220-de89-4e96-b86b-d8e1e54fc842",
+            "brand": "Hotwheels",
+            "name": "普卡红法拉利Cilindr 12",
+            "buyDate": "2026-04-10",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-04-10",
+                    "value": 19.9
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "35670dfd-8162-4c07-aa5f-9dd699626236",
+            "brand": "Hotwheels",
+            "name": "普卡白法拉利356GT",
+            "buyDate": "2026-04-07",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-04-07",
+                    "value": 19.9
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "0734bb88-7750-4430-a4f6-812c0b3c0f81",
+            "brand": "Hotwheels",
+            "name": "普卡红法拉利Cilindr 12",
+            "buyDate": "2026-04-07",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-04-07",
+                    "value": 19.9
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "c1069b8f-f4ed-4df6-a1ed-545c8c1abc73",
+            "brand": "Hotwheels",
+            "name": "普卡黑法拉利F40",
+            "buyDate": "2026-04-07",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-04-07",
+                    "value": 19.9
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "fc418f81-0dae-4525-9934-e25342e77537",
+            "brand": "Hotwheels",
+            "name": "普卡白法拉利356GT",
+            "buyDate": "2026-04-05",
+            "buyPrice": 18,
+            "expectedValue": 18,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-04-05",
+                    "value": 18
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "4c62a660-05a2-40ce-8e8d-7a441df77926",
+            "brand": "Hotwheels",
+            "name": "单独法拉利的5连包",
+            "buyDate": "2026-04-04",
+            "buyPrice": 80,
+            "expectedValue": 80,
+            "category": "keep",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-04-04",
+                    "value": 80
+                }
+            ],
+            "subCategory": "礼盒"
+        },
+        {
+            "sid": "a8d8ee37-bac6-4257-b376-d83d1ce83383",
+            "brand": "Hotwheels",
+            "name": "普卡白法拉利356GT",
+            "buyDate": "2026-04-04",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-04-04",
+                    "value": 19.9
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "8123dde2-6bb4-4a8c-8007-c1672df2a05a",
+            "brand": "Hotwheels",
+            "name": "普卡黑法拉利F40",
+            "buyDate": "2026-03-30",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-03-30",
+                    "value": 19.9
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "8d4d6004-38d4-47da-9b82-b4d73cb31478",
+            "brand": "Hotwheels",
+            "name": "五连包法拉利",
+            "buyDate": "2026-03-29",
+            "buyPrice": 99,
+            "expectedValue": 99,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-03-29",
+                    "value": 99
+                }
+            ],
+            "subCategory": "礼盒"
+        },
+        {
+            "sid": "faa11716-65b2-4c0c-ba08-60ffcc490b31",
+            "brand": "Hotwheels",
+            "name": "普卡F1 法拉利短卡设计师签名版",
+            "buyDate": "2026-03-29",
+            "buyPrice": 0.01,
+            "expectedValue": 0.01,
+            "category": "keep",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-03-29",
+                    "value": 0.01
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "3eea461d-6d22-4a52-a68c-54781ab208ef",
+            "brand": "Hotwheels",
+            "name": "火柴盒福特Shelby绿",
+            "buyDate": "2026-03-29",
+            "buyPrice": 0.01,
+            "expectedValue": 0.01,
+            "category": "keep",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-03-29",
+                    "value": 0.01
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "1aa925e0-7b57-49ba-8dad-175fe24c9862",
+            "brand": "Hotwheels",
+            "name": "五连包法拉利",
+            "buyDate": "2026-03-29",
+            "buyPrice": 0.01,
+            "expectedValue": 0.01,
+            "category": "keep",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-03-29",
+                    "value": 0.01
+                }
+            ],
+            "subCategory": "礼盒"
+        },
+        {
+            "sid": "5664f975-24e9-4989-aadd-4638d9144046",
+            "brand": "Hotwheels",
+            "name": "普卡F1威廉姆斯",
+            "buyDate": "2026-03-26",
+            "buyPrice": 42.24,
+            "expectedValue": 42.24,
+            "category": "keep",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-03-26",
+                    "value": 42.24
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "6b92a811-728f-4f06-a83d-d0d99aa91bea",
+            "brand": "Hotwheels",
+            "name": "普卡黑LBWORKS兰博基尼小牛",
+            "buyDate": "2026-03-23",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": 23,
+            "soldDate": "2026-02-25",
+            "isSold": true,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-03-23",
+                    "value": 19.9
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "f0675113-1a68-4a25-b313-e4c3e6079f3c",
+            "brand": "Hotwheels",
+            "name": "普卡红法拉利Cilindr 12",
+            "buyDate": "2026-03-21",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-03-21",
+                    "value": 19.9
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "1632c283-e6a3-4a22-b6e5-3e68fb119233",
+            "brand": "Hotwheels",
+            "name": "欧洲速度日产R34",
+            "buyDate": "2026-03-19",
+            "buyPrice": 75,
+            "expectedValue": 75,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-03-19",
+                    "value": 75
+                }
+            ],
+            "subCategory": "文化"
+        },
+        {
+            "sid": "cc2786b0-7e87-476f-8936-7cfaa6d66185",
+            "brand": "Hotwheels",
+            "name": "永恒经典法拉利F50",
+            "buyDate": "2026-03-19",
+            "buyPrice": 80,
+            "expectedValue": 80,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-03-19",
+                    "value": 80
+                }
+            ],
+            "subCategory": "文化"
+        },
+        {
+            "sid": "f96bfb6a-7439-4f35-8680-cdd2597a735c",
+            "brand": "Hotwheels",
+            "name": "永恒经典法拉利F50",
+            "buyDate": "2026-03-19",
+            "buyPrice": 80,
+            "expectedValue": 80,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-03-19",
+                    "value": 80
+                }
+            ],
+            "subCategory": "文化"
+        },
+        {
+            "sid": "efd73d32-8918-4135-ada6-f763e6ebab65",
+            "brand": "Hotwheels",
+            "name": "永恒经典法拉利F50",
+            "buyDate": "2026-03-19",
+            "buyPrice": 80,
+            "expectedValue": 80,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-03-19",
+                    "value": 80
+                }
+            ],
+            "subCategory": "文化"
+        },
+        {
+            "sid": "6712f0c4-4fc9-4aad-be51-0d02e57217d3",
+            "brand": "Hotwheels",
+            "name": "永恒经典法拉利F50",
+            "buyDate": "2026-03-19",
+            "buyPrice": 80,
+            "expectedValue": 80,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-03-19",
+                    "value": 80
+                }
+            ],
+            "subCategory": "文化"
+        },
+        {
+            "sid": "9a3ba499-0741-4a7c-86e9-0c35f1920b18",
+            "brand": "Hotwheels",
+            "name": "永恒经典法拉利F50",
+            "buyDate": "2026-03-19",
+            "buyPrice": 80,
+            "expectedValue": 80,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-03-19",
+                    "value": 80
+                }
+            ],
+            "subCategory": "文化"
+        },
+        {
+            "sid": "442e980c-aeae-4fce-9ef7-d889b2740e7e",
+            "brand": "Hotwheels",
+            "name": "普卡白法拉利356GT",
+            "buyDate": "2026-03-19",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-03-19",
+                    "value": 19.9
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "669b8c52-727b-4874-9a46-eb2d6bcb5287",
+            "brand": "Hotwheels",
+            "name": "普卡红法拉利Cilindr 12",
+            "buyDate": "2026-03-14",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-03-14",
+                    "value": 19.9
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "5d2b0b4b-72c0-4c93-acc6-29b210e9ef97",
+            "brand": "Hotwheels",
+            "name": "红法拉利250GTO运输车",
+            "buyDate": "2026-03-13",
+            "buyPrice": 225,
+            "expectedValue": 225,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-03-13",
+                    "value": 225
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "b4e43385-f1d9-44d6-a73f-63febbc64bb7",
+            "brand": "Hotwheels",
+            "name": "欧洲速度法拉利拉法La Ferrari",
+            "buyDate": "2026-03-09",
+            "buyPrice": 90,
+            "expectedValue": 90,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-03-09",
+                    "value": 90
+                }
+            ],
+            "subCategory": "文化"
+        },
+        {
+            "sid": "6e16aac5-009a-42ce-b107-6ab8e45c9f01",
+            "brand": "Hotwheels",
+            "name": "红法拉利250GTO运输车",
+            "buyDate": "2026-03-09",
+            "buyPrice": 456,
+            "expectedValue": 456,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-03-09",
+                    "value": 456
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "8735fdd5-033e-4416-966b-36a2b80b7508",
+            "brand": "Hotwheels",
+            "name": "斯巴鲁翼豹超宝散车",
+            "buyDate": "2026-03-06",
+            "buyPrice": 230,
+            "expectedValue": 230,
+            "category": "keep",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-03-06",
+                    "value": 230
+                }
+            ],
+            "subCategory": "超宝"
+        },
+        {
+            "sid": "7b252e3f-c27d-4d3c-908b-70e8308835bf",
+            "brand": "Hotwheels",
+            "name": "赛道传奇法拉利499P",
+            "buyDate": "2026-03-06",
+            "buyPrice": 117,
+            "expectedValue": 117,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-03-06",
+                    "value": 117
+                }
+            ],
+            "subCategory": "文化"
+        },
+        {
+            "sid": "20751838-6c7a-4a09-8579-ec1aeb7ea17a",
+            "brand": "Hotwheels",
+            "name": "普卡黑法拉利F40",
+            "buyDate": "2026-03-03",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-03-03",
+                    "value": 19.9
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "a31646c9-8623-4b3e-ab21-13f3e713fa35",
+            "brand": "Hotwheels",
+            "name": "普卡F1白小红牛",
+            "buyDate": "2026-03-03",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "keep",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-03-03",
+                    "value": 19.9
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "d805dca4-23a1-4fc9-af76-d96c6120f83f",
+            "brand": "Hotwheels",
+            "name": "普卡白有行李箱丰田普锐斯",
+            "buyDate": "2026-02-25",
+            "buyPrice": 14,
+            "expectedValue": 14,
+            "category": "keep",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-02-25",
+                    "value": 14
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "55549c01-069e-4806-b4be-c1dd4331a098",
+            "brand": "Hotwheels",
+            "name": "普卡白法拉利356GT",
+            "buyDate": "2026-02-16",
+            "buyPrice": 12,
+            "expectedValue": 12,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-02-16",
+                    "value": 12
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "fafa1b8d-e423-4e29-9687-9aa179bd8914",
+            "brand": "Hotwheels",
+            "name": "普卡白法拉利356GT",
+            "buyDate": "2026-02-15",
+            "buyPrice": 12,
+            "expectedValue": 12,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-02-15",
+                    "value": 12
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "6a0ead55-802b-47e5-936c-db366477460b",
+            "brand": "Hotwheels",
+            "name": "普卡白法拉利356GT",
+            "buyDate": "2026-02-15",
+            "buyPrice": 12,
+            "expectedValue": 12,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-02-15",
+                    "value": 12
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "5c52a106-3a1a-4ec7-8804-9ce20a8b6c5b",
+            "brand": "Hotwheels",
+            "name": "普卡红法拉利Cilindr 12",
+            "buyDate": "2026-02-15",
+            "buyPrice": 14,
+            "expectedValue": 14,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-02-15",
+                    "value": 14
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "ca58f36d-cdfa-451f-9a35-715f5ad5b876",
+            "brand": "Hotwheels",
+            "name": "普卡黑LBWORKS兰博基尼小牛",
+            "buyDate": "2026-02-15",
+            "buyPrice": 14,
+            "expectedValue": 14,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-02-15",
+                    "value": 14
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "13422e3e-75bc-43fa-a4ec-78d269d13228",
+            "brand": "Hotwheels",
+            "name": "普卡黑LBWORKS兰博基尼小牛",
+            "buyDate": "2026-02-15",
+            "buyPrice": 12,
+            "expectedValue": 12,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-02-15",
+                    "value": 12
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "9da2e061-76f6-4290-9f13-81e60f42632d",
+            "brand": "Hotwheels",
+            "name": "普卡红法拉利Cilindr 12",
+            "buyDate": "2026-02-15",
+            "buyPrice": 12,
+            "expectedValue": 12,
+            "category": "keep",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-02-15",
+                    "value": 12
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "3711c054-88cf-43e7-bd95-cd027707e8c7",
+            "brand": "Hotwheels",
+            "name": "普卡黑法拉利F40",
+            "buyDate": "2026-02-15",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-02-15",
+                    "value": 19.9
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "7d07a729-d19f-4ad3-9640-a312c02037e5",
+            "brand": "Hotwheels",
+            "name": "普卡白无行李箱丰田普锐斯",
+            "buyDate": "2026-02-14",
+            "buyPrice": 12,
+            "expectedValue": 12,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-02-14",
+                    "value": 12
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "a6842f9e-139f-49c1-a285-c61e949a5201",
+            "brand": "Hotwheels",
+            "name": "普卡深蓝布加迪玻璃龙",
+            "buyDate": "2026-02-09",
+            "buyPrice": 12,
+            "expectedValue": 12,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-02-09",
+                    "value": 12
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "2742663b-d66d-4898-9a4a-20383fa2299b",
+            "brand": "Hotwheels",
+            "name": "普卡黑法拉利F40",
+            "buyDate": "2026-02-07",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-02-07",
+                    "value": 19.9
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "cd25a3a3-8dc2-4673-9b0f-b060b18c1f7c",
+            "brand": "Hotwheels",
+            "name": "精英ELITE法拉利330P",
+            "buyDate": "2026-01-28",
+            "buyPrice": 184.28,
+            "expectedValue": 184.28,
+            "category": "keep",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-01-28",
+                    "value": 184.28
+                }
+            ],
+            "subCategory": "RLC"
+        },
+        {
+            "sid": "858e2e71-2c07-4e97-b2bd-c4b780b21af7",
+            "brand": "Hotwheels",
+            "name": "花园大道银奔驰SLC500",
+            "buyDate": "2026-01-23",
+            "buyPrice": 34.6,
+            "expectedValue": 34.6,
+            "category": "keep",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-01-23",
+                    "value": 34.6
+                }
+            ],
+            "subCategory": "文化"
+        },
+        {
+            "sid": "074ed1d9-c42c-4504-bfbf-2fddcd645140",
+            "brand": "Hotwheels",
+            "name": "普卡F1 迈凯伦",
+            "buyDate": "2026-01-19",
+            "buyPrice": 21,
+            "expectedValue": 21,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-01-19",
+                    "value": 21
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "a6edd3c4-def8-47ad-9cd0-5e32f103b34b",
+            "brand": "Hotwheels",
+            "name": "普卡黑法拉利F40",
+            "buyDate": "2026-01-10",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "keep",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-01-10",
+                    "value": 19.9
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "fec28b1b-d5b8-4d7c-870b-af203ac8f5f6",
+            "brand": "Hotwheels",
+            "name": "普卡F1 迈凯伦",
+            "buyDate": "2026-01-07",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "keep",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-01-07",
+                    "value": 19.9
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "6bdedd98-f8e3-4e23-9f6a-b9b910fbbc39",
+            "brand": "Hotwheels",
+            "name": "红法拉利250GTO运输车",
+            "buyDate": "2026-01-06",
+            "buyPrice": 199.89,
+            "expectedValue": 199.89,
+            "category": "keep",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "expectedHistory": [
+                {
+                    "date": "2026-01-06",
+                    "value": 199.89
+                }
+            ],
+            "subCategory": "普卡"
+        },
+        {
+            "sid": "3c6894d3-4127-465f-a145-aafc03bddfaa",
+            "brand": "Hotwheels",
+            "name": "普卡黑法拉利F40",
+            "buyDate": "2026-01-31",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "subCategory": "普卡",
+            "expectedHistory": [
+                {
+                    "date": "2026-01-31",
+                    "value": 19.9
+                }
+            ]
+        },
+        {
+            "sid": "39adaa3b-c12e-4165-aa37-c3831919eb83",
+            "brand": "Hotwheels",
+            "name": "普卡黑法拉利F40",
+            "buyDate": "2026-01-31",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "subCategory": "普卡",
+            "expectedHistory": [
+                {
+                    "date": "2026-01-31",
+                    "value": 19.9
+                }
+            ]
+        },
+        {
+            "sid": "75489571-5d93-4729-a282-4d086f396e8d",
+            "brand": "Hotwheels",
+            "name": "普卡黑法拉利F40",
+            "buyDate": "2026-01-31",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "subCategory": "普卡",
+            "expectedHistory": [
+                {
+                    "date": "2026-01-31",
+                    "value": 19.9
+                }
+            ]
+        },
+        {
+            "sid": "ef05c6f4-d722-4e7e-abb4-3e8c5ca8e2dc",
+            "brand": "Hotwheels",
+            "name": "普卡黑法拉利F40",
+            "buyDate": "2026-01-31",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "subCategory": "普卡",
+            "expectedHistory": [
+                {
+                    "date": "2026-01-31",
+                    "value": 19.9
+                }
+            ]
+        },
+        {
+            "sid": "ec524ff6-e72d-41f3-b6a8-db848bcfd021",
+            "brand": "Hotwheels",
+            "name": "普卡红法拉利Cilindr 12",
+            "buyDate": "2026-01-31",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "subCategory": "普卡",
+            "expectedHistory": [
+                {
+                    "date": "2026-01-31",
+                    "value": 19.9
+                }
+            ]
+        },
+        {
+            "sid": "b9f80eb5-94c8-4472-b20f-a8fc775d96a4",
+            "brand": "Hotwheels",
+            "name": "普卡红法拉利Cilindr 12",
+            "buyDate": "2026-01-31",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "subCategory": "普卡",
+            "expectedHistory": [
+                {
+                    "date": "2026-01-31",
+                    "value": 19.9
+                }
+            ]
+        },
+        {
+            "sid": "874ce4c0-3bb4-4077-ba32-fef8b71a1489",
+            "brand": "Hotwheels",
+            "name": "普卡红法拉利Cilindr 12",
+            "buyDate": "2026-01-31",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "subCategory": "普卡",
+            "expectedHistory": [
+                {
+                    "date": "2026-01-31",
+                    "value": 19.9
+                }
+            ]
+        },
+        {
+            "sid": "1201dc62-9821-44e1-b8e0-40c456f5da92",
+            "brand": "Hotwheels",
+            "name": "普卡F1白小红牛",
+            "buyDate": "2026-01-31",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "subCategory": "普卡",
+            "expectedHistory": [
+                {
+                    "date": "2026-01-31",
+                    "value": 19.9
+                }
+            ]
+        },
+        {
+            "sid": "08fcb26c-c0d0-46a7-9a7c-ef812255a0d1",
+            "brand": "Hotwheels",
+            "name": "普卡F1白小红牛",
+            "buyDate": "2026-01-31",
+            "buyPrice": 19.9,
+            "expectedValue": 19.9,
+            "category": "invest",
+            "sellPrice": null,
+            "soldDate": null,
+            "isSold": false,
+            "note": "",
+            "subCategory": "普卡",
+            "expectedHistory": [
+                {
+                    "date": "2026-01-31",
+                    "value": 19.9
+                }
+            ]
+        }
+    ],
+    "transferPairs": [
+        {
+            "id": "tp_1782620648443_aefivy",
+            "fromAccount": "pocket",
+            "toAccount": "invest",
+            "amount": 21,
+            "date": "2026-06-28",
+            "note": "自留→投资: 普卡F1 迈凯伦"
+        },
+        {
+            "id": "tp_1782628556673_r4apj0",
+            "fromAccount": "invest",
+            "toAccount": "pocket",
+            "amount": 184.28,
+            "date": "2026-06-28",
+            "note": "投资→自留: 精英ELITE法拉利330P"
+        }
+    ],
+    "operationLogs": [
+        {
+            "id": 1782628557574,
+            "time": "2026-06-28T06:35:56.673Z",
+            "type": "car_convert",
+            "message": "精英ELITE法拉利330P 投资→自留 按 ¥184.28",
+            "detail": {
+                "name": "精英ELITE法拉利330P",
+                "from": "投资",
+                "to": "自留",
+                "amount": 184.28
+            }
+        },
+        {
+            "id": 1782628525859,
+            "time": "2026-06-28T06:35:25.112Z",
+            "type": "import",
+            "message": "导入JSON 82车·129笔",
+            "detail": {}
+        },
+        {
+            "id": 1782620648945,
+            "time": "2026-06-28T04:24:08.443Z",
+            "type": "car_convert",
+            "message": "普卡F1 迈凯伦 自留→投资 按 ¥21.00",
+            "detail": {
+                "name": "普卡F1 迈凯伦",
+                "from": "自留",
+                "to": "投资",
+                "amount": 21
+            }
+        },
+        {
+            "id": 1782620531308,
+            "time": "2026-06-28T04:22:10.447Z",
+            "type": "export",
+            "message": "导出JSON 93车·125笔",
+            "detail": {}
+        },
+        {
+            "id": 1782620489798,
+            "time": "2026-06-28T04:21:29.796Z",
+            "type": "txn_add",
+            "message": "收入 allowance ¥321.61",
+            "detail": {
+                "type": "income",
+                "category": "allowance",
+                "amount": 321.61,
+                "account": "pocket"
+            }
+        },
+        {
+            "id": 1782620455125,
+            "time": "2026-06-28T04:20:54.271Z",
+            "type": "import",
+            "message": "导入JSON 93车·124笔",
+            "detail": {}
+        }
+    ]
+}
