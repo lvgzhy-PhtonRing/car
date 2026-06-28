@@ -431,6 +431,16 @@
       });
     }
 
+    // 品牌列表
+    const ALL_BRANDS = ['Hotwheels', 'MINIGT', 'TLV', 'Kyosho', 'Tomica', 'Matchbox', 'ARBOX', 'KingModel', 'Mortal', '其它'];
+
+    function renderBrandSelect(id, selected) {
+      return `<select id="${id}" class="w-full glass-input p-2 text-sm">
+        <option value="">选择品牌</option>
+        ${ALL_BRANDS.map(b => `<option value="${b}" ${b === selected ? 'selected' : ''}>${b}</option>`).join('')}
+      </select>`;
+    }
+
     // 日期工具
     const getToday = () => new Date().toISOString().split('T')[0];
 
@@ -1363,7 +1373,7 @@
                   <div class="grid grid-cols-2 gap-3">
                     <div>
                       <label class="block text-sm text-gray-600 mb-1">品牌</label>
-                      <input type="text" id="carBrand" value="${esc(car ? car.brand : '')}" placeholder="如：Hotwheels" class="w-full glass-input p-2 text-sm">
+                      ${renderBrandSelect('carBrand', car ? car.brand : '')}
                     </div>
                     <div>
                       <label class="block text-sm text-gray-600 mb-1">名称 <span class="text-invest">*</span></label>
@@ -1701,7 +1711,7 @@
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block text-sm text-gray-600 mb-1">品牌</label>
-                  <input type="text" id="editCarBrand" value="${esc(car.brand)}" class="w-full glass-input p-2 text-sm">
+                  ${renderBrandSelect('editCarBrand', car.brand)}
                 </div>
                 <div>
                   <label class="block text-sm text-gray-600 mb-1">名称</label>
