@@ -323,10 +323,10 @@
             background: rgba(255,255,255,0.5);
         }
         .tab-btn.active {
-            color: var(--c-text);
-            background: white;
+            color: var(--c-accent);
+            background: var(--c-accent-bg);
             font-weight: 600;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
         }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
@@ -1148,6 +1148,7 @@
       hideModal();
       addOperationLog(id ? 'loan_edit' : 'loan_new', (id ? '编辑' : '新增') + '贷款 ' + name + ' ' + fmt(amount), { name, amount });
       saveData();
+      renderCurrentModule();
     }
 
     function openRepayLoanModal(loanId) {
@@ -1223,6 +1224,7 @@
       hideModal();
       addOperationLog('loan_repay', '归还贷款 ' + loan.name + ' ' + fmt(amount) + '（剩余' + fmt(loan.remaining) + '）', { name: loan.name, amount, remaining: loan.remaining });
       saveData();
+      renderCurrentModule();
     }
 
     // ==================== 账户互转 ====================
