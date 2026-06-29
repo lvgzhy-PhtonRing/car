@@ -430,7 +430,7 @@
     // 默认空数据结构
     function getDefaultData() {
       return {
-        version: '2.0.2',
+        version: '2.0.5',
         accounts: {
           pocket: {
             id: 'pocket', name: '零花钱账户', monthlyAllowance: 200, allowanceDay: 1,
@@ -570,7 +570,7 @@
       if (raw) {
         try {
           carAppData = JSON.parse(raw);
-          if (!carAppData.version) carAppData.version = '2.0.2';
+          if (!carAppData.version) carAppData.version = '2.0.5';
           migrateExpectedHistory();
           return true;
         } catch (e) {
@@ -988,8 +988,11 @@
       const investTotal = investCars.reduce((s, c) => s + c.buyPrice, 0);
       const investCount = investCars.length;
       const expectedTotal = investCars.reduce((s, c) => s + (c.expectedValue || c.buyPrice), 0);
+      
+      const keepCars = allCars.filter(c => c.category === 'keep' && !c.isSold);
+      const keepExpectedTotal = keepCars.reduce((s, c) => s + (c.expectedValue || c.buyPrice), 0);
 
-      return { pocketBalance, investBalance, loanTotal, investSpent, investTotal, investCount, expectedTotal, unsoldCount: investCount };
+      return { pocketBalance, investBalance, loanTotal, investSpent, investTotal, investCount, expectedTotal, unsoldCount: investCount, keepExpectedTotal };
     }
 
     function getActiveLoans() {
@@ -1347,17 +1350,17 @@
             </div>
           </div>
 
-          <!-- 投资 & 库存卡片 -->
+          <!-- 投资 & 自留卡片 -->
           <div class="grid grid-cols-2 gap-4">
             <div class="stat-card">
               <div class="stat-label"><i data-lucide="car" class="w-4 h-4 inline-block align-middle mr-1"></i> 已投资小车</div>
               <div class="stat-value text-gray-800">${fmt(stats.investTotal)}</div>
-              <div class="stat-sub">共 ${stats.investCount} 辆</div>
+              <div class="stat-sub">共 ${stats.investCount} 辆 · 预期 ${fmt(stats.expectedTotal)}</div>
             </div>
             <div class="stat-card">
-              <div class="stat-label"><i data-lucide="diamond" class="w-4 h-4 inline-block align-middle mr-1"></i> 投资库存预期价值</div>
-              <div class="stat-value text-gray-800">${fmt(stats.expectedTotal)}</div>
-              <div class="stat-sub">共计 ${stats.unsoldCount} 辆</div>
+              <div class="stat-label"><i data-lucide="heart" class="w-4 h-4 inline-block align-middle mr-1"></i> 自留车库总价值</div>
+              <div class="stat-value text-gray-800">${fmt(stats.keepExpectedTotal)}</div>
+              <div class="stat-sub">未包括之前购买的文化和普卡</div>
             </div>
           </div>
 
@@ -1370,11 +1373,11 @@
               const isSoon = daysLeft >= 0 && daysLeft <= 7;
               return `
                 <div class="loan-card ${isOverdue ? 'overdue' : ''} ${isSoon ? 'due-soon' : ''} mb-2 flex justify-between items-center">
-                  <div>
-                    <div class="font-semibold text-sm">${esc(loan.name)}</div>
-                    <div class="text-xs text-gray-500">剩余 ${fmt(loan.remaining)} / 总额 ${fmt(loan.amount)}</div>
-                    <div class="text-xs ${isOverdue ? 'text-invest font-bold' : isSoon ? 'text-sell font-semibold' : 'text-gray-400'}">
-                      ${isOverdue ? '⚠ 已逾期 ' + Math.abs(daysLeft) + ' 天' : '到期: ' + loan.dueDate + ' (' + daysLeft + ' 天)'}
+                  <div class="flex-1">
+                    <div class="font-semibold text-sm mb-1">${esc(loan.name)}</div>
+                    <div class="text-xl font-bold ${isOverdue ? 'text-invest' : 'text-gray-800'} mb-1">${fmt(loan.remaining)}<span class="text-xs text-gray-400 font-normal ml-1">/ ${fmt(loan.amount)}</span></div>
+                    <div class="text-base font-semibold ${isOverdue ? 'text-invest' : isSoon ? 'text-sell' : 'text-gray-500'}">
+                      ${isOverdue ? '⚠ 已逾期 ' + Math.abs(daysLeft) + ' 天' : daysLeft + ' 天'}
                     </div>
                   </div>
                 </div>`;
@@ -1802,7 +1805,9 @@
 
           <div class="glass rounded-2xl-apple p-4 flex gap-6 text-sm">
             <div>账户: <span class="font-bold">${esc(invest.name)}</span></div>
-            <div>余额: <span class="font-bold ${balance >= 0 ? 'text-negative' : 'text-positive'}">${fmt(balance)}</span></div>
+            <div>余额: <span class="font-bold ${balance >= 0 ? 'text-negative' : 'text-positive'}">${fmt(balance)}</span>
+              <span class="text-gray-400 text-xs ml-1">(${fmt(invest.loans.reduce((s, l) => s + (l.amount || 0), 0))} 贷款 - ${fmt(invest.transactions.reduce((s, t) => s + (t.type === 'expense' ? t.amount : 0), 0))} 已花)</span>
+            </div>
             <div>贷款数: ${invest.loans.filter(l => l.status === 'active').length} 笔</div>
           </div>
 
