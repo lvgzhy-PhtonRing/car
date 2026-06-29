@@ -980,13 +980,16 @@
 
       const pocketBalance = calcBalance(pocket);
       const investBalance = calcBalance(invest);
+      
+      const loanTotal = invest.loans.reduce((s, l) => s + (l.amount || 0), 0);
+      const investSpent = invest.transactions.reduce((s, t) => s + (t.type === 'expense' ? t.amount : 0), 0);
 
       const investCars = allCars.filter(c => c.category === 'invest' && !c.isSold);
       const investTotal = investCars.reduce((s, c) => s + c.buyPrice, 0);
       const investCount = investCars.length;
       const expectedTotal = investCars.reduce((s, c) => s + (c.expectedValue || c.buyPrice), 0);
 
-      return { pocketBalance, investBalance, investTotal, investCount, expectedTotal, unsoldCount: investCount };
+      return { pocketBalance, investBalance, loanTotal, investSpent, investTotal, investCount, expectedTotal, unsoldCount: investCount };
     }
 
     function getActiveLoans() {
@@ -1340,7 +1343,7 @@
             <div class="stat-card flex-1">
               <div class="stat-label"><i data-lucide="trending-up" class="w-4 h-4 inline-block align-middle mr-1"></i> 投资款余额</div>
               <div class="stat-value text-negative">${fmt(stats.investBalance)}</div>
-              <div class="stat-sub">含贷款融资</div>
+              <div class="stat-sub">${fmt(stats.loanTotal)} 贷款 - ${fmt(stats.investSpent)} 已花</div>
             </div>
           </div>
 
