@@ -791,9 +791,15 @@
       setTimeout(() => toast.remove(), duration);
     }
 
-    function updateCloudStatusUI() {
+    async function updateCloudStatusUI() {
       const config = CarCloudSync.loadConfig();
-      const session = CarCloudSync.loadSession();
+      let session = CarCloudSync.loadSession();
+      if (session.accessToken && !CarCloudSync.isSessionValid(session)) {
+        try {
+          session = await CarCloudSync.ensureSession(config, session);
+          CarCloudSync.saveSession(session);
+        } catch (e) {}
+      }
       const icon = document.getElementById('cloudIcon');
       const label = document.getElementById('cloudLabel');
       if (!config.enabled || !config.supabaseAnonKey) {
@@ -811,9 +817,18 @@
       }
     }
 
-    function openCloudSettings() {
+    async function openCloudSettings() {
       const config = CarCloudSync.loadConfig();
-      const session = CarCloudSync.loadSession();
+      let session = CarCloudSync.loadSession();
+      // 尝试自动刷新过期 token，避免频繁弹出登录框
+      if (session.accessToken && !CarCloudSync.isSessionValid(session)) {
+        try {
+          session = await CarCloudSync.ensureSession(config, session);
+          CarCloudSync.saveSession(session);
+        } catch (e) {
+          // 刷新失败，沿用旧 session，UI 显示"登录已过期"
+        }
+      }
       const isLoggedIn = session.accessToken && CarCloudSync.isSessionValid(session);
       const lastSync = localStorage.getItem('car_last_sync') || '从未同步';
 
