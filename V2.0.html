@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>记账管理系统 v2.0.2</title>
+    <title>记账管理系统 v2.0.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="cloud-sync.js"></script>
@@ -365,7 +365,7 @@
                 <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                 记账管理
             </h1>
-            <div class="text-[10px] text-gray-400 mt-1" id="appVersion">v2.0.2</div>
+            <div class="text-[10px] text-gray-400 mt-1" id="appVersion">v2.0.5</div>
         </div>
         <nav class="sidebar-nav">
             <div class="sidebar-nav-item active" data-module="dashboard" onclick="switchModule('dashboard')">
@@ -1355,12 +1355,12 @@
             <div class="stat-card">
               <div class="stat-label"><i data-lucide="car" class="w-4 h-4 inline-block align-middle mr-1"></i> 已投资小车</div>
               <div class="stat-value text-gray-800">${fmt(stats.investTotal)}</div>
-              <div class="stat-sub">共 ${stats.investCount} 辆 · 预期 ${fmt(stats.expectedTotal)}</div>
+              <div class="stat-sub">共 ${stats.investCount} 辆 · 预计总价值 ${fmt(stats.expectedTotal)}</div>
             </div>
             <div class="stat-card">
               <div class="stat-label"><i data-lucide="heart" class="w-4 h-4 inline-block align-middle mr-1"></i> 自留车库预计总价值</div>
               <div class="stat-value text-gray-800">${fmt(stats.keepExpectedTotal)}</div>
-              <div class="stat-sub">共 ${carAppData.cars.filter(c => c.category === 'keep' && !c.isSold).length} 辆 · 未含文化普卡</div>
+              <div class="stat-sub">共 ${carAppData.cars.filter(c => c.category === 'keep' && !c.isSold).length} 辆 · 未包括2025年买入的文化和普卡</div>
             </div>
           </div>
 
@@ -1368,28 +1368,35 @@
           <div class="glass rounded-2xl-apple p-5">
             <h3 class="font-bold text-base mb-3"><i data-lucide="hourglass" class="w-4 h-4 inline-block align-middle mr-1"></i> 贷款倒计时</h3>
             ${loans.length === 0 ? '<p class="text-gray-400 text-sm">无进行中的贷款</p>' : loans.map(loan => {
-              const daysLeft = Math.ceil((new Date(loan.dueDate) - new Date()) / (1000 * 60 * 60 * 24));
+              const now = new Date();
+              const startDate = new Date(loan.startDate);
+              const dueDate = new Date(loan.dueDate);
+              const totalDays = Math.ceil((dueDate - startDate) / (1000 * 60 * 60 * 24));
+              const daysLeft = Math.ceil((dueDate - now) / (1000 * 60 * 60 * 24));
+              const daysPassed = Math.ceil((now - startDate) / (1000 * 60 * 60 * 24));
               const isOverdue = daysLeft < 0;
               const isSoon = daysLeft >= 0 && daysLeft <= 7;
-              const pct = loan.amount > 0 ? Math.round((loan.remaining / loan.amount) * 100) : 0;
+              const timePct = totalDays > 0 ? Math.min(100, Math.max(0, Math.round((daysPassed / totalDays) * 100))) : 0;
+              const monthsLeft = Math.max(0, daysLeft / 30).toFixed(1);
               return `
                 <div class="loan-card ${isOverdue ? 'overdue' : ''} ${isSoon ? 'due-soon' : ''} mb-3 flex items-center gap-4">
                   <div class="relative w-16 h-16 flex-shrink-0">
                     <svg class="w-16 h-16 transform -rotate-90" viewBox="0 0 36 36">
                       <circle cx="18" cy="18" r="15.5" fill="none" stroke="#e5e7eb" stroke-width="2.5"/>
-                      <circle cx="18" cy="18" r="15.5" fill="none" stroke="${isOverdue ? '#c44b3d' : isSoon ? '#d97706' : '#5b8c5a'}" stroke-width="2.5" stroke-dasharray="${pct} ${100 - pct}" stroke-linecap="round"/>
+                      <circle cx="18" cy="18" r="15.5" fill="none" stroke="${isOverdue ? '#c44b3d' : isSoon ? '#d97706' : '#5b8c5a'}" stroke-width="2.5" stroke-dasharray="${timePct} ${100 - timePct}" stroke-linecap="round"/>
                     </svg>
                     <div class="absolute inset-0 flex flex-col items-center justify-center">
-                      <span class="text-base font-bold ${isOverdue ? 'text-invest' : 'text-gray-800'} leading-none">${Math.round(loan.remaining / 1000 * 10) / 10}k</span>
-                      <span class="text-[8px] text-gray-400">剩余</span>
+                      <span class="text-xs font-bold ${isOverdue ? 'text-invest' : 'text-gray-800'} leading-none">${isOverdue ? '逾期' : monthsLeft + '月'}</span>
+                      <span class="text-[8px] text-gray-400">${isOverdue ? Math.abs(daysLeft) + '天' : '剩余'}</span>
                     </div>
                   </div>
                   <div class="flex-1 min-w-0">
-                    <div class="font-semibold text-sm mb-1">${esc(loan.name)}</div>
-                    <div class="text-xl font-bold ${isOverdue ? 'text-invest' : 'text-gray-800'} mb-1">${fmt(loan.remaining)}<span class="text-xs text-gray-400 font-normal ml-1">/ ${fmt(loan.amount)}</span></div>
-                    <div class="text-sm font-semibold ${isOverdue ? 'text-invest' : isSoon ? 'text-sell' : 'text-gray-500'}">
-                      ${isOverdue ? '⚠ 逾期 ' + Math.abs(daysLeft) + ' 天' : daysLeft + ' 天'}
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="text-xs text-gray-400">${esc(loan.name)}</span>
+                      <span class="text-[10px] text-gray-400">${loan.dueDate}到期</span>
                     </div>
+                    <div class="text-2xl font-bold ${isOverdue ? 'text-invest' : 'text-gray-800'} leading-tight">${fmt(loan.remaining)}</div>
+                    <div class="text-[10px] text-gray-400 mt-0.5">总额 ${fmt(loan.amount)}</div>
                   </div>
                 </div>`;
             }).join('')}
