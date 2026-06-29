@@ -1784,10 +1784,17 @@
             </div>
           </div>
 
-          <div class="glass rounded-2xl-apple p-4 flex gap-6 text-sm">
-            <div>账户: <span class="font-bold">${esc(pocket.name)}</span></div>
-            <div>余额: <span class="font-bold ${balance >= 0 ? 'text-negative' : 'text-positive'}">${fmt(balance)}</span></div>
-            <div>月额: ¥${pocket.monthlyAllowance || 0}</div>
+          <div class="glass rounded-2xl-apple p-4 flex items-center justify-between">
+            <div class="flex items-center gap-6">
+              <div>
+                <div class="text-xs text-gray-500 mb-1">账户余额</div>
+                <div class="text-2xl font-bold ${balance >= 0 ? 'text-negative' : 'text-positive'}">${fmt(balance)}</div>
+              </div>
+              <div class="text-xs text-gray-400">
+                <div>${esc(pocket.name)}</div>
+                <div>月额 ¥${pocket.monthlyAllowance || 0}</div>
+              </div>
+            </div>
           </div>
 
           <div class="tab-bar">
@@ -1885,12 +1892,17 @@
             </div>
           </div>
 
-          <div class="glass rounded-2xl-apple p-4 flex gap-6 text-sm">
-            <div>账户: <span class="font-bold">${esc(invest.name)}</span></div>
-            <div>余额: <span class="font-bold ${balance >= 0 ? 'text-negative' : 'text-positive'}">${fmt(balance)}</span>
-              <span class="text-gray-400 text-xs ml-1">(${fmt(invest.loans.filter(l => l.status === 'active').reduce((s, l) => s + (l.amount || 0), 0))} 贷款 - ${fmt(invest.transactions.filter(t => t.type === 'expense' && t.category === 'car_buy').reduce((s, t) => s + t.amount, 0))} 买车 + ${fmt(invest.transactions.filter(t => t.type === 'income' && t.category === 'car_sell').reduce((s, t) => s + t.amount, 0))} 卖车)</span>
+          <div class="glass rounded-2xl-apple p-4 flex items-center justify-between">
+            <div class="flex items-center gap-6">
+              <div>
+                <div class="text-xs text-gray-500 mb-1">投资账户余额</div>
+                <div class="text-2xl font-bold ${balance >= 0 ? 'text-negative' : 'text-positive'}">${fmt(balance)}</div>
+              </div>
+              <div class="text-xs text-gray-400">
+                <div>${fmt(invest.loans.filter(l => l.status === 'active').reduce((s, l) => s + (l.amount || 0), 0))} 贷款 - ${fmt(invest.transactions.filter(t => t.type === 'expense' && t.category === 'car_buy').reduce((s, t) => s + t.amount, 0))} 买车 + ${fmt(invest.transactions.filter(t => t.type === 'income' && t.category === 'car_sell').reduce((s, t) => s + t.amount, 0))} 卖车</div>
+                <div>贷款数 ${invest.loans.filter(l => l.status === 'active').length} 笔</div>
+              </div>
             </div>
-            <div>贷款数: ${invest.loans.filter(l => l.status === 'active').length} 笔</div>
           </div>
 
 
