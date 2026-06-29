@@ -1992,6 +1992,7 @@
                         <button onclick="openCarEditModal('${car.sid}')" class="text-accent hover:underline text-xs" title="编辑"><i data-lucide="pencil-line" class="w-3 h-3 inline-block"></i></button>
                         <button onclick="sellCar('${car.sid}')" class="btn-sell text-xs">卖出</button>
                         <button onclick="convertCar('${car.sid}')" class="btn-convert text-xs ${accountType === 'invest' ? 'btn-to-keep' : 'btn-to-invest'}" title="转库">→${accountType === 'invest' ? '自留' : '投资'}</button>
+                        <button onclick="deleteCar('${car.sid}')" class="text-invest hover:underline text-xs" title="删除"><i data-lucide="trash-2" class="w-3 h-3 inline-block"></i></button>
                       </div>
                     </td>
                   </tr>`).join('')}
