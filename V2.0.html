@@ -1385,7 +1385,7 @@
             <div class="stat-card flex-1">
               <div class="stat-label"><i data-lucide="trending-up" class="w-4 h-4 inline-block align-middle mr-1"></i> 投资款余额</div>
               <div class="stat-value text-negative">${fmt(stats.investBalance)}</div>
-              <div class="stat-sub">${fmt(stats.loanTotal)} 贷款 - ${fmt(stats.investSpent)} 已花</div>
+              <div class="stat-sub">收入 ${fmt(stats.loanTotal + invest.transactions.filter(t => t.type === 'income' && t.category !== 'loan_new').reduce((s, t) => s + t.amount, 0))} - 支出 ${fmt(stats.investSpent)}</div>
             </div>
           </div>
 
@@ -1883,7 +1883,7 @@
           <div class="glass rounded-2xl-apple p-4 flex gap-6 text-sm">
             <div>账户: <span class="font-bold">${esc(invest.name)}</span></div>
             <div>余额: <span class="font-bold ${balance >= 0 ? 'text-negative' : 'text-positive'}">${fmt(balance)}</span>
-              <span class="text-gray-400 text-xs ml-1">(${fmt(invest.loans.filter(l => l.status === 'active').reduce((s, l) => s + (l.amount || 0), 0))} 贷款 - ${fmt(invest.transactions.filter(t => t.type === 'expense' && t.category !== 'loan_repay').reduce((s, t) => s + t.amount, 0))} 已花)</span>
+              <span class="text-gray-400 text-xs ml-1">(收入 ${fmt(invest.loans.filter(l => l.status === 'active').reduce((s, l) => s + (l.amount || 0), 0) + invest.transactions.filter(t => t.type === 'income' && t.category !== 'loan_new').reduce((s, t) => s + t.amount, 0))} - 支出 ${fmt(invest.transactions.filter(t => t.type === 'expense' && t.category !== 'loan_repay').reduce((s, t) => s + t.amount, 0))})</span>
             </div>
             <div>贷款数: ${invest.loans.filter(l => l.status === 'active').length} 笔</div>
           </div>
