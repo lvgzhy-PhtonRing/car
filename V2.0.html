@@ -785,7 +785,6 @@
       if (raw) {
         try {
           carAppData = JSON.parse(raw);
-          if (!carAppData.version) carAppData.version = '2.1.0';
           migrateExpectedHistory();
           migrateExpectedPrices();
           return true;
@@ -3823,9 +3822,6 @@
     window.onload = () => {
       loadData();
 
-      // 强制更新版本号到最新
-      carAppData.version = '2.1.0';
-
       // 如果无数据，注入默认示例数据
       if (carAppData.cars.length === 0 &&
           carAppData.accounts.pocket.transactions.length === 0 &&
@@ -3833,7 +3829,7 @@
         seedDemoData();
       }
 
-      document.getElementById('appVersion').innerText = 'v' + carAppData.version;
+      // 版本号已在HTML中设置，无需动态更新
       updateCloudStatusUI();
       renderCurrentModule();
     };
