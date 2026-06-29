@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>记账管理系统 v2.0.5</title>
+    <title>记账管理系统 v2.0.6</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="cloud-sync.js"></script>
@@ -267,6 +267,11 @@
             backdrop-filter: blur(6px);
             -webkit-backdrop-filter: blur(6px);
         }
+        .expected-tag-btn.active-tag {
+            background: var(--c-accent);
+            color: white;
+            font-weight: 600;
+        }
 
         /* ===== V2 Sidebar ===== */
         .sidebar {
@@ -404,7 +409,7 @@
                 <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                 记账管理
             </h1>
-            <div class="text-[10px] text-gray-400 mt-1" id="appVersion">v2.0.5</div>
+            <div class="text-[10px] text-gray-400 mt-1" id="appVersion">v2.0.6</div>
         </div>
         <nav class="sidebar-nav">
             <div class="sidebar-nav-item active" data-module="dashboard" onclick="switchModule('dashboard')">
@@ -2803,7 +2808,7 @@
     function openManualCarModal(accountType) {
       const catLabel = accountType === 'invest' ? '投资' : '自留';
       const html = `
-        <div id="manualCarModal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-50" onclick="if(event.target===this)hideModal()">
+        <div id="manualCarModal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-50">
           <div class="glass-strong rounded-2xl-apple w-full max-w-sm p-6">
             <div class="flex justify-between items-center mb-3">
               <h3 class="font-bold text-lg"><i data-lucide="plus-square" class="w-4 h-4 inline-block align-middle mr-1"></i> 手动添加小车</h3>
@@ -3288,10 +3293,12 @@
         const first = items[0];
         const count = items.length;
         const avgExpected = items.reduce((s, c) => s + (c.expectedValue || c.buyPrice), 0) / count;
+        const subCat = first.subCategory || '';
         return `
-        <label class="flex items-center gap-3 px-4 py-2.5 hover:bg-white/30 text-sm cursor-pointer">
+        <label class="flex items-center gap-3 px-4 py-2.5 hover:bg-white/30 text-sm cursor-pointer expected-group-row" data-subcategory="${esc(subCat)}">
           <input type="checkbox" value="${name}" class="expected-check rounded" checked>
           <span class="text-xs ${first.category === 'invest' ? 'text-invest' : 'text-keep'} font-semibold">${first.category === 'invest' ? '投资' : '自留'}</span>
+          ${subCat ? `<span class="text-xs px-1 py-0.5 rounded ${subCat === '超宝' ? 'bg-green-100 text-green-700' : subCat === 'RLC' ? 'bg-yellow-100 text-yellow-700' : subCat === 'ELITE' ? 'bg-red-100 text-red-700' : subCat === '礼盒' ? 'bg-blue-100 text-blue-700' : subCat === '文化' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'}">${subCat}</span>` : ''}
           <span class="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full font-medium mr-1">×${count}</span>
           <span class="font-medium truncate flex-1">${esc(first.brand || '?')} ${esc(name)}</span>
           <span class="text-xs text-gray-500">均价预期 ${fmt(avgExpected)}</span>
@@ -3305,7 +3312,11 @@
               <h3 class="font-bold text-lg"><i data-lucide="diamond" class="w-4 h-4 inline-block align-middle mr-1 text-accent"></i> 预期价格更新</h3>
               <button onclick="closeExpectedSafe()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
-            <p class="text-xs text-gray-400 mb-4">选择车型（合并显示），赋值为该车型<strong>所有</strong>小车统一设置预期价格</p>
+            <p class="text-xs text-gray-400 mb-3">选择车型（合并显示），赋值为该车型<strong>所有</strong>小车统一设置预期价格</p>
+            <div class="flex flex-wrap gap-1.5 mb-4">
+              <button onclick="filterExpectedByTag('')" class="expected-tag-btn px-2.5 py-1 text-xs rounded-full glass-light hover:bg-white/60 active-tag">全部</button>
+              ${HW_SUBCATS.filter(s => s).map(s => `<button onclick="filterExpectedByTag('${s}')" class="expected-tag-btn px-2.5 py-1 text-xs rounded-full glass-light hover:bg-white/60">${s}</button>`).join('')}
+            </div>
 
             <div id="expectedStep1">
               ${investGroups.length > 0 ? `
@@ -3329,6 +3340,25 @@
         </div>`;
       showModal(html);
       initIcons();
+    }
+
+    function filterExpectedByTag(tag) {
+      document.querySelectorAll('.expected-tag-btn').forEach(btn => {
+        btn.classList.remove('active-tag');
+        if (btn.textContent === tag || (tag === '' && btn.textContent === '全部')) {
+          btn.classList.add('active-tag');
+        }
+      });
+      document.querySelectorAll('.expected-group-row').forEach(row => {
+        const rowTag = row.dataset.subcategory || '';
+        if (tag === '' || rowTag === tag) {
+          row.style.display = '';
+          row.querySelector('.expected-check').checked = true;
+        } else {
+          row.style.display = 'none';
+          row.querySelector('.expected-check').checked = false;
+        }
+      });
     }
 
     function startExpectedUpdate() {
