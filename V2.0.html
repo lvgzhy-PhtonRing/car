@@ -469,7 +469,7 @@
     // 默认空数据结构
     function getDefaultData() {
       return {
-        version: '2.0.5',
+        version: '2.0.6',
         accounts: {
           pocket: {
             id: 'pocket', name: '零花钱账户', monthlyAllowance: 200, allowanceDay: 1,
@@ -481,7 +481,8 @@
           }
         },
         cars: [],
-        transferPairs: []
+        transferPairs: [],
+        expectedPrices: {}
       };
     }
 
@@ -513,28 +514,189 @@
       </select>`;
     }
 
-    // 品牌→颜色/车型 强联想
-    function getBrandNames(brand) {
+    // 品牌+子类别→颜色/车型 强联想
+    function getBrandNames(brand, subCategory) {
       if (!brand) return [];
       const names = new Set();
       carAppData.cars.forEach(c => {
-        if (c.brand === brand && c.name) names.add(c.name);
+        if (c.brand === brand && c.name) {
+          if (!subCategory || c.subCategory === subCategory) {
+            names.add(c.name);
+          }
+        }
       });
       return Array.from(names).sort();
     }
 
-    function populateNameDatalist(brand, datalistId) {
+    // 查找同款车的最高预期价格（优先从中央索引读取）
+    function getMaxExpectedForSameCar(brand, name) {
+      if (!brand || !name) return 0;
+      const key = brand + '|' + name;
+
+      // 优先从中央索引读取
+      if (carAppData.expectedPrices && carAppData.expectedPrices[key]) {
+        return carAppData.expectedPrices[key].value;
+      }
+
+      // 降级：从现有车辆中取最高值
+      let maxExpected = 0;
+      carAppData.cars.forEach(c => {
+        if (c.brand === brand && c.name === name && !c.isSold) {
+          const expected = c.expectedValue || c.buyPrice || 0;
+          if (expected > maxExpected) maxExpected = expected;
+        }
+      });
+      return maxExpected;
+    }
+
+    // 自动填充预期价格（仅当预期价格为空时）
+    function autoFillExpected(brand, name, expectedFieldId) {
+      const field = document.getElementById(expectedFieldId);
+      if (!field) return;
+      // 只在字段为空或为0时自动填充
+      if (field.value && parseFloat(field.value) > 0) return;
+      const maxExpected = getMaxExpectedForSameCar(brand, name);
+      if (maxExpected > 0) {
+        field.value = maxExpected;
+        field.placeholder = '同款最高预期 ' + maxExpected;
+      }
+    }
+
+    // 监听车型名称变化，自动填充预期价格
+    function onCarNameChange(inputId) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      const name = input.value.trim();
+      const brand = document.getElementById('carBrand')?.value || document.getElementById('editCarBrand')?.value || document.getElementById('manualCarBrand')?.value || '';
+      if (inputId === 'carName') {
+        autoFillExpected(brand, name, 'carExpected');
+      } else if (inputId === 'editCarName') {
+        autoFillExpected(brand, name, 'editCarExpected');
+      } else if (inputId === 'manualCarName') {
+        autoFillExpected(brand, name, 'manualCarExpected');
+      }
+    }
+
+    function populateNameDatalist(brand, subCategory, datalistId) {
       const dl = document.getElementById(datalistId);
       if (!dl) return;
-      const names = getBrandNames(brand);
+      const names = getBrandNames(brand, subCategory);
       dl.innerHTML = names.map(n => `<option value="${esc(n)}">`).join('');
     }
 
     function onCarBrandChange() {
       const brand = document.getElementById('carBrand')?.value || document.getElementById('editCarBrand')?.value || document.getElementById('manualCarBrand')?.value || '';
-      populateNameDatalist(brand, 'carNameList');
-      populateNameDatalist(brand, 'editCarNameList');
-      populateNameDatalist(brand, 'manualCarNameList');
+      const subCat = document.getElementById('carSubCategory')?.value || document.getElementById('editCarSubCategory')?.value || document.getElementById('manualCarSubCategory')?.value || '';
+      populateNameDatalist(brand, subCat, 'carNameList');
+      populateNameDatalist(brand, subCat, 'editCarNameList');
+      populateNameDatalist(brand, subCat, 'manualCarNameList');
+    }
+
+    // ==================== 预期价格联动系统 ====================
+    // 获取受影响的车辆数量（同品牌+同名称+未售出）
+    function getAffectedCarsCount(brand, name) {
+      if (!brand || !name) return 0;
+      return carAppData.cars.filter(c =>
+        c.brand === brand && c.name === name && !c.isSold
+      ).length;
+    }
+
+    // 获取同款车的预期价格（从中央索引或现有车辆中取最高值）
+    function getExpectedPrice(brand, name) {
+      if (!brand || !name) return 0;
+      const key = brand + '|' + name;
+
+      // 优先从中央索引读取
+      if (carAppData.expectedPrices && carAppData.expectedPrices[key]) {
+        return carAppData.expectedPrices[key].value;
+      }
+
+      // 降级：从现有车辆中取最高值
+      return getMaxExpectedForSameCar(brand, name);
+    }
+
+    // 设置同款车的预期价格（联动所有同名车，跨库）
+    function setExpectedPrice(brand, name, value, date) {
+      if (!brand || !name || !value) return 0;
+      const key = brand + '|' + name;
+      const today = date || getToday();
+
+      // 初始化中央索引
+      if (!carAppData.expectedPrices) carAppData.expectedPrices = {};
+
+      // 更新中央索引
+      if (!carAppData.expectedPrices[key]) {
+        carAppData.expectedPrices[key] = { value: 0, date: today, history: [] };
+      }
+      const entry = carAppData.expectedPrices[key];
+      if (entry.value !== value) {
+        entry.value = value;
+        entry.date = today;
+        entry.history.unshift({ date: today, value: value });
+      }
+
+      // 联动更新所有同名未售出车辆（跨库）
+      let affectedCount = 0;
+      carAppData.cars.forEach(car => {
+        if (car.brand === brand && car.name === name && !car.isSold) {
+          if (car.expectedValue !== value) {
+            car.expectedValue = value;
+            if (!car.expectedHistory) car.expectedHistory = [];
+            car.expectedHistory.unshift({ date: today, value: value });
+            affectedCount++;
+          }
+        }
+      });
+
+      return affectedCount;
+    }
+
+    // 预期价格变化时的联动提示
+    function onExpectedChange(brandFieldId, nameFieldId, expectedFieldId) {
+      const brand = document.getElementById(brandFieldId)?.value || '';
+      const name = document.getElementById(nameFieldId)?.value || '';
+      const expected = parseFloat(document.getElementById(expectedFieldId)?.value) || 0;
+
+      const hintEl = document.getElementById('expectedSyncHint');
+      const countEl = document.getElementById('affectedCount');
+
+      if (!brand || !name || !expected || !hintEl || !countEl) {
+        if (hintEl) hintEl.classList.add('hidden');
+        return;
+      }
+
+      const count = getAffectedCarsCount(brand, name);
+      if (count > 0) {
+        const currentExpected = getExpectedPrice(brand, name);
+        if (expected !== currentExpected) {
+          countEl.textContent = count;
+          hintEl.classList.remove('hidden');
+        } else {
+          hintEl.classList.add('hidden');
+        }
+      } else {
+        hintEl.classList.add('hidden');
+      }
+    }
+
+    // 迁移：从现有车辆构建中央索引
+    function migrateExpectedPrices() {
+      if (!carAppData.expectedPrices) carAppData.expectedPrices = {};
+
+      // 从现有车辆中构建中央索引
+      carAppData.cars.forEach(car => {
+        if (car.isSold || !car.brand || !car.name) return;
+        const key = car.brand + '|' + car.name;
+        const expected = car.expectedValue || car.buyPrice || 0;
+
+        if (!carAppData.expectedPrices[key]) {
+          carAppData.expectedPrices[key] = { value: expected, date: car.buyDate || getToday(), history: [] };
+        } else if (expected > carAppData.expectedPrices[key].value) {
+          // 取最高值
+          carAppData.expectedPrices[key].value = expected;
+          carAppData.expectedPrices[key].date = car.buyDate || getToday();
+        }
+      });
     }
 
     // ==================== 操作日志 ====================
@@ -565,9 +727,18 @@
 
     // 预期价格历史
     function appendExpectedHistory(car, value, date) {
-      if (!car.expectedHistory) car.expectedHistory = [];
-      car.expectedHistory.unshift({ date: date || getToday(), value: value || car.expectedValue || car.buyPrice });
-      car.expectedValue = car.expectedHistory[0].value;
+      const actualValue = value || car.expectedValue || car.buyPrice;
+      const actualDate = date || getToday();
+
+      // 调用联动系统更新所有同名车
+      if (car.brand && car.name) {
+        setExpectedPrice(car.brand, car.name, actualValue, actualDate);
+      } else {
+        // 无品牌/名称时只更新当前车
+        if (!car.expectedHistory) car.expectedHistory = [];
+        car.expectedHistory.unshift({ date: actualDate, value: actualValue });
+        car.expectedValue = actualValue;
+      }
     }
 
     function migrateExpectedHistory() {
@@ -609,8 +780,9 @@
       if (raw) {
         try {
           carAppData = JSON.parse(raw);
-          if (!carAppData.version) carAppData.version = '2.0.5';
+          if (!carAppData.version) carAppData.version = '2.0.6';
           migrateExpectedHistory();
+          migrateExpectedPrices();
           return true;
         } catch (e) {
           console.error('数据解析失败，使用默认数据', e);
@@ -1125,10 +1297,15 @@
         const amountDelta = amount - loan.amount;
         loan.name = name; loan.amount = amount; loan.startDate = startDate;
         loan.dueDate = dueDate; loan.note = note;
+        // 同步更新关联的收支记录
+        const txn = invest.transactions.find(t => t.loanId === id && t.category === 'loan_new');
+        if (txn) {
+          txn.amount = amount;
+          txn.date = startDate;
+          txn.note = '新增贷款: ' + name;
+        }
         if (amountDelta !== 0) {
           loan.remaining = Math.max(0, (loan.remaining || 0) + amountDelta);
-          const txn = invest.transactions.find(t => t.loanId === id && t.category === 'loan_new');
-          if (txn) txn.amount = amount;
         }
       } else {
         const newLoan = {
@@ -1495,6 +1672,7 @@
         </div>`;
 
       document.getElementById('moduleDashboard').innerHTML = html;
+      initIcons();
     }
 
     // ==================== 日常消费 ====================
@@ -1688,7 +1866,7 @@
           <div class="flex items-center gap-3 flex-1 min-w-0">
             <span class="font-semibold text-xs">${esc(car.brand || '?')}</span>
             ${car.subCategory ? `<span class="text-xs px-1 py-0.5 rounded ${car.subCategory === '超宝' ? 'bg-green-100 text-green-700' : car.subCategory === 'RLC' ? 'bg-yellow-100 text-yellow-700' : car.subCategory === 'ELITE' ? 'bg-red-100 text-red-700' : car.subCategory === '礼盒' ? 'bg-blue-100 text-blue-700' : car.subCategory === '文化' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'}">${car.subCategory}</span>` : ''}
-            <span class="text-gray-600 text-xs truncate">${esc(car.name)}</span>
+            <span class="text-gray-600 text-xs truncate cursor-pointer hover:text-accent hover:underline" onclick="showCarDetail('${car.sid}')">${esc(car.name)}</span>
             <span class="text-xs text-gray-400">${car.buyDate}</span>
             <span class="text-xs font-semibold text-positive">${fmt(car.buyPrice)}</span>
             <span class="text-xs text-gray-400">预期 ${fmt(car.expectedValue || car.buyPrice)}</span>
@@ -1710,7 +1888,7 @@
           <div class="flex items-center gap-3 flex-1 min-w-0">
             <span class="font-semibold text-xs">${esc(first.brand || '?')}</span>
             ${first.subCategory ? `<span class="text-xs px-1 py-0.5 rounded ${first.subCategory === '超宝' ? 'bg-green-100 text-green-700' : first.subCategory === 'RLC' ? 'bg-yellow-100 text-yellow-700' : first.subCategory === 'ELITE' ? 'bg-red-100 text-red-700' : first.subCategory === '礼盒' ? 'bg-blue-100 text-blue-700' : first.subCategory === '文化' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'}">${first.subCategory}</span>` : ''}
-            <span class="text-gray-600 text-xs truncate">${esc(items[0].name)}</span>
+            <span class="text-gray-600 text-xs truncate cursor-pointer hover:text-accent hover:underline" onclick="showCarDetail('${items[0].sid}')">${esc(items[0].name)}</span>
             <span class="text-xs text-gray-400">${dateLabel}</span>
             <span class="text-xs font-semibold text-positive">均价 ${fmt(avgPrice)}</span>
             <span class="text-xs text-gray-400">预期 ${fmt(avgExpected)}</span>
@@ -1767,6 +1945,105 @@
           </div>
         </div>`;
       showModal(html);
+    }
+
+    // ==================== 小车详情弹窗 ====================
+    function showCarDetail(sid) {
+      const car = carAppData.cars.find(c => c.sid === sid);
+      if (!car) return;
+
+      const otherCategory = car.category === 'keep' ? 'invest' : 'keep';
+      const otherLabel = otherCategory === 'keep' ? '自留库' : '投资库';
+      const sameNameOthers = carAppData.cars.filter(c => c.name === car.name && c.category === otherCategory && !c.isSold);
+
+      const catLabel = car.category === 'keep' ? '自留库' : '投资库';
+      const catClass = car.category === 'invest' ? 'text-invest' : 'text-keep';
+
+      const html = `
+        <div id="carDetailModal" class="fixed inset-0 modal-backdrop flex items-center justify-center p-4 z-50" onclick="if(event.target===this)hideModal()">
+          <div class="glass-strong rounded-2xl-apple w-full max-w-md p-6">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="font-bold text-lg"><i data-lucide="info" class="w-4 h-4 inline-block align-middle mr-1"></i> 小车详情</h3>
+              <button onclick="hideModal()" class="text-gray-400 hover:text-gray-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            
+            <div class="space-y-3">
+              <div class="text-center py-3 bg-gray-50/50 rounded-xl">
+                <div class="text-lg font-bold">${esc(car.brand || '?')} ${esc(car.name)}</div>
+                ${car.subCategory ? `<span class="text-xs px-2 py-1 rounded ${car.subCategory === '超宝' ? 'bg-green-100 text-green-700' : car.subCategory === 'RLC' ? 'bg-yellow-100 text-yellow-700' : car.subCategory === 'ELITE' ? 'bg-red-100 text-red-700' : car.subCategory === '礼盒' ? 'bg-blue-100 text-blue-700' : car.subCategory === '文化' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'}">${car.subCategory}</span>` : ''}
+              </div>
+
+              <div class="grid grid-cols-2 gap-3 text-sm">
+                <div class="glass-light rounded-xl p-3">
+                  <div class="text-xs text-gray-500 mb-1">品牌</div>
+                  <div class="font-medium">${esc(car.brand || '-')}</div>
+                </div>
+                <div class="glass-light rounded-xl p-3">
+                  <div class="text-xs text-gray-500 mb-1">分类</div>
+                  <div class="font-medium">${esc(car.subCategory || '-')}</div>
+                </div>
+                <div class="glass-light rounded-xl p-3">
+                  <div class="text-xs text-gray-500 mb-1">颜色/车型</div>
+                  <div class="font-medium">${esc(car.name)}</div>
+                </div>
+                <div class="glass-light rounded-xl p-3">
+                  <div class="text-xs text-gray-500 mb-1">所属库</div>
+                  <div class="font-medium ${catClass}">${catLabel}</div>
+                </div>
+                <div class="glass-light rounded-xl p-3">
+                  <div class="text-xs text-gray-500 mb-1">购买日期</div>
+                  <div class="font-medium">${car.buyDate || '-'}</div>
+                </div>
+                <div class="glass-light rounded-xl p-3">
+                  <div class="text-xs text-gray-500 mb-1">购买价格</div>
+                  <div class="font-medium text-positive">${fmt(car.buyPrice)}</div>
+                </div>
+                <div class="glass-light rounded-xl p-3">
+                  <div class="text-xs text-gray-500 mb-1">预期价值</div>
+                  <div class="font-medium">${fmt(car.expectedValue || car.buyPrice)}</div>
+                </div>
+                <div class="glass-light rounded-xl p-3">
+                  <div class="text-xs text-gray-500 mb-1">来源</div>
+                  <div class="font-medium">${car.manual ? '<span class="text-orange-600">手动入库</span>' : '收支记录'}</div>
+                </div>
+              </div>
+
+              ${car.note ? `
+              <div class="glass-light rounded-xl p-3">
+                <div class="text-xs text-gray-500 mb-1">备注</div>
+                <div class="text-sm">${esc(car.note)}</div>
+              </div>
+              ` : ''}
+
+              <div class="text-xs text-gray-400 text-center font-mono">SID: ${car.sid.slice(0, 8)}...</div>
+
+              ${sameNameOthers.length > 0 ? `
+              <div class="border-t border-dashed border-gray-200 pt-3 mt-3">
+                <div class="text-xs text-gray-500 mb-2"><i data-lucide="arrow-right-left" class="w-3 h-3 inline-block align-middle mr-1"></i> ${otherLabel}也有同款 (${sameNameOthers.length}辆)</div>
+                <div class="space-y-2 max-h-40 overflow-y-auto">
+                  ${sameNameOthers.map(c => `
+                    <div class="glass-light rounded-xl p-2 flex items-center justify-between cursor-pointer hover:bg-white/60" onclick="showCarDetail('${c.sid}')">
+                      <div class="flex items-center gap-2">
+                        <span class="text-xs text-gray-400">${c.buyDate}</span>
+                        <span class="text-xs font-semibold text-positive">${fmt(c.buyPrice)}</span>
+                        ${c.subCategory ? `<span class="text-xs px-1 py-0.5 rounded ${c.subCategory === '超宝' ? 'bg-green-100 text-green-700' : c.subCategory === 'RLC' ? 'bg-yellow-100 text-yellow-700' : c.subCategory === 'ELITE' ? 'bg-red-100 text-red-700' : c.subCategory === '礼盒' ? 'bg-blue-100 text-blue-700' : c.subCategory === '文化' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'}">${c.subCategory}</span>` : ''}
+                      </div>
+                      <span class="text-xs text-accent">查看详情 →</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+              ` : ''}
+            </div>
+
+            <div class="mt-5 flex justify-end space-x-2">
+              <button onclick="hideModal()" class="px-4 py-2 glass-light rounded-xl-apple hover:bg-white/60 text-sm btn-glass">关闭</button>
+              <button onclick="hideModal(); openCarEditModal('${car.sid}')" class="px-4 py-2 bg-accent/85 text-white rounded-xl-apple hover:bg-accent/90 text-sm btn-glass"><i data-lucide="pencil-line" class="w-3 h-3 inline-block align-middle mr-1"></i> 编辑</button>
+            </div>
+          </div>
+        </div>`;
+      showModal(html);
+      initIcons();
     }
 
     function renderDaily() {
@@ -1833,6 +2110,7 @@
           </div>
         </div>`;
       document.getElementById('moduleDaily').innerHTML = html;
+      initIcons();
     }
 
     function switchDailyTab(tab) {
@@ -1942,6 +2220,7 @@
           </div>
         </div>`;
       document.getElementById('moduleInvest').innerHTML = html;
+      initIcons();
     }
 
     function switchInvestTab(tab) {
@@ -2017,10 +2296,16 @@
                       ${renderBrandSelect('carBrand', car ? car.brand : '', 'onCarBrandChange()')}
                     </div>
                     <div>
-                      <label class="block text-sm text-gray-600 mb-1">颜色/车型 <span class="text-invest">*</span></label>
-                      <input type="text" id="carName" list="carNameList" value="${esc(car ? car.name : '')}" placeholder="如：红奔驰AMG瓦罐" class="w-full glass-input p-2 text-sm">
-                      <datalist id="carNameList"></datalist>
+                      <label class="block text-sm text-gray-600 mb-1">分类</label>
+                      <select id="carSubCategory" onchange="onCarBrandChange()" class="w-full glass-input p-2 text-sm">
+                        ${HW_SUBCATS.map(s => `<option value="${s}" ${(car && car.subCategory === s) ? 'selected' : ''}>${s || '-- 无 --'}</option>`).join('')}
+                      </select>
                     </div>
+                  </div>
+                  <div class="mt-3">
+                    <label class="block text-sm text-gray-600 mb-1">颜色/车型 <span class="text-invest">*</span></label>
+                    <input type="text" id="carName" list="carNameList" value="${esc(car ? car.name : '')}" placeholder="如：红奔驰AMG瓦罐" oninput="onCarNameChange('carName')" onchange="onCarNameChange('carName')" class="w-full glass-input p-2 text-sm">
+                    <datalist id="carNameList"></datalist>
                   </div>
                   <div class="grid grid-cols-2 gap-3 mt-3">
                     <div>
@@ -2033,14 +2318,11 @@
                     </div>
                   </div>
                   <div class="mt-3">
-                    <label class="block text-sm text-gray-600 mb-1">子类别（Hotwheels分类）</label>
-                    <select id="carSubCategory" class="w-full glass-input p-2 text-sm">
-                      ${HW_SUBCATS.map(s => `<option value="${s}" ${(car && car.subCategory === s) ? 'selected' : ''}>${s || '-- 无 --'}</option>`).join('')}
-                    </select>
-                  </div>
-                  <div class="mt-3">
                     <label class="block text-sm text-gray-600 mb-1">预期价值</label>
-                    <input type="number" id="carExpected" step="0.01" value="${car ? car.expectedValue : ''}" placeholder="手动估值" class="w-full glass-input p-2 text-sm">
+                    <input type="number" id="carExpected" step="0.01" value="${car ? car.expectedValue : ''}" placeholder="手动估值" oninput="onExpectedChange('carBrand', 'carName', 'carExpected')" class="w-full glass-input p-2 text-sm">
+                    <div id="expectedSyncHint" class="text-xs text-orange-500 hidden mt-1">
+                      <i data-lucide="info" class="w-3 h-3 inline-block align-middle mr-1"></i> 将联动更新 <span id="affectedCount">0</span> 辆同款车的预期价格
+                    </div>
                   </div>
                   <div class="mt-3 flex items-center gap-4 text-xs">
                     <span class="text-gray-500">类别: <strong class="${defaultCarCat === 'invest' ? 'text-invest' : 'text-keep'}">${carCatLabel}</strong></span>
@@ -2305,10 +2587,17 @@
       }
 
       // === 创建/更新交易记录 ===
+      // 保留原有的 loanId（如果存在）
+      let loanId = null;
+      if (txnId) {
+        const oldTxn = carAppData.accounts[accountId].transactions.find(t => t.id === txnId);
+        if (oldTxn) loanId = oldTxn.loanId;
+      }
+
       const txn = {
         id: txnId || genId('txn'),
         type, category, amount, date,
-        carSid, loanId: null, transferPairId: null, note
+        carSid, loanId, transferPairId: null, note
       };
 
       const account = carAppData.accounts[accountId];
@@ -2316,6 +2605,25 @@
         account.transactions = account.transactions.map(t => t.id === txnId ? txn : t);
       } else {
         account.transactions.push(txn);
+      }
+
+      // 贷款联动：编辑贷款类型的收支记录时，同步更新贷款
+      if (loanId && (category === 'loan_new' || category === 'loan_repay')) {
+        const invest = carAppData.accounts.invest;
+        const loan = invest.loans.find(l => l.id === loanId);
+        if (loan) {
+          if (category === 'loan_new') {
+            const oldAmount = loan.amount;
+            loan.amount = amount;
+            loan.remaining = Math.max(0, (loan.remaining || 0) + (amount - oldAmount));
+            // 更新其他关联的贷款收支记录（如还款记录）
+          } else if (category === 'loan_repay') {
+            // 还款记录变化时，更新贷款剩余金额
+            const oldRepayTxn = carAppData.accounts[accountId].transactions.find(t => t.id === txnId);
+            const oldRepayAmount = oldRepayTxn ? (parseFloat(oldRepayTxn.amount) || 0) : 0;
+            loan.remaining = Math.max(0, (loan.remaining || 0) + oldRepayAmount - amount);
+          }
+        }
       }
 
       hideModal();
@@ -2427,10 +2735,16 @@
                   ${renderBrandSelect('manualCarBrand', '', 'onCarBrandChange()')}
                 </div>
                 <div>
-                  <label class="block text-sm text-gray-600 mb-1">颜色/车型 <span class="text-invest">*</span></label>
-                   <input type="text" id="manualCarName" list="manualCarNameList" placeholder="如：红奔驰AMG瓦罐" class="w-full glass-input p-2 text-sm">
-                   <datalist id="manualCarNameList"></datalist>
+                  <label class="block text-sm text-gray-600 mb-1">分类</label>
+                  <select id="manualCarSubCategory" onchange="onCarBrandChange()" class="w-full glass-input p-2 text-sm">
+                    ${HW_SUBCATS.map(s => `<option value="${s}">${s || '-- 无 --'}</option>`).join('')}
+                  </select>
                 </div>
+              </div>
+              <div class="mt-3">
+                <label class="block text-sm text-gray-600 mb-1">颜色/车型 <span class="text-invest">*</span></label>
+                 <input type="text" id="manualCarName" list="manualCarNameList" placeholder="如：红奔驰AMG瓦罐" oninput="onCarNameChange('manualCarName')" onchange="onCarNameChange('manualCarName')" class="w-full glass-input p-2 text-sm">
+                 <datalist id="manualCarNameList"></datalist>
               </div>
               <div class="grid grid-cols-2 gap-3">
                 <div>
@@ -2443,14 +2757,11 @@
                 </div>
               </div>
               <div>
-                <label class="block text-sm text-gray-600 mb-1">子类别（Hotwheels分类）</label>
-                <select id="manualCarSubCategory" class="w-full glass-input p-2 text-sm">
-                  ${HW_SUBCATS.map(s => `<option value="${s}">${s || '-- 无 --'}</option>`).join('')}
-                </select>
-              </div>
-              <div>
                 <label class="block text-sm text-gray-600 mb-1">预期价值</label>
-                <input type="number" id="manualCarExpected" step="0.01" placeholder="手动估值" class="w-full glass-input p-2 text-sm">
+                <input type="number" id="manualCarExpected" step="0.01" placeholder="手动估值" oninput="onExpectedChange('manualCarBrand', 'manualCarName', 'manualCarExpected')" class="w-full glass-input p-2 text-sm">
+                <div id="expectedSyncHint" class="text-xs text-orange-500 hidden mt-1">
+                  <i data-lucide="info" class="w-3 h-3 inline-block align-middle mr-1"></i> 将联动更新 <span id="affectedCount">0</span> 辆同款车的预期价格
+                </div>
               </div>
               <div>
                 <label class="block text-sm text-gray-600 mb-1">备注</label>
@@ -2518,20 +2829,23 @@
                   ${renderBrandSelect('editCarBrand', car.brand, 'onCarBrandChange()')}
                 </div>
                 <div>
-                  <label class="block text-sm text-gray-600 mb-1">颜色/车型</label>
-                  <input type="text" id="editCarName" list="editCarNameList" value="${esc(car.name)}" class="w-full glass-input p-2 text-sm">
-                  <datalist id="editCarNameList"></datalist>
+                  <label class="block text-sm text-gray-600 mb-1">分类</label>
+                  <select id="editCarSubCategory" onchange="onCarBrandChange()" class="w-full glass-input p-2 text-sm">
+                    ${HW_SUBCATS.map(s => `<option value="${s}" ${(car.subCategory === s) ? 'selected' : ''}>${s || '-- 无 --'}</option>`).join('')}
+                  </select>
                 </div>
               </div>
               <div class="mt-3">
-                <label class="block text-sm text-gray-600 mb-1">子类别（Hotwheels分类）</label>
-                <select id="editCarSubCategory" class="w-full glass-input p-2 text-sm">
-                  ${HW_SUBCATS.map(s => `<option value="${s}" ${(car.subCategory === s) ? 'selected' : ''}>${s || '-- 无 --'}</option>`).join('')}
-                </select>
+                <label class="block text-sm text-gray-600 mb-1">颜色/车型</label>
+                <input type="text" id="editCarName" list="editCarNameList" value="${esc(car.name)}" oninput="onCarNameChange('editCarName')" onchange="onCarNameChange('editCarName')" class="w-full glass-input p-2 text-sm">
+                <datalist id="editCarNameList"></datalist>
               </div>
               <div class="mt-3">
                 <label class="block text-sm text-gray-600 mb-1">预期价值</label>
-                <input type="number" id="editCarExpected" step="0.01" value="${car.expectedValue || ''}" class="w-full glass-input p-2 text-sm">
+                <input type="number" id="editCarExpected" step="0.01" value="${car.expectedValue || ''}" oninput="onExpectedChange('editCarBrand', 'editCarName', 'editCarExpected')" class="w-full glass-input p-2 text-sm">
+                <div id="expectedSyncHint" class="text-xs text-orange-500 hidden mt-1">
+                  <i data-lucide="info" class="w-3 h-3 inline-block align-middle mr-1"></i> 将联动更新 <span id="affectedCount">0</span> 辆同款车的预期价格
+                </div>
               </div>
               <div class="text-xs text-gray-400 flex gap-4">
                 <span>购入: ${car.buyDate} · ${fmt(car.buyPrice)}</span>
@@ -3380,7 +3694,7 @@
       loadData();
 
       // 强制更新版本号到最新
-      carAppData.version = '2.0.5';
+      carAppData.version = '2.0.6';
 
       // 如果无数据，注入默认示例数据
       if (carAppData.cars.length === 0 &&
