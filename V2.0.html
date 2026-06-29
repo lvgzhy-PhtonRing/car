@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>记账管理系统 v2.0.6</title>
+    <title>记账管理系统 v2.0.7</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="cloud-sync.js"></script>
@@ -409,7 +409,7 @@
                 <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                 记账管理
             </h1>
-            <div class="text-[10px] text-gray-400 mt-1" id="appVersion">v2.0.6</div>
+            <div class="text-[10px] text-gray-400 mt-1" id="appVersion">v2.0.7</div>
         </div>
         <nav class="sidebar-nav">
             <div class="sidebar-nav-item active" data-module="dashboard" onclick="switchModule('dashboard')">
@@ -2934,9 +2934,20 @@
                   <i data-lucide="info" class="w-3 h-3 inline-block align-middle mr-1"></i> 将联动更新 <span id="affectedCount">0</span> 辆同款车的预期价格
                 </div>
               </div>
+              ${car.manual ? `
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1">购买日期</label>
+                  <input type="date" id="editCarBuyDate" value="${car.buyDate}" class="w-full glass-input p-2 text-sm">
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1">购买价格</label>
+                  <input type="number" id="editCarBuyPrice" step="0.01" value="${car.buyPrice}" class="w-full glass-input p-2 text-sm">
+                </div>
+              </div>` : `
               <div class="text-xs text-gray-400 flex gap-4">
                 <span>购入: ${car.buyDate} · ${fmt(car.buyPrice)}</span>
-              </div>
+              </div>`}
               <div class="flex items-center gap-4 text-xs text-gray-400">
                 <span>类别: <strong class="${car.category === 'invest' ? 'text-invest' : 'text-keep'}">${car.category === 'invest' ? '投资' : '自留'}</strong></span>
                 <span class="font-mono">SID: ${car.sid.slice(0, 8)}</span>
@@ -2971,6 +2982,13 @@
         appendExpectedHistory(car, newExpected, getToday());
       }
       car.note = document.getElementById('editCarNote').value.trim();
+
+      if (car.manual) {
+        const newBuyDate = document.getElementById('editCarBuyDate').value;
+        const newBuyPrice = parseFloat(document.getElementById('editCarBuyPrice').value) || 0;
+        if (newBuyDate) car.buyDate = newBuyDate;
+        if (newBuyPrice > 0) car.buyPrice = newBuyPrice;
+      }
 
       hideModal();
       addOperationLog('car_edit', `编辑小车 ${esc(car.brand)} ${esc(car.name)}`, { name: car.name, brand: car.brand, expected: newExpected !== oldExpected ? fmt(oldExpected) + '→' + fmt(newExpected) : '' });
