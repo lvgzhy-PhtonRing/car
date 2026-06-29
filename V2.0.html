@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>记账管理系统 v2.0.0</title>
+    <title>记账管理系统 v2.0.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="cloud-sync.js"></script>
@@ -365,7 +365,7 @@
                 <svg class="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                 记账管理
             </h1>
-            <div class="text-[10px] text-gray-400 mt-1" id="appVersion">v2.0.0</div>
+            <div class="text-[10px] text-gray-400 mt-1" id="appVersion">v2.0.2</div>
         </div>
         <nav class="sidebar-nav">
             <div class="sidebar-nav-item active" data-module="dashboard" onclick="switchModule('dashboard')">
@@ -430,7 +430,7 @@
     // 默认空数据结构
     function getDefaultData() {
       return {
-        version: '2.0.0',
+        version: '2.0.2',
         accounts: {
           pocket: {
             id: 'pocket', name: '零花钱账户', monthlyAllowance: 200, allowanceDay: 1,
@@ -490,9 +490,10 @@
     }
 
     function onCarBrandChange() {
-      const brand = document.getElementById('carBrand')?.value || document.getElementById('editCarBrand')?.value || '';
+      const brand = document.getElementById('carBrand')?.value || document.getElementById('editCarBrand')?.value || document.getElementById('manualCarBrand')?.value || '';
       populateNameDatalist(brand, 'carNameList');
       populateNameDatalist(brand, 'editCarNameList');
+      populateNameDatalist(brand, 'manualCarNameList');
     }
 
     // ==================== 操作日志 ====================
@@ -567,7 +568,7 @@
       if (raw) {
         try {
           carAppData = JSON.parse(raw);
-          if (!carAppData.version) carAppData.version = '2.0.0';
+          if (!carAppData.version) carAppData.version = '2.0.2';
           migrateExpectedHistory();
           return true;
         } catch (e) {
@@ -2116,11 +2117,12 @@
               <div class="grid grid-cols-2 gap-3">
                 <div>
                   <label class="block text-sm text-gray-600 mb-1">品牌</label>
-                  ${renderBrandSelect('manualCarBrand', '', '')}
+                  ${renderBrandSelect('manualCarBrand', '', 'onCarBrandChange()')}
                 </div>
                 <div>
                   <label class="block text-sm text-gray-600 mb-1">颜色/车型 <span class="text-invest">*</span></label>
-                  <input type="text" id="manualCarName" placeholder="如：红奔驰AMG瓦罐" class="w-full glass-input p-2 text-sm">
+                   <input type="text" id="manualCarName" list="manualCarNameList" placeholder="如：红奔驰AMG瓦罐" class="w-full glass-input p-2 text-sm">
+                   <datalist id="manualCarNameList"></datalist>
                 </div>
               </div>
               <div class="grid grid-cols-2 gap-3">
@@ -2155,6 +2157,7 @@
           </div>
         </div>`;
       showModal(html);
+      onCarBrandChange();
       initIcons();
     }
 
