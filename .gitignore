@@ -2,3 +2,13 @@ node_modules/
 *.log
 .DS_Store
 Thumbs.db
+
+# 数据文件（含隐私）
+*.json
+!package.json
+!package-lock.json
+!supabase-setup.sql
+
+# Claude AI 工作区
+.claude/
+.superpowers/
