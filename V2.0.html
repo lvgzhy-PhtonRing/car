@@ -1122,6 +1122,8 @@
         loan.dueDate = dueDate; loan.note = note;
         if (amountDelta !== 0) {
           loan.remaining = Math.max(0, (loan.remaining || 0) + amountDelta);
+          const txn = invest.transactions.find(t => t.loanId === id && t.category === 'loan_new');
+          if (txn) txn.amount = amount;
         }
       } else {
         const newLoan = {
