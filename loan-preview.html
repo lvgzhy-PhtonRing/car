@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>贷款倒计时 - 仪表盘式方案预览</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f5f5f7; 
+      padding: 40px 20px;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    h1 {
+      text-align: center;
+      font-size: 28px;
+      font-weight: 700;
+      color: #1d1d1f;
+      margin-bottom: 40px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 30px;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1d1d1f;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .card-desc {
+      font-size: 12px;
+      color: #86868b;
+      margin-bottom: 16px;
+    }
+    .loan-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px;
+      background: #fafafa;
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
+    .loan-item:last-child { margin-bottom: 0; }
+    .loan-item.overdue { background: #fef2f2; border-left: 3px solid #c44b3d; }
+    .loan-item.due-soon { background: #fffbeb; border-left: 3px solid #d97706; }
+
+    /* 方案A：经典仪表盘 */
+    .gauge-a {
+      position: relative;
+      width: 64px;
+      height: 64px;
+      flex-shrink: 0;
+    }
+    .gauge-a svg {
+      transform: rotate(-90deg);
+    }
+    .gauge-a .pct {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: #1d1d1f;
+    }
+    .loan-info-a .name {
+      font-size: 12px;
+      color: #86868b;
+      margin-bottom: 2px;
+    }
+    .loan-info-a .amount {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1d1d1f;
+      line-height: 1.1;
+    }
+    .loan-info-a .amount .total {
+      font-size: 10px;
+      font-weight: 400;
+      color: #86868b;
+      margin-left: 4px;
+    }
+    .loan-info-a .days {
+      font-size: 14px;
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    /* 方案B：极简仪表盘 */
+    .gauge-b {
+      position: relative;
+      width: 56px;
+      height: 56px;
+      flex-shrink: 0;
+    }
+    .gauge-b .ring {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 4px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: #1d1d1f;
+    }
+    .gauge-b .ring::before {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 4px solid transparent;
+    }
+    .loan-info-b {
+      flex: 1;
+      min-width: 0;
+    }
+    .loan-info-b .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .loan-info-b .name {
+      font-size: 12px;
+      color: #86868b;
+    }
+    .loan-info-b .days {
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .loan-info-b .days small {
+      font-size: 12px;
+      font-weight: 400;
+    }
+    .loan-info-b .amount {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1d1d1f;
+    }
+    .loan-info-b .bar {
+      height: 4px;
+      background: #e5e7eb;
+      border-radius: 2px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+    .loan-info-b .bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.3s;
+    }
+
+    /* 方案C：大仪表盘 */
+    .gauge-c-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .gauge-c {
+      position: relative;
+      width: 80px;
+      height: 80px;
+    }
+    .gauge-c svg {
+      transform: rotate(-90deg);
+    }
+    .gauge-c .pct {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .gauge-c .pct .val {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1d1d1f;
+      line-height: 1;
+    }
+    .gauge-c .pct .unit {
+      font-size: 9px;
+      color: #86868b;
+    }
+    .gauge-c-label {
+      font-size: 10px;
+      color: #86868b;
+      margin-top: 4px;
+    }
+    .loan-info-c .name {
+      font-size: 12px;
+      color: #86868b;
+      margin-bottom: 2px;
+    }
+    .loan-info-c .amount {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1d1d1f;
+      line-height: 1.1;
+    }
+    .loan-info-c .meta {
+      display: flex;
+      gap: 12px;
+      margin-top: 4px;
+    }
+    .loan-info-c .meta-item {
+      font-size: 11px;
+      color: #86868b;
+    }
+    .loan-info-c .meta-item strong {
+      color: #1d1d1f;
+      font-weight: 600;
+    }
+
+    /* 颜色 */
+    .text-danger { color: #c44b3d; }
+    .text-warning { color: #d97706; }
+    .text-success { color: #5b8c5a; }
+    .bg-danger { background: #c44b3d; }
+    .bg-warning { background: #d97706; }
+    .bg-success { background: #5b8c5a; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>贷款倒计时 - 仪表盘式方案预览</h1>
+    
+    <div class="grid">
+      <!-- 方案A：经典仪表盘 -->
+      <div class="card">
+        <div class="card-title">方案A：经典仪表盘</div>
+        <div class="card-desc">左侧圆形进度 + 右侧金额/天数分层显示，层次清晰</div>
+        
+        <div class="loan-item overdue">
+          <div class="gauge-a">
+            <svg width="64" height="64" viewBox="0 0 36 36">
+              <circle cx="18" cy="18" r="15.5" fill="none" stroke="#e5e7eb" stroke-width="3"/>
+              <circle cx="18" cy="18" r="15.5" fill="none" stroke="#c44b3d" stroke-width="3" stroke-dasharray="15 85" stroke-linecap="round"/>
+            </svg>
+            <div class="pct">15%</div>
+          </div>
+          <div class="loan-info-a">
+            <div class="name">老爸借款</div>
+            <div class="amount text-danger">¥450.00<span class="total">/ ¥3,000.00</span></div>
+            <div class="days text-danger">⚠ 逾期 3天</div>
+          </div>
+        </div>
+        
+        <div class="loan-item due-soon">
+          <div class="gauge-a">
+            <svg width="64" height="64" viewBox="0 0 36 36">
+              <circle cx="18" cy="18" r="15.5" fill="none" stroke="#e5e7eb" stroke-width="3"/>
+              <circle cx="18" cy="18" r="15.5" fill="none" stroke="#d97706" stroke-width="3" stroke-dasharray="72 28" stroke-linecap="round"/>
+            </svg>
+            <div class="pct">72%</div>
+          </div>
+          <div class="loan-info-a">
+            <div class="name">花呗分期</div>
+            <div class="amount">¥1,440.00<span class="total">/ ¥2,000.00</span></div>
+            <div class="days text-warning">5 天</div>
+          </div>
+        </div>
+        
+        <div class="loan-item">
+          <div class="gauge-a">
+            <svg width="64" height="64" viewBox="0 0 36 36">
+              <circle cx="18" cy="18" r="15.5" fill="none" stroke="#e5e7eb" stroke-width="3"/>
+              <circle cx="18" cy="18" r="15.5" fill="none" stroke="#5b8c5a" stroke-width="3" stroke-dasharray="93 7" stroke-linecap="round"/>
+            </svg>
+            <div class="pct">93%</div>
+          </div>
+          <div class="loan-info-a">
+            <div class="name">信用卡分期</div>
+            <div class="amount">¥2,800.00<span class="total">/ ¥3,000.00</span></div>
+            <div class="days text-success">23 天</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 方案B：极简仪表盘 -->
+      <div class="card">
+        <div class="card-title">方案B：极简仪表盘</div>
+        <div class="card-desc">天数为主角，金额次之，进度条辅助，适合多贷款场景</div>
+        
+        <div class="loan-item overdue">
+          <div class="gauge-b">
+            <div class="ring" style="border-color: #c44b3d;">15%</div>
+          </div>
+          <div class="loan-info-b">
+            <div class="header">
+              <span class="name">老爸借款</span>
+              <span class="days text-danger">3<small>天</small></span>
+            </div>
+            <div class="amount text-danger">¥450.00 <small style="font-size:11px;color:#86868b;font-weight:400">/ ¥3,000.00</small></div>
+            <div class="bar"><div class="bar-fill bg-danger" style="width:15%"></div></div>
+          </div>
+        </div>
+        
+        <div class="loan-item due-soon">
+          <div class="gauge-b">
+            <div class="ring" style="border-color: #d97706;">72%</div>
+          </div>
+          <div class="loan-info-b">
+            <div class="header">
+              <span class="name">花呗分期</span>
+              <span class="days text-warning">5<small>天</small></span>
+            </div>
+            <div class="amount">¥1,440.00 <small style="font-size:11px;color:#86868b;font-weight:400">/ ¥2,000.00</small></div>
+            <div class="bar"><div class="bar-fill bg-warning" style="width:72%"></div></div>
+          </div>
+        </div>
+        
+        <div class="loan-item">
+          <div class="gauge-b">
+            <div class="ring" style="border-color: #5b8c5a;">93%</div>
+          </div>
+          <div class="loan-info-b">
+            <div class="header">
+              <span class="name">信用卡分期</span>
+              <span class="days text-success">23<small>天</small></span>
+            </div>
+            <div class="amount">¥2,800.00 <small style="font-size:11px;color:#86868b;font-weight:400">/ ¥3,000.00</small></div>
+            <div class="bar"><div class="bar-fill bg-success" style="width:93%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 方案C：大仪表盘 -->
+      <div class="card">
+        <div class="card-title">方案C：大仪表盘</div>
+        <div class="card-desc">大号圆形进度突出百分比，金额和天数并排显示，视觉冲击力强</div>
+        
+        <div class="loan-item overdue">
+          <div class="gauge-c-wrapper">
+            <div class="gauge-c">
+              <svg width="80" height="80" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="15.5" fill="none" stroke="#e5e7eb" stroke-width="2.5"/>
+                <circle cx="18" cy="18" r="15.5" fill="none" stroke="#c44b3d" stroke-width="2.5" stroke-dasharray="15 85" stroke-linecap="round"/>
+              </svg>
+              <div class="pct">
+                <span class="val text-danger">450</span>
+                <span class="unit">剩余</span>
+              </div>
+            </div>
+          </div>
+          <div class="loan-info-c">
+            <div class="name">老爸借款</div>
+            <div class="amount text-danger">¥450.00</div>
+            <div class="meta">
+              <div class="meta-item">总额 <strong>¥3,000</strong></div>
+              <div class="meta-item">剩余 <strong class="text-danger">3天</strong></div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="loan-item due-soon">
+          <div class="gauge-c-wrapper">
+            <div class="gauge-c">
+              <svg width="80" height="80" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="15.5" fill="none" stroke="#e5e7eb" stroke-width="2.5"/>
+                <circle cx="18" cy="18" r="15.5" fill="none" stroke="#d97706" stroke-width="2.5" stroke-dasharray="72 28" stroke-linecap="round"/>
+              </svg>
+              <div class="pct">
+                <span class="val">1,440</span>
+                <span class="unit">剩余</span>
+              </div>
+            </div>
+          </div>
+          <div class="loan-info-c">
+            <div class="name">花呗分期</div>
+            <div class="amount">¥1,440.00</div>
+            <div class="meta">
+              <div class="meta-item">总额 <strong>¥2,000</strong></div>
+              <div class="meta-item">剩余 <strong class="text-warning">5天</strong></div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="loan-item">
+          <div class="gauge-c-wrapper">
+            <div class="gauge-c">
+              <svg width="80" height="80" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="15.5" fill="none" stroke="#e5e7eb" stroke-width="2.5"/>
+                <circle cx="18" cy="18" r="15.5" fill="none" stroke="#5b8c5a" stroke-width="2.5" stroke-dasharray="93 7" stroke-linecap="round"/>
+              </svg>
+              <div class="pct">
+                <span class="val">2,800</span>
+                <span class="unit">剩余</span>
+              </div>
+            </div>
+          </div>
+          <div class="loan-info-c">
+            <div class="name">信用卡分期</div>
+            <div class="amount">¥2,800.00</div>
+            <div class="meta">
+              <div class="meta-item">总额 <strong>¥3,000</strong></div>
+              <div class="meta-item">剩余 <strong class="text-success">23天</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

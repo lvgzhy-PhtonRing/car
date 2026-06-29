@@ -1371,13 +1371,24 @@
               const daysLeft = Math.ceil((new Date(loan.dueDate) - new Date()) / (1000 * 60 * 60 * 24));
               const isOverdue = daysLeft < 0;
               const isSoon = daysLeft >= 0 && daysLeft <= 7;
+              const pct = loan.amount > 0 ? Math.round((loan.remaining / loan.amount) * 100) : 0;
               return `
-                <div class="loan-card ${isOverdue ? 'overdue' : ''} ${isSoon ? 'due-soon' : ''} mb-2 flex justify-between items-center">
-                  <div class="flex-1">
+                <div class="loan-card ${isOverdue ? 'overdue' : ''} ${isSoon ? 'due-soon' : ''} mb-3 flex items-center gap-4">
+                  <div class="relative w-16 h-16 flex-shrink-0">
+                    <svg class="w-16 h-16 transform -rotate-90" viewBox="0 0 36 36">
+                      <circle cx="18" cy="18" r="15.5" fill="none" stroke="#e5e7eb" stroke-width="2.5"/>
+                      <circle cx="18" cy="18" r="15.5" fill="none" stroke="${isOverdue ? '#c44b3d' : isSoon ? '#d97706' : '#5b8c5a'}" stroke-width="2.5" stroke-dasharray="${pct} ${100 - pct}" stroke-linecap="round"/>
+                    </svg>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center">
+                      <span class="text-base font-bold ${isOverdue ? 'text-invest' : 'text-gray-800'} leading-none">${Math.round(loan.remaining / 1000 * 10) / 10}k</span>
+                      <span class="text-[8px] text-gray-400">剩余</span>
+                    </div>
+                  </div>
+                  <div class="flex-1 min-w-0">
                     <div class="font-semibold text-sm mb-1">${esc(loan.name)}</div>
                     <div class="text-xl font-bold ${isOverdue ? 'text-invest' : 'text-gray-800'} mb-1">${fmt(loan.remaining)}<span class="text-xs text-gray-400 font-normal ml-1">/ ${fmt(loan.amount)}</span></div>
-                    <div class="text-base font-semibold ${isOverdue ? 'text-invest' : isSoon ? 'text-sell' : 'text-gray-500'}">
-                      ${isOverdue ? '⚠ 已逾期 ' + Math.abs(daysLeft) + ' 天' : daysLeft + ' 天'}
+                    <div class="text-sm font-semibold ${isOverdue ? 'text-invest' : isSoon ? 'text-sell' : 'text-gray-500'}">
+                      ${isOverdue ? '⚠ 逾期 ' + Math.abs(daysLeft) + ' 天' : daysLeft + ' 天'}
                     </div>
                   </div>
                 </div>`;
