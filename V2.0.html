@@ -1592,11 +1592,11 @@
             <span class="text-xs text-gray-400 ml-3">成本 ${fmt(labelCost)} / 预期 ${fmt(labelExpected)}</span>
           </div>
           <div id="${labelId}_body" class="accordion-body expanded">
-            ${entries.map(({ key, items }) => renderCarGroup(items, key, accountType)).join('')}
+            ${entries.sort((a, b) => b.items[0].buyDate.localeCompare(a.items[0].buyDate)).map(({ key, items }) => renderCarGroup(items, key, accountType)).join('')}
           </div>
         </div>`;
       }).join('') :
-      sortedEntries.map(([key, items]) => renderCarGroup(items, key, accountType)).join(''))
+      sortedEntries.sort(([, a], [, b]) => b[0].buyDate.localeCompare(a[0].buyDate)).map(([key, items]) => renderCarGroup(items, key, accountType)).join(''))
       ;
     }
 
