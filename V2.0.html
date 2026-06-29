@@ -1358,9 +1358,9 @@
               <div class="stat-sub">共 ${stats.investCount} 辆 · 预期 ${fmt(stats.expectedTotal)}</div>
             </div>
             <div class="stat-card">
-              <div class="stat-label"><i data-lucide="heart" class="w-4 h-4 inline-block align-middle mr-1"></i> 自留车库总价值</div>
+              <div class="stat-label"><i data-lucide="heart" class="w-4 h-4 inline-block align-middle mr-1"></i> 自留车库预计总价值</div>
               <div class="stat-value text-gray-800">${fmt(stats.keepExpectedTotal)}</div>
-              <div class="stat-sub">未包括之前购买的文化和普卡</div>
+              <div class="stat-sub">共 ${carAppData.cars.filter(c => c.category === 'keep' && !c.isSold).length} 辆 · 未含文化普卡</div>
             </div>
           </div>
 
