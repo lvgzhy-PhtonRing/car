@@ -1,5 +1,5 @@
-// car 云同步模块 — 复用 Ysp-app 的 Supabase 实例
-// 表名: car_state (需在 Supabase 控制台创建)
+// car cloud sync module - Supabase
+// Table: car_state (create in Supabase console)
 
 const CLOUD_STORAGE_KEY = 'car_cloud_config';
 const CLOUD_SESSION_KEY = 'car_cloud_session';
@@ -7,7 +7,7 @@ const SYNC_DEBOUNCE_MS = 1000;
 
 let syncTimer = null;
 
-// ==================== 配置管理 ====================
+// ==================== Config ====================
 
 function getDefaultConfig() {
   return {
@@ -30,7 +30,7 @@ function saveConfig(config) {
   localStorage.setItem(CLOUD_STORAGE_KEY, JSON.stringify(config));
 }
 
-// ==================== 会话管理 ====================
+// ==================== Session ====================
 
 function loadSession() {
   try {
@@ -49,7 +49,7 @@ function isSessionValid(session, safeSeconds = 60) {
   return session.expiresAt - safeSeconds > Math.floor(Date.now() / 1000);
 }
 
-// ==================== API 调用 ====================
+// ==================== API ====================
 
 function buildHeaders(config, token) {
   return {
@@ -70,7 +70,6 @@ function apiError(prefix, status, data) {
   return new Error(`${prefix}${msg ? ': ' + msg : ''} (HTTP ${status})`);
 }
 
-// 登录
 async function signIn(config, email, password) {
   const resp = await fetch(`${config.supabaseUrl}/auth/v1/token?grant_type=password`, {
     method: 'POST',
@@ -78,7 +77,7 @@ async function signIn(config, email, password) {
     body: JSON.stringify({ email, password }),
   });
   const data = await parseResp(resp);
-  if (!resp.ok) throw apiError('云端登录失败', resp.status, data);
+  if (!resp.ok) throw apiError('Login failed', resp.status, data);
 
   const expiresIn = Number(data.expires_in || 0);
   const expiresAt = Number(data.expires_at || 0) || Math.floor(Date.now() / 1000) + expiresIn;
@@ -90,16 +89,15 @@ async function signIn(config, email, password) {
   };
 }
 
-// 刷新会话
 async function refreshSession(config, session) {
-  if (!session?.refreshToken) throw new Error('登录已过期，请重新登录');
+  if (!session?.refreshToken) throw new Error('Session expired, please login again');
   const resp = await fetch(`${config.supabaseUrl}/auth/v1/token?grant_type=refresh_token`, {
     method: 'POST',
     headers: buildHeaders(config),
     body: JSON.stringify({ refresh_token: session.refreshToken }),
   });
   const data = await parseResp(resp);
-  if (!resp.ok) throw apiError('刷新会话失败', resp.status, data);
+  if (!resp.ok) throw apiError('Refresh failed', resp.status, data);
 
   const expiresIn = Number(data.expires_in || 0);
   const expiresAt = Number(data.expires_at || 0) || Math.floor(Date.now() / 1000) + expiresIn;
@@ -114,7 +112,6 @@ async function refreshSession(config, session) {
   };
 }
 
-// 确保会话有效
 async function ensureSession(config, session) {
   if (!session?.accessToken) return null;
   if (isSessionValid(session)) return session;
@@ -123,7 +120,6 @@ async function ensureSession(config, session) {
   return refreshed;
 }
 
-// 读取云端数据
 async function fetchCloudData(config, session) {
   const validSession = await ensureSession(config, session);
   const params = new URLSearchParams();
@@ -137,7 +133,7 @@ async function fetchCloudData(config, session) {
     cache: 'no-store',
   });
   const data = await parseResp(resp);
-  if (!resp.ok) throw apiError('读取云端数据失败', resp.status, data);
+  if (!resp.ok) throw apiError('Fetch failed', resp.status, data);
 
   const rows = Array.isArray(data) ? data : [];
   return {
@@ -147,43 +143,40 @@ async function fetchCloudData(config, session) {
   };
 }
 
-// 保存云端数据
 async function saveCloudData(config, payload, session) {
   const validSession = await ensureSession(config, session);
-  if (!validSession?.accessToken) throw new Error('请先登录云端账号');
+  if (!validSession?.accessToken) throw new Error('Please login first');
 
   const headers = { ...buildHeaders(config, validSession.accessToken), Prefer: 'return=representation' };
   const patchParams = new URLSearchParams();
   patchParams.set('id', `eq.${config.stateId}`);
 
-  // 尝试更新
   const patchResp = await fetch(`${config.supabaseUrl}/rest/v1/car_state?${patchParams}`, {
     method: 'PATCH',
     headers,
     body: JSON.stringify({ payload, updated_at: new Date().toISOString() }),
   });
   const patchData = await parseResp(patchResp);
-  if (!patchResp.ok) throw apiError('写入云端数据失败', patchResp.status, patchData);
+  if (!patchResp.ok) throw apiError('Save failed', patchResp.status, patchData);
 
   const patchedRows = Array.isArray(patchData) ? patchData : [];
   if (patchedRows.length > 0) {
     return { updatedAt: patchedRows[0]?.updated_at || '', session: validSession };
   }
 
-  // 不存在则插入
   const insertResp = await fetch(`${config.supabaseUrl}/rest/v1/car_state`, {
     method: 'POST',
     headers,
     body: JSON.stringify([{ id: config.stateId, payload, owner_id: validSession.user.id }]),
   });
   const insertData = await parseResp(insertResp);
-  if (!insertResp.ok) throw apiError('创建云端数据行失败', insertResp.status, insertData);
+  if (!insertResp.ok) throw apiError('Insert failed', insertResp.status, insertData);
 
   const insertedRows = Array.isArray(insertData) ? insertData : [];
   return { updatedAt: insertedRows[0]?.updated_at || '', session: validSession };
 }
 
-// ==================== 导出接口 ====================
+// ==================== Export ====================
 
 window.CarCloudSync = {
   loadConfig,
@@ -196,7 +189,6 @@ window.CarCloudSync = {
   ensureSession,
   isSessionValid,
 
-  // 同步：保存本地数据到云端
   async syncUp(getDataFn) {
     const config = loadConfig();
     if (!config.enabled || !config.supabaseAnonKey) return;
@@ -209,12 +201,11 @@ window.CarCloudSync = {
       if (result.session) saveSession(result.session);
       return result;
     } catch (err) {
-      console.error('云同步上传失败:', err);
+      console.error('Cloud sync up failed:', err);
       throw err;
     }
   },
 
-  // 加载：从云端拉取数据
   async loadFromCloud() {
     const config = loadConfig();
     if (!config.supabaseAnonKey) return null;
@@ -224,12 +215,11 @@ window.CarCloudSync = {
       if (result.session) saveSession(result.session);
       return result.payload;
     } catch (err) {
-      console.error('云端加载失败:', err);
+      console.error('Cloud load failed:', err);
       return null;
     }
   },
 
-  // 防抖同步
   scheduleSync(getDataFn) {
     clearTimeout(syncTimer);
     syncTimer = setTimeout(() => {
@@ -237,7 +227,6 @@ window.CarCloudSync = {
     }, SYNC_DEBOUNCE_MS);
   },
 
-  // 立即同步
   async syncNow(getDataFn) {
     clearTimeout(syncTimer);
     return this.syncUp(getDataFn);

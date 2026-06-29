@@ -255,6 +255,12 @@
                    class="w-full glass-input p-3 pl-10 text-sm">
         </div>
 
+        <!-- 视图切换标签 -->
+        <div class="flex space-x-1 mb-4 border-b border-black/5">
+            <button id="tabGroupView" class="view-tab active" onclick="switchView('group')">按账单组</button>
+            <button id="tabCategoryView" class="view-tab" onclick="switchView('category')">按分类-账单组</button>
+        </div>
+
         <!-- 首页头部与新建按钮 -->
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-lg font-bold">账单组列表</h2>
@@ -385,6 +391,7 @@
     <script>
         // 核心数据结构
         let appData = JSON.parse(localStorage.getItem('accountingData')) || [];
+        let currentView = 'group';  // 'group' | 'category'
         let searchText = '';
 
         // 辅助获取今天日期
@@ -468,6 +475,13 @@
             render();
         }
 
+        function switchView(view) {
+            currentView = view;
+            document.getElementById('tabGroupView').className = view === 'group' ? 'view-tab active' : 'view-tab';
+            document.getElementById('tabCategoryView').className = view === 'category' ? 'view-tab active' : 'view-tab';
+            render();
+        }
+
         // ========================
         // 核心渲染逻辑
         // ========================
@@ -484,7 +498,11 @@
                 return;
             }
 
-            renderGroupView(container);
+            if (currentView === 'category') {
+                renderCategoryView(container);
+            } else {
+                renderGroupView(container);
+            }
 
             // 重新计算全局统计
             globalTotalBalance = 0; globalTotalInventory = 0;
@@ -585,6 +603,73 @@
 
             if (!hasVisible && searchText) {
                 container.innerHTML = `<div class="text-center py-10 text-gray-400 glass rounded-2xl-apple">没有匹配"${escapeHTML(searchText)}"的账单</div>`;
+            }
+        }
+
+        // 视图2: 按分类-账单组
+        function renderCategoryView(container) {
+            const categories = [
+                { key: '投资', label: '投资', cssClass: 'invest', icon: '📈' },
+                { key: '自留', label: '自留', cssClass: 'keep', icon: '💚' },
+                { key: '转账', label: '转账', cssClass: 'transfer', icon: '💛' }
+            ];
+
+            let html = '';
+
+            categories.forEach(cat => {
+                // 收集该分类下所有账单，按组聚合
+                const groupMap = new Map();
+                appData.forEach(group => {
+                    let catBills = group.bills.filter(b => b.type === cat.key);
+                    if (searchText) {
+                        catBills = catBills.filter(b => b.name.toLowerCase().includes(searchText));
+                    }
+                    if (catBills.length > 0) {
+                        groupMap.set(group, catBills);
+                    }
+                });
+
+                if (groupMap.size === 0) return; // 该分类无账单，跳过
+
+                let catTotal = 0;
+                groupMap.forEach((bills) => {
+                    bills.forEach(b => {
+                        catTotal += parseFloat((b.type === '转账' ? b.amount : b.price) || 0);
+                    });
+                });
+
+                html += `<div class="category-section">`;
+                html += `<div class="category-header ${cat.cssClass}">`;
+                html += `<span>${cat.icon} ${cat.label}</span>`;
+                html += `<span class="text-sm">小计: ¥${catTotal.toFixed(2)} | ${Array.from(groupMap.values()).reduce((s,b) => s + b.length, 0)} 条</span>`;
+                html += `</div>`;
+                html += `<div class="category-body">`;
+
+                groupMap.forEach((bills, group) => {
+                    html += `<div class="border-b border-gray-100 last:border-b-0">`;
+                    html += `<div class="px-4 py-2 glass-light text-sm font-medium text-gray-600 flex justify-between items-center">`;
+                    html += `<span>📁 ${escapeHTML(group.name)} <span class="text-xs text-gray-400">(${bills.length}条)</span></span>`;
+                    html += `<button onclick="openBillModal('${group.id}')" class="text-blue-500 hover:underline text-xs">+添加</button>`;
+                    html += `</div>`;
+                    html += `<table class="w-full text-left text-sm whitespace-nowrap">`;
+                    html += `<thead class="bg-black/[0.015] text-gray-400 text-xs border-b border-black/5"><tr>
+                        <th class="px-4 py-1.5">名称/品牌</th><th class="px-4 py-1.5">明细</th><th class="px-4 py-1.5">日期</th><th class="px-4 py-1.5 text-right">操作</th>
+                    </tr></thead>`;
+                    html += `<tbody class="divide-y divide-gray-50">`;
+                    html += bills.map(bill => renderBillRow(group.id, bill)).join('');
+                    html += `</tbody></table>`;
+                    html += `</div>`;
+                });
+
+                html += `</div></div>`;
+            });
+
+            if (!html && searchText) {
+                container.innerHTML = `<div class="text-center py-10 text-gray-400 glass rounded-2xl-apple">没有匹配"${escapeHTML(searchText)}"的账单</div>`;
+            } else if (!html) {
+                container.innerHTML = `<div class="text-center py-10 text-gray-400 glass rounded-2xl-apple">暂无账单。</div>`;
+            } else {
+                container.innerHTML = html;
             }
         }
 

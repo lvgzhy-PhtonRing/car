@@ -383,7 +383,7 @@
         </nav>
         <div class="sidebar-footer space-y-2">
 <div id="cloudStatus" class="text-xs px-3 py-1.5 text-gray-400 cursor-pointer" onclick="openCloudSettings()">
-  <span id="cloudIcon">☁️</span> <span id="cloudLabel">云端未配置</span>
+    <span id="cloudIcon">☁️</span> <span id="cloudLabel">云端未配置</span>
 </div>
 <button onclick="exportData()" class="w-full text-xs px-3 py-1.5 text-gray-400 hover:text-gray-600 transition-colors text-left">导出 JSON</button>
             <label class="w-full text-xs px-3 py-1.5 text-gray-400 hover:text-gray-600 transition-colors cursor-pointer text-left block">
@@ -463,6 +463,8 @@
     const ALL_BRANDS = ['Hotwheels', 'MINIGT', 'TLV', 'Kyosho', 'Tomica', 'Matchbox', 'ARBOX', 'KingModel', 'Mortal', '其它'];
     const HW_SUBCATS = ['', 'RLC', '文化', '超宝', '普卡', '礼盒'];
     const HW_SUBCAT_LABEL = { 'RLC':'RLC', '文化':'文化', '超宝':'超宝', '普卡':'普卡', '礼盒':'礼盒' };
+    // Hotwheels子类别排序顺序
+    const HW_SUBCAT_ORDER = ['超宝', 'RLC', '礼盒', '文化', '普卡'];
 
     function renderBrandSelect(id, selected, onChange) {
       const handler = onChange ? ` onchange="${onChange}"` : '';
@@ -778,6 +780,158 @@
       };
       reader.readAsText(file);
       e.target.value = '';
+    }
+
+    // ==================== 云同步 ====================
+    function showSyncToast(message, duration = 2000) {
+      const toast = document.createElement('div');
+      toast.className = 'fixed top-4 right-4 z-50 glass-strong px-4 py-2 rounded-xl text-sm shadow-lg';
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), duration);
+    }
+
+    function updateCloudStatusUI() {
+      const config = CarCloudSync.loadConfig();
+      const session = CarCloudSync.loadSession();
+      const icon = document.getElementById('cloudIcon');
+      const label = document.getElementById('cloudLabel');
+      if (!config.enabled || !config.supabaseAnonKey) {
+        icon.textContent = '☁️';
+        label.textContent = '云端未配置';
+      } else if (!session.accessToken) {
+        icon.textContent = '🔒';
+        label.textContent = '未登录';
+      } else if (!CarCloudSync.isSessionValid(session)) {
+        icon.textContent = '⚠️';
+        label.textContent = '登录已过期';
+      } else {
+        icon.textContent = '✅';
+        label.textContent = session.user.email || '已连接';
+      }
+    }
+
+    function openCloudSettings() {
+      const config = CarCloudSync.loadConfig();
+      const session = CarCloudSync.loadSession();
+      const isLoggedIn = session.accessToken && CarCloudSync.isSessionValid(session);
+      const lastSync = localStorage.getItem('car_last_sync') || '从未同步';
+
+      const html = `
+        <div class="fixed inset-0 bg-black/30 flex items-center justify-center z-50" onclick="if(event.target===this) hideModal()">
+          <div class="glass-strong rounded-2xl-apple p-6 w-[400px] max-h-[80vh] overflow-y-auto">
+            <h3 class="text-lg font-bold mb-4">☁️ 云端同步设置</h3>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-gray-600 mb-1">Supabase Anon Key</label>
+                <input id="cloudKey" type="text" class="w-full glass-input p-2" value="${esc(config.supabaseAnonKey)}" placeholder="eyJ...">
+              </div>
+              <div>
+                <label class="block text-gray-600 mb-1">State ID</label>
+                <input id="cloudStateId" type="text" class="w-full glass-input p-2" value="${esc(config.stateId || 'main')}" placeholder="main">
+              </div>
+              <div class="flex items-center gap-2">
+                <input id="cloudEnabled" type="checkbox" ${config.enabled ? 'checked' : ''}>
+                <label for="cloudEnabled">启用云端同步</label>
+              </div>
+              <div id="syncStatus" class="text-xs text-gray-400">上次同步: ${lastSync}</div>
+              <hr class="border-black/10">
+              ${isLoggedIn ? `
+                <div class="text-green-600">✅ 已登录 ${session.user.email}</div>
+                <button onclick="cloudLogout()" class="w-full btn-glass bg-red-50 text-red-600 py-2">退出登录</button>
+              ` : `
+                <div>
+                  <label class="block text-gray-600 mb-1">邮箱</label>
+                  <input id="cloudEmail" type="email" class="w-full glass-input p-2" placeholder="user@example.com">
+                </div>
+                <div>
+                  <label class="block text-gray-600 mb-1">密码</label>
+                  <input id="cloudPassword" type="password" class="w-full glass-input p-2">
+                </div>
+                <button onclick="cloudLogin()" class="w-full btn-glass bg-blue-50 text-blue-600 py-2">登录</button>
+              `}
+              <hr class="border-black/10">
+              <div class="space-y-2">
+                <button onclick="cloudSyncNow()" class="w-full btn-glass bg-blue-50 text-blue-600 py-2">⬆️ 立即同步</button>
+                <button onclick="cloudLoadFromServer()" class="w-full btn-glass bg-green-50 text-green-600 py-2">⬇️ 从云端加载</button>
+              </div>
+              <div class="flex justify-end gap-2 mt-4">
+                <button onclick="hideModal()" class="px-4 py-2 glass-light rounded-xl-apple text-sm btn-glass">取消</button>
+                <button onclick="saveCloudSettings()" class="px-4 py-2 bg-blue-600/90 text-white rounded-xl-apple text-sm btn-glass">保存配置</button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      document.getElementById('modalContainer').innerHTML = html;
+    }
+
+    function saveCloudSettings() {
+      const config = CarCloudSync.loadConfig();
+      config.supabaseAnonKey = document.getElementById('cloudKey').value.trim();
+      config.stateId = document.getElementById('cloudStateId').value.trim() || 'main';
+      config.enabled = document.getElementById('cloudEnabled').checked;
+      CarCloudSync.saveConfig(config);
+      updateCloudStatusUI();
+      hideModal();
+      showSyncToast('配置已保存');
+    }
+
+    async function cloudLogin() {
+      const email = document.getElementById('cloudEmail').value.trim();
+      const password = document.getElementById('cloudPassword').value;
+      if (!email || !password) return showSyncToast('请填写邮箱和密码');
+      try {
+        const config = CarCloudSync.loadConfig();
+        const session = await CarCloudSync.signIn(config, email, password);
+        CarCloudSync.saveSession(session);
+        updateCloudStatusUI();
+        hideModal();
+        showSyncToast('登录成功');
+      } catch (err) {
+        showSyncToast('登录失败: ' + err.message);
+      }
+    }
+
+    function cloudLogout() {
+      localStorage.removeItem('car_cloud_session');
+      updateCloudStatusUI();
+      hideModal();
+    }
+
+    async function cloudSyncNow() {
+      const statusEl = document.getElementById('syncStatus');
+      if (statusEl) statusEl.textContent = '同步中..';
+      try {
+        await CarCloudSync.syncNow(() => carAppData);
+        const now = new Date().toLocaleString('zh-CN');
+        localStorage.setItem('car_last_sync', now);
+        if (statusEl) statusEl.textContent = '✅ 同步成功: ' + now;
+        updateCloudStatusUI();
+      } catch (err) {
+        if (statusEl) statusEl.textContent = '❌ 同步失败: ' + err.message;
+      }
+    }
+
+    async function cloudLoadFromServer() {
+      if (!confirm('从云端加载将覆盖本地数据，确定？')) return;
+      const statusEl = document.getElementById('syncStatus');
+      if (statusEl) statusEl.textContent = '加载中..';
+      try {
+        const data = await CarCloudSync.loadFromCloud();
+        if (data) {
+          carAppData = data;
+          saveData();
+          renderCurrentModule();
+          const now = new Date().toLocaleString('zh-CN');
+          localStorage.setItem('car_last_sync', now);
+          if (statusEl) statusEl.textContent = '✅ 加载成功: ' + now;
+          updateCloudStatusUI();
+        } else {
+          if (statusEl) statusEl.textContent = '云端无数据';
+        }
+      } catch (err) {
+        if (statusEl) statusEl.textContent = '❌ 加载失败: ' + err.message;
+      }
     }
 
     // ==================== 模块路由 ====================
@@ -1355,12 +1509,44 @@
         groups[key].push(c);
       });
 
-      // 排序：价格模式按买入价排序，其他按标签字母序
+      // 排序：价格模式按买入价排序，品牌-类型模式按自定义顺序，其他按标签字母序
       let sortedEntries = Object.entries(groups);
       if (sortMode === 'price-desc') {
         sortedEntries.sort(([, a], [, b]) => (b[0].buyPrice || 0) - (a[0].buyPrice || 0));
       } else if (sortMode === 'price-asc') {
         sortedEntries.sort(([, a], [, b]) => (a[0].buyPrice || 0) - (b[0].buyPrice || 0));
+      } else if (sortMode === 'brand-subcat') {
+        // 品牌-类型模式：Hotwheels内部按子类别排序，其他品牌按ALL_BRANDS顺序
+        sortedEntries.sort(([keyA], [keyB]) => {
+          const partsA = keyA.split('|');
+          const partsB = keyB.split('|');
+          const brandA = partsA[0] || '';
+          const brandB = partsB[0] || '';
+          const subCatA = partsA[1] || '';
+          const subCatB = partsB[1] || '';
+          
+          // Hotwheels品牌排在最前面
+          const isHWA = brandA === 'Hotwheels';
+          const isHWB = brandB === 'Hotwheels';
+          if (isHWA && !isHWB) return -1;
+          if (!isHWA && isHWB) return 1;
+          
+          if (isHWA && isHWB) {
+            // Hotwheels内部按子类别排序
+            const indexA = HW_SUBCAT_ORDER.indexOf(subCatA);
+            const indexB = HW_SUBCAT_ORDER.indexOf(subCatB);
+            return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
+          } else {
+            // 其他品牌按ALL_BRANDS顺序排序
+            const brandIndexA = ALL_BRANDS.indexOf(brandA);
+            const brandIndexB = ALL_BRANDS.indexOf(brandB);
+            const brandOrderA = brandIndexA === -1 ? 999 : brandIndexA;
+            const brandOrderB = brandIndexB === -1 ? 999 : brandIndexB;
+            if (brandOrderA !== brandOrderB) return brandOrderA - brandOrderB;
+            // 同品牌内按子类别排序
+            return subCatA.localeCompare(subCatB);
+          }
+        });
       } else {
         sortedEntries.sort(([a], [b]) => a.localeCompare(b));
       }
@@ -2408,6 +2594,45 @@
       let groups;
       if (invSortMode === 'brand') {
         groups = groupBy(filtered, c => (c.brand || '未知品牌') + '|' + c.name);
+        // 对分组进行排序
+        const sortedGroups = {};
+        const hwGroups = [];
+        const otherGroups = [];
+        
+        // 分离Hotwheels和其他品牌
+        Object.entries(groups).forEach(([key, cars]) => {
+          if (cars[0].brand === 'Hotwheels') {
+            hwGroups.push([key, cars]);
+          } else {
+            otherGroups.push([key, cars]);
+          }
+        });
+        
+        // Hotwheels内部按子类别排序
+        hwGroups.sort(([keyA, carsA], [keyB, carsB]) => {
+          const subCatA = carsA[0].subCategory || '';
+          const subCatB = carsB[0].subCategory || '';
+          const indexA = HW_SUBCAT_ORDER.indexOf(subCatA);
+          const indexB = HW_SUBCAT_ORDER.indexOf(subCatB);
+          // 处理不在列表中的子类别，放到最后
+          return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
+        });
+        
+        // 其他品牌按ALL_BRANDS顺序排序
+        otherGroups.sort(([keyA, carsA], [keyB, carsB]) => {
+          const brandA = carsA[0].brand || '';
+          const brandB = carsB[0].brand || '';
+          const indexA = ALL_BRANDS.indexOf(brandA);
+          const indexB = ALL_BRANDS.indexOf(brandB);
+          // 处理不在列表中的品牌，放到最后
+          return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
+        });
+        
+        // 合并排序结果
+        [...hwGroups, ...otherGroups].forEach(([key, cars]) => {
+          sortedGroups[key] = cars;
+        });
+        groups = sortedGroups;
       } else {
         groups = groupBy(filtered, c => c.buyDate.slice(0, 7));
       }
@@ -2965,12 +3190,8 @@
     }
 
     function closeModal(id) {
-      if (id) {
-        const el = document.getElementById(id);
-        if (el) el.classList.add('hidden');
-      } else {
-        document.getElementById('modalContainer').innerHTML = '';
-      }
+      const el = document.getElementById(id);
+      if (el) el.classList.add('hidden');
     }
 
     // ==================== 示例数据 ====================
@@ -3032,156 +3253,12 @@
       saveData();
     }
 
-    // ==================== 云同步 ====================
-    function showSyncToast(message, duration = 2000) {
-      const toast = document.createElement('div');
-      toast.className = 'fixed top-4 right-4 z-50 glass-strong px-4 py-2 rounded-xl text-sm shadow-lg';
-      toast.textContent = message;
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), duration);
-    }
-
-    function updateCloudStatusUI() {
-      const config = CarCloudSync.loadConfig();
-      const session = CarCloudSync.loadSession();
-      const icon = document.getElementById('cloudIcon');
-      const label = document.getElementById('cloudLabel');
-      if (!config.enabled || !config.supabaseAnonKey) {
-        icon.textContent = '☁️';
-        label.textContent = '云端未配置';
-      } else if (!session.accessToken) {
-        icon.textContent = '🔒';
-        label.textContent = '未登录';
-      } else if (!CarCloudSync.isSessionValid(session)) {
-        icon.textContent = '⚠️';
-        label.textContent = '登录已过期';
-      } else {
-        icon.textContent = '✅';
-        label.textContent = session.user.email || '已连接';
-      }
-    }
-
-    function openCloudSettings() {
-      const config = CarCloudSync.loadConfig();
-      const session = CarCloudSync.loadSession();
-      const isLoggedIn = session.accessToken && CarCloudSync.isSessionValid(session);
-      const lastSync = localStorage.getItem('car_last_sync') || '从未同步';
-
-      const html = `
-        <div class="fixed inset-0 bg-black/30 flex items-center justify-center z-50" onclick="closeModal()">
-          <div class="glass-strong rounded-2xl p-6 w-[400px] max-h-[80vh] overflow-y-auto" onclick="event.stopPropagation()">
-            <h3 class="text-lg font-bold mb-4">☁️ 云端同步设置</h3>
-            <div class="space-y-3 text-sm">
-              <div>
-                <label class="block text-gray-600 mb-1">Supabase Anon Key</label>
-                <input id="cloudKey" type="password" class="w-full glass-input p-2" value="${config.supabaseAnonKey}" placeholder="eyJ...">
-              </div>
-              <div>
-                <label class="block text-gray-600 mb-1">数据 ID</label>
-                <input id="cloudStateId" type="text" class="w-full glass-input p-2" value="${config.stateId || 'main'}" placeholder="main">
-              </div>
-              <div class="flex items-center gap-2">
-                <input id="cloudEnabled" type="checkbox" ${config.enabled ? 'checked' : ''}>
-                <label for="cloudEnabled">启用云端同步</label>
-              </div>
-              <div id="syncStatus" class="text-xs text-gray-400">上次同步: ${lastSync}</div>
-              <hr class="border-black/10">
-              ${isLoggedIn ? `
-                <div class="text-green-600">✅ 已登录: ${session.user.email}</div>
-                <button onclick="cloudLogout()" class="w-full btn-glass bg-red-50 text-red-600 py-2">退出登录</button>
-                <button onclick="cloudSyncNow()" class="w-full btn-glass bg-blue-50 text-blue-600 py-2">立即同步</button>
-                <button onclick="cloudLoadFromServer()" class="w-full btn-glass bg-green-50 text-green-600 py-2">从云端加载</button>
-              ` : `
-                <div>
-                  <label class="block text-gray-600 mb-1">邮箱</label>
-                  <input id="cloudEmail" type="email" class="w-full glass-input p-2" placeholder="user@example.com">
-                </div>
-                <div>
-                  <label class="block text-gray-600 mb-1">密码</label>
-                  <input id="cloudPassword" type="password" class="w-full glass-input p-2">
-                </div>
-                <button onclick="cloudLogin()" class="w-full btn-glass bg-accent text-white py-2">登录</button>
-              `}
-              <button onclick="saveCloudSettings()" class="w-full btn-glass bg-gray-100 py-2">保存配置</button>
-            </div>
-          </div>
-        </div>
-      `;
-      document.getElementById('modalContainer').innerHTML = html;
-    }
-
-    function saveCloudSettings() {
-      const config = CarCloudSync.loadConfig();
-      config.supabaseAnonKey = document.getElementById('cloudKey').value.trim();
-      config.stateId = document.getElementById('cloudStateId').value.trim() || 'main';
-      config.enabled = document.getElementById('cloudEnabled').checked;
-      CarCloudSync.saveConfig(config);
-      updateCloudStatusUI();
-      closeModal();
-      showSyncToast('配置已保存');
-    }
-
-    async function cloudLogin() {
-      const email = document.getElementById('cloudEmail').value.trim();
-      const password = document.getElementById('cloudPassword').value;
-      if (!email || !password) return showSyncToast('请填写邮箱和密码');
-      try {
-        const config = CarCloudSync.loadConfig();
-        const session = await CarCloudSync.signIn(config, email, password);
-        CarCloudSync.saveSession(session);
-        updateCloudStatusUI();
-        closeModal();
-        showSyncToast('登录成功！');
-      } catch (err) {
-        showSyncToast('登录失败: ' + err.message);
-      }
-    }
-
-    function cloudLogout() {
-      localStorage.removeItem('car_cloud_session');
-      updateCloudStatusUI();
-      closeModal();
-    }
-
-    async function cloudSyncNow() {
-      const statusEl = document.getElementById('syncStatus');
-      if (statusEl) statusEl.textContent = '同步中...';
-      try {
-        await CarCloudSync.syncNow(() => carAppData);
-        const now = new Date().toLocaleString('zh-CN');
-        localStorage.setItem('car_last_sync', now);
-        if (statusEl) statusEl.textContent = '✅ 同步成功: ' + now;
-        updateCloudStatusUI();
-      } catch (err) {
-        if (statusEl) statusEl.textContent = '❌ 同步失败: ' + err.message;
-      }
-    }
-
-    async function cloudLoadFromServer() {
-      if (!confirm('从云端加载将覆盖本地数据，确定？')) return;
-      const statusEl = document.getElementById('syncStatus');
-      if (statusEl) statusEl.textContent = '加载中...';
-      try {
-        const data = await CarCloudSync.loadFromCloud();
-        if (data) {
-          carAppData = data;
-          saveData();
-          renderCurrentModule();
-          const now = new Date().toLocaleString('zh-CN');
-          localStorage.setItem('car_last_sync', now);
-          if (statusEl) statusEl.textContent = '✅ 加载成功: ' + now;
-          updateCloudStatusUI();
-        } else {
-          if (statusEl) statusEl.textContent = '云端无数据';
-        }
-      } catch (err) {
-        if (statusEl) statusEl.textContent = '❌ 加载失败: ' + err.message;
-      }
-    }
-
     // ==================== 初始化 ====================
     window.onload = () => {
       loadData();
+
+      // 强制更新版本号到最新
+      carAppData.version = '2.0.1';
 
       // 如果无数据，注入默认示例数据
       if (carAppData.cars.length === 0 &&
@@ -3191,23 +3268,8 @@
       }
 
       document.getElementById('appVersion').innerText = 'v' + carAppData.version;
-      renderCurrentModule();
       updateCloudStatusUI();
-
-      // 关闭页面时自动同步
-      window.addEventListener('beforeunload', () => {
-        const config = CarCloudSync.loadConfig();
-        if (config.enabled && config.supabaseAnonKey) {
-          const session = CarCloudSync.loadSession();
-          if (session.accessToken && CarCloudSync.isSessionValid(session)) {
-            navigator.sendBeacon(`${config.supabaseUrl}/rest/v1/car_state`, JSON.stringify({
-              id: config.stateId,
-              payload: carAppData,
-              updated_at: new Date().toISOString(),
-            }));
-          }
-        }
-      });
+      renderCurrentModule();
     };
     </script>
 </body>
