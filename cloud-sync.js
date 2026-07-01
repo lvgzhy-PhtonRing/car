@@ -231,4 +231,37 @@ window.CarCloudSync = {
     clearTimeout(syncTimer);
     return this.syncUp(getDataFn);
   },
+
+  // ==================== 基金余额同步（写入 ysp_state 供 ysp-app 读取） ====================
+  async saveCarFundBalance(balance) {
+    const SUPABASE_URL = 'https://mqdxmbsaddebxlallgos.supabase.co';
+    const ANON_KEY = 'sb_publishable_pwZYqYeBwpJbj4Pt1vaQyQ_av4QZZ-U';
+    const headers = {
+      apikey: ANON_KEY,
+      Authorization: `Bearer ${ANON_KEY}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=representation',
+    };
+    const payload = {
+      balance: Number(balance || 0),
+      updatedAt: new Date().toISOString(),
+    };
+    try {
+      const patchResp = await fetch(
+        `${SUPABASE_URL}/rest/v1/ysp_state?id=eq.car`,
+        { method: 'PATCH', headers, body: JSON.stringify({ payload, is_public: true }) }
+      );
+      const patchData = await patchResp.json();
+      if (Array.isArray(patchData) && patchData.length > 0) return patchData[0];
+      const insertResp = await fetch(
+        `${SUPABASE_URL}/rest/v1/ysp_state`,
+        { method: 'POST', headers, body: JSON.stringify([{ id: 'car', payload, is_public: true }]) }
+      );
+      const insertData = await insertResp.json();
+      return Array.isArray(insertData) ? insertData[0] : null;
+    } catch (err) {
+      console.error('Fund balance sync failed:', err);
+      return null;
+    }
+  },
 };

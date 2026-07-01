@@ -812,6 +812,19 @@
       localStorage.setItem('carAppData', JSON.stringify(carAppData));
       if (typeof renderCurrentModule === 'function') renderCurrentModule();
       if (window.CarCloudSync) CarCloudSync.scheduleSync(() => carAppData);
+      syncFundBalance();
+    }
+
+    // 同步基金余额到 ysp_state 供 ysp-app 支付宝计算器读取
+    function syncFundBalance() {
+      if (!window.CarCloudSync) return;
+      const pocketBal = calcBalance(carAppData.accounts.pocket);
+      const investBal = calcBalance(carAppData.accounts.invest);
+      const loanRemaining = (carAppData.accounts.invest.loans || [])
+        .filter(l => l.status === 'active')
+        .reduce((s, l) => s + (l.remaining || 0), 0);
+      const fundBalance = pocketBal + investBal - loanRemaining;
+      CarCloudSync.saveCarFundBalance(fundBalance).catch(() => {});
     }
 
     // V1 → V2 数据迁移
