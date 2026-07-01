@@ -781,10 +781,15 @@
 
     // 加载数据（含迁移检测）
     function loadData() {
+      const defaultVersion = getDefaultData().version;
       const raw = localStorage.getItem('carAppData');
       if (raw) {
         try {
           carAppData = JSON.parse(raw);
+          // 自动升级版本号
+          if (!carAppData.version || carAppData.version < defaultVersion) {
+            carAppData.version = defaultVersion;
+          }
           migrateExpectedHistory();
           migrateExpectedPrices();
           return true;
