@@ -249,7 +249,7 @@ window.CarCloudSync = {
     try {
       const patchResp = await fetch(
         `${SUPABASE_URL}/rest/v1/ysp_state?id=eq.car`,
-        { method: 'PATCH', headers, body: JSON.stringify({ payload, is_public: true }) }
+        { method: 'PATCH', headers, body: JSON.stringify({ payload, is_public: true, updated_at: payload.updatedAt }) }
       );
       const patchData = await patchResp.json();
       if (Array.isArray(patchData) && patchData.length > 0) return patchData[0];
