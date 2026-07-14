@@ -3029,6 +3029,16 @@
         const newBuyPrice = parseFloat(document.getElementById('editCarBuyPrice').value) || 0;
         if (newBuyDate) car.buyDate = newBuyDate;
         if (newBuyPrice > 0) car.buyPrice = newBuyPrice;
+
+        // 同步更新关联的买入交易
+        const linkedBuyTxns = [
+          ...carAppData.accounts.pocket.transactions,
+          ...carAppData.accounts.invest.transactions
+        ].filter(t => t.carSid === car.sid && t.category === 'car_buy');
+        linkedBuyTxns.forEach(t => {
+          if (newBuyPrice > 0) t.amount = newBuyPrice;
+          if (newBuyDate) t.date = newBuyDate;
+        });
       }
 
       hideModal();
@@ -3042,7 +3052,7 @@
       ].filter(t => t.carSid === car.sid);
       if (linkedTxns.length > 0) {
         const summary = linkedTxns.map(t => `  · ${t.date} ${t.category} ${fmt(t.amount)}`).join('\n');
-        alert(`✅ 小车属性已保存\n\n关联收支（未改动）:\n${summary}`);
+        alert(`✅ 小车属性已保存\n\n关联收支（已同步）:\n${summary}`);
       }
     }
 
@@ -3082,6 +3092,7 @@
 
       const car = carAppData.cars.find(c => c.sid === sid);
       if (!car) return;
+      if (car.isSold) return alert('此小车已标记为卖出，不能重复操作');
 
       car.isSold = true;
       car.sellPrice = sellPrice;
@@ -3128,6 +3139,11 @@
       carAppData.accounts[fromAccId].transactions =
         fromAcc.transactions.filter(t => t.carSid !== sid);
 
+      // 计算关联交易实际金额（买入 - 卖出）
+      const buyTotal = linkedTxns.filter(t => t.category === 'car_buy').reduce((s, t) => s + t.amount, 0);
+      const sellTotal = linkedTxns.filter(t => t.category === 'car_sell').reduce((s, t) => s + t.amount, 0);
+      const transferAmount = buyTotal - sellTotal;
+
       // 生成转账配对记录
       const transferPairId = genId('tp');
       const date = getToday();
@@ -3136,12 +3152,12 @@
         id: transferPairId,
         fromAccount: fromAccId,
         toAccount: toAccId,
-        amount: car.buyPrice,
+        amount: transferAmount,
         date: date,
         note: `${oldLabel}→${newLabel}: ${car.name}`
       });
 
-      addOperationLog('car_convert', esc(car.name) + ' ' + oldLabel + '→' + newLabel + ' 按 ' + fmt(car.buyPrice), { name: car.name, from: oldLabel, to: newLabel, amount: car.buyPrice });
+      addOperationLog('car_convert', esc(car.name) + ' ' + oldLabel + '→' + newLabel + ' 按 ' + fmt(transferAmount), { name: car.name, from: oldLabel, to: newLabel, amount: transferAmount });
       saveData();
     }
 
