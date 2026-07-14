@@ -474,7 +474,7 @@
     // 默认空数据结构
     function getDefaultData() {
       return {
-        version: '2.1.1',
+        version: '2.2.0',
         accounts: {
           pocket: {
             id: 'pocket', name: '零花钱账户', monthlyAllowance: 200, allowanceDay: 1,
@@ -2385,75 +2385,84 @@
                 <label class="block text-sm text-gray-600 mb-1">日期</label>
                 <input type="date" id="txnDate" onchange="onTxnDateChange()" value="${txn ? txn.date : getToday()}" class="w-full glass-input p-2.5 text-sm">
               </div>
-              ${isCarBuy || isCarSell ? `
-
-              <!-- === 小车属性（买小车/卖小车时显示） === -->
-              <div id="carFields" class="space-y-3 border-t border-dashed border-gray-200 pt-4 mt-2" style="display:${isCarBuy || isCarSell ? 'block' : 'none'}">
+              ${isCarBuy && !txn ? `
+              <!-- === 新建买小车：完整小车属性 === -->
+              <div id="carFields" class="space-y-3 border-t border-dashed border-gray-200 pt-4 mt-2">
                 <div class="flex items-center gap-2 text-sm font-semibold text-accent">
                   <i data-lucide="car" class="w-4 h-4"></i> 小车属性
                 </div>
-
-                <!-- 买小车字段 -->
-                <div id="carBuyFields">
-                  <div class="grid grid-cols-2 gap-3">
-                    <div>
-                      <label class="block text-sm text-gray-600 mb-1">品牌</label>
-                      ${renderBrandSelect('carBrand', car ? car.brand : '', 'onCarBrandChange()')}
-                    </div>
-                    <div>
-                      <label class="block text-sm text-gray-600 mb-1">分类</label>
-                      <select id="carSubCategory" onchange="onCarBrandChange()" class="w-full glass-input p-2 text-sm">
-                        ${HW_SUBCATS.map(s => `<option value="${s}" ${(car && car.subCategory === s) ? 'selected' : ''}>${s || '-- 无 --'}</option>`).join('')}
-                      </select>
-                    </div>
-                  </div>
-                  <div class="mt-3">
-                    <label class="block text-sm text-gray-600 mb-1">颜色/车型 <span class="text-invest">*</span></label>
-                    <input type="text" id="carName" list="carNameList" value="${esc(car ? car.name : '')}" placeholder="如：红奔驰AMG瓦罐" oninput="onCarNameChange('carName')" onchange="onCarNameChange('carName')" class="w-full glass-input p-2 text-sm">
-                    <datalist id="carNameList"></datalist>
-                  </div>
-                  <div class="grid grid-cols-2 gap-3 mt-3">
-                    <div>
-                      <label class="block text-sm text-gray-600 mb-1">购买日期</label>
-                      <input type="date" id="carBuyDate" value="${car ? car.buyDate : getToday()}" class="w-full glass-input p-2 text-sm">
-                    </div>
-                    <div>
-                      <label class="block text-sm text-gray-600 mb-1">购买价格</label>
-                      <input type="number" id="carBuyPrice" step="0.01" value="${car ? car.buyPrice : ''}" class="w-full glass-input p-2 text-sm">
-                    </div>
-                  </div>
-                  <div class="mt-3">
-                    <label class="block text-sm text-gray-600 mb-1">预期价值</label>
-                    <input type="number" id="carExpected" step="0.01" value="${car ? car.expectedValue : ''}" placeholder="手动估值" oninput="onExpectedChange('carBrand', 'carName', 'carExpected')" class="w-full glass-input p-2 text-sm">
-                    <div id="expectedSyncHint" class="text-xs text-orange-500 hidden mt-1">
-                      <i data-lucide="info" class="w-3 h-3 inline-block align-middle mr-1"></i> 将联动更新 <span id="affectedCount">0</span> 辆同款车的预期价格
-                    </div>
-                  </div>
-                  <div class="mt-3 flex items-center gap-4 text-xs">
-                    <span class="text-gray-500">类别: <strong class="${defaultCarCat === 'invest' ? 'text-invest' : 'text-keep'}">${carCatLabel}</strong></span>
-                    <span class="text-gray-400 font-mono">SID: ${car ? car.sid.slice(0, 8) + '...' : '自动生成'}</span>
-                  </div>
-                  <div class="mt-3">
-                    <label class="block text-sm text-gray-600 mb-1">小车备注</label>
-                    <input type="text" id="carNote" value="${esc(car ? car.note : '')}" class="w-full glass-input p-2 text-sm">
-                  </div>
-                </div>
-
-                <!-- 卖小车字段 -->
-                <div id="carSellFields" class="hidden">
+                <div class="grid grid-cols-2 gap-3">
                   <div>
-                    <label class="block text-sm text-gray-600 mb-1">选择小车</label>
-                    <select id="sellCarSelect" onchange="onSellCarSelect()" class="w-full glass-input p-2 text-sm">
+                    <label class="block text-sm text-gray-600 mb-1">品牌</label>
+                    ${renderBrandSelect('carBrand', '', 'onCarBrandChange()')}
+                  </div>
+                  <div>
+                    <label class="block text-sm text-gray-600 mb-1">分类</label>
+                    <select id="carSubCategory" onchange="onCarBrandChange()" class="w-full glass-input p-2 text-sm">
+                      ${HW_SUBCATS.map(s => `<option value="${s}">${s || '-- 无 --'}</option>`).join('')}
                     </select>
                   </div>
-                  <div class="mt-3">
-                    <label class="block text-sm text-gray-600 mb-1">卖出价格</label>
-                    <input type="number" id="sellCarPriceInput" step="0.01" class="w-full glass-input p-2 text-sm">
+                </div>
+                <div class="mt-3">
+                  <label class="block text-sm text-gray-600 mb-1">颜色/车型 <span class="text-invest">*</span></label>
+                  <input type="text" id="carName" list="carNameList" placeholder="如：红奔驰AMG瓦罐" oninput="onCarNameChange('carName')" onchange="onCarNameChange('carName')" class="w-full glass-input p-2 text-sm">
+                  <datalist id="carNameList"></datalist>
+                </div>
+                <div class="grid grid-cols-2 gap-3 mt-3">
+                  <div>
+                    <label class="block text-sm text-gray-600 mb-1">购买日期</label>
+                    <input type="date" id="carBuyDate" value="${getToday()}" class="w-full glass-input p-2 text-sm">
                   </div>
-                  <div class="mt-3">
-                    <label class="block text-sm text-gray-600 mb-1">卖出日期</label>
-                    <input type="date" id="sellCarDateInput" value="${getToday()}" class="w-full glass-input p-2 text-sm">
+                  <div>
+                    <label class="block text-sm text-gray-600 mb-1">购买价格</label>
+                    <input type="number" id="carBuyPrice" step="0.01" class="w-full glass-input p-2 text-sm">
                   </div>
+                </div>
+                <div class="mt-3">
+                  <label class="block text-sm text-gray-600 mb-1">预期价值</label>
+                  <input type="number" id="carExpected" step="0.01" placeholder="手动估值" oninput="onExpectedChange('carBrand', 'carName', 'carExpected')" class="w-full glass-input p-2 text-sm">
+                  <div id="expectedSyncHint" class="text-xs text-orange-500 hidden mt-1">
+                    <i data-lucide="info" class="w-3 h-3 inline-block align-middle mr-1"></i> 将联动更新 <span id="affectedCount">0</span> 辆同款车的预期价格
+                  </div>
+                </div>
+                <div class="mt-3 flex items-center gap-4 text-xs">
+                  <span class="text-gray-500">类别: <strong class="${defaultCarCat === 'invest' ? 'text-invest' : 'text-keep'}">${carCatLabel}</strong></span>
+                  <span class="text-gray-400 font-mono">SID: 自动生成</span>
+                </div>
+                <div class="mt-3">
+                  <label class="block text-sm text-gray-600 mb-1">小车备注</label>
+                  <input type="text" id="carNote" class="w-full glass-input p-2 text-sm">
+                </div>
+              </div>
+              ` : ''}
+              ${(isCarBuy && txn) || isCarSell ? `
+              <!-- === 编辑买卖交易：只选择小车 === -->
+              <div id="carSelectSection" class="border-t border-dashed border-gray-200 pt-4 mt-2">
+                <div class="flex items-center gap-2 text-sm font-semibold text-accent mb-3">
+                  <i data-lucide="car" class="w-4 h-4"></i> 选择小车
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-600 mb-1">小车</label>
+                  <select id="carSelect" class="w-full glass-input p-2 text-sm">
+                    <option value="">选择小车</option>
+                    ${carAppData.cars
+                      .filter(c => (isCarSell && txn ? c.isSold : !c.isSold) && c.category === (accountId === 'invest' ? 'invest' : 'keep'))
+                      .map(c => `<option value="${c.sid}" ${txn && txn.carSid === c.sid ? 'selected' : ''}>${esc(c.brand)} ${esc(c.name)} - ${fmt(c.buyPrice)}</option>`)
+                      .join('')}
+                  </select>
+                </div>
+                ${isCarSell ? `
+                <div class="mt-3">
+                  <label class="block text-sm text-gray-600 mb-1">卖出价格</label>
+                  <input type="number" id="sellCarPriceInput" step="0.01" value="${txn ? txn.amount : ''}" class="w-full glass-input p-2 text-sm">
+                </div>
+                <div class="mt-3">
+                  <label class="block text-sm text-gray-600 mb-1">卖出日期</label>
+                  <input type="date" id="sellCarDateInput" value="${txn ? txn.date : getToday()}" class="w-full glass-input p-2 text-sm">
+                </div>
+                ` : ''}
+                <div class="mt-3 text-xs text-gray-400">
+                  💡 小车属性（品牌、名称、价格等）请在车库中修改
                 </div>
               </div>
               ` : ''}
@@ -2474,19 +2483,7 @@
 
       // 初始化
       if (isCarBuy || isCarSell) {
-        // 买卖小车：直接展开小车属性，无需填充下拉
-        const carFields = document.getElementById('carFields');
-        const carBuyFields = document.getElementById('carBuyFields');
-        const carSellFields = document.getElementById('carSellFields');
-        if (carFields) carFields.style.display = "block";
-        if (isCarBuy && carBuyFields) {
-          carBuyFields.style.display = "block";
-          onCarBrandChange();
-        }
-        if (isCarSell && carSellFields) {
-          carSellFields.style.display = "block";
-          populateSellCarDropdown();
-        }
+        // 买卖小车：使用统一的选择小车下拉框，无需额外初始化
       } else {
         // 普通交易：填充类别下拉，默认取列表第一个
         let initType = 'expense';
@@ -2514,67 +2511,30 @@
       const catEl = document.getElementById('txnCategory');
       if (!catEl) return;
       const cat = catEl.value;
-      const carFields = document.getElementById('carFields');
-      const carBuyFields = document.getElementById('carBuyFields');
-      const carSellFields = document.getElementById('carSellFields');
+      const carSelectSection = document.getElementById('carSelectSection');
 
-      if (cat === 'car_buy') {
-        carFields.style.display = "block";
-        carBuyFields.style.display = "block";
-        carSellFields.classList.add('hidden');
-        // 金额同步
-        onTxnAmountChange();
-        onTxnDateChange();
-      } else if (cat === 'car_sell') {
-        carFields.style.display = "block";
-        carBuyFields.classList.add('hidden');
-        carSellFields.style.display = "block";
-        populateSellCarDropdown();
+      if (cat === 'car_buy' || cat === 'car_sell') {
+        if (carSelectSection) carSelectSection.style.display = "block";
       } else {
-        carFields.style.display = "none";
+        if (carSelectSection) carSelectSection.style.display = "none";
       }
     }
 
     function onTxnAmountChange() {
       const cat = document.getElementById('txnCategory').value;
-      if (cat === 'car_buy') {
+      const carBuyPrice = document.getElementById('carBuyPrice');
+      if (cat === 'car_buy' && carBuyPrice) {
         const amt = document.getElementById('txnAmount').value;
-        document.getElementById('carBuyPrice').value = amt;
+        carBuyPrice.value = amt;
       }
     }
 
     function onTxnDateChange() {
       const cat = document.getElementById('txnCategory').value;
-      if (cat === 'car_buy') {
+      const carBuyDate = document.getElementById('carBuyDate');
+      if (cat === 'car_buy' && carBuyDate) {
         const date = document.getElementById('txnDate').value;
-        document.getElementById('carBuyDate').value = date;
-      }
-    }
-
-    function populateSellCarDropdown() {
-      const accountId = document.getElementById('txnAccountId').value;
-      const sel = document.getElementById('sellCarSelect');
-      const unsoldCars = carAppData.cars.filter(c =>
-        !c.isSold && c.category === (accountId === 'invest' ? 'invest' : 'keep')
-      );
-      if (unsoldCars.length === 0) {
-        sel.innerHTML = '<option value="">— 无可售小车 —</option>';
-        return;
-      }
-      sel.innerHTML = unsoldCars.map(c =>
-        `<option value="${c.sid}" data-expected="${c.expectedValue || c.buyPrice}">
-          ${esc(c.brand ? c.brand + ' ' : '')}${esc(c.name)} (${fmt(c.buyPrice)})
-        </option>`
-      ).join('');
-      // 预填卖出价格
-      onSellCarSelect();
-    }
-
-    function onSellCarSelect() {
-      const sel = document.getElementById('sellCarSelect');
-      const opt = sel.options[sel.selectedIndex];
-      if (opt && opt.dataset.expected) {
-        document.getElementById('sellCarPriceInput').value = opt.dataset.expected;
+        carBuyDate.value = date;
       }
     }
 
@@ -2633,32 +2593,31 @@
       let carSid = null;
 
       if (category === 'car_buy') {
-        const carNameEl = document.getElementById('carName');
-        const carName = carNameEl ? carNameEl.value.trim() : '';
-        if (!carName && !txnId) return alert('请填写颜色/车型');
-        const sid = document.getElementById('carSid').value;
-        const brand = document.getElementById('carBrand').value.trim();
-        const buyDate = document.getElementById('carBuyDate').value || date;
-        const buyPrice = parseFloat(document.getElementById('carBuyPrice').value) || amount;
-        const expectedValue = parseFloat(document.getElementById('carExpected').value) || 0;
-        const carCat = document.getElementById('carCategory').value;
-        const carNote = document.getElementById('carNote').value.trim();
-        const subCategory = document.getElementById('carSubCategory')?.value || '';
-
-        const existingCar = carAppData.cars.find(c => c.sid === sid);
-        if (existingCar) {
-          // 更新已有小车（名称非空才覆盖，防止误清空）
-          existingCar.brand = brand;
-          if (carName) existingCar.name = carName;
-          existingCar.buyDate = buyDate;
-          existingCar.buyPrice = buyPrice;
-          existingCar.note = carNote;
-          existingCar.subCategory = subCategory;
-          if (expectedValue !== existingCar.expectedValue) {
-            appendExpectedHistory(existingCar, expectedValue, date);
-          }
+        if (txnId) {
+          // 编辑已有买入记录：从下拉框选择小车
+          const carSelect = document.getElementById('carSelect');
+          const selectedSid = carSelect ? carSelect.value : '';
+          if (!selectedSid) return alert('请选择小车');
+          
+          const car = carAppData.cars.find(c => c.sid === selectedSid);
+          if (!car) return alert('未找到选中的小车');
+          
+          carSid = selectedSid;
+          note = (car.brand ? car.brand + ' ' : '') + car.name;
         } else {
-          // 新建小车
+          // 新建买入记录：创建新小车
+          const carNameEl = document.getElementById('carName');
+          const carName = carNameEl ? carNameEl.value.trim() : '';
+          if (!carName) return alert('请填写颜色/车型');
+          const sid = document.getElementById('carSid').value;
+          const brand = document.getElementById('carBrand').value.trim();
+          const buyDate = document.getElementById('carBuyDate').value || date;
+          const buyPrice = parseFloat(document.getElementById('carBuyPrice').value) || amount;
+          const expectedValue = parseFloat(document.getElementById('carExpected').value) || 0;
+          const carCat = document.getElementById('carCategory').value;
+          const carNote = document.getElementById('carNote').value.trim();
+          const subCategory = document.getElementById('carSubCategory')?.value || '';
+
           const newCar = {
             sid, brand, name: carName,
             buyDate, buyPrice, subCategory,
@@ -2669,18 +2628,32 @@
             expectedValue
           };
           carAppData.cars.push(newCar);
+          carSid = sid;
+          note = carName;
         }
-        carSid = sid;
-        if (carName) note = carName; // 收支备注同步为车名
       }
 
       else if (category === 'car_sell') {
-        const sel = document.getElementById('sellCarSelect');
-        const selectedSid = sel.value;
+        const carSelect = document.getElementById('carSelect');
+        const selectedSid = carSelect ? carSelect.value : '';
         if (!selectedSid) return alert('请选择要卖出的小车');
+        
         const sellPrice = parseFloat(document.getElementById('sellCarPriceInput').value) || 0;
         const sellDate = document.getElementById('sellCarDateInput').value || date;
-
+        
+        // 编辑卖车交易时，如果更改了选中的小车，需要恢复原来小车的状态
+        if (txnId) {
+          const oldTxn = carAppData.accounts[accountId].transactions.find(t => t.id === txnId);
+          if (oldTxn && oldTxn.carSid && oldTxn.carSid !== selectedSid) {
+            const oldCar = carAppData.cars.find(c => c.sid === oldTxn.carSid);
+            if (oldCar) {
+              oldCar.isSold = false;
+              oldCar.sellPrice = null;
+              oldCar.soldDate = null;
+            }
+          }
+        }
+        
         const car = carAppData.cars.find(c => c.sid === selectedSid);
         if (car) {
           car.isSold = true;
@@ -2688,7 +2661,7 @@
           car.soldDate = sellDate;
         }
         carSid = selectedSid;
-        if (car) note = '卖出: ' + (car.brand ? car.brand + ' ' : '') + car.name;
+        note = '卖出: ' + (car.brand ? car.brand + ' ' : '') + car.name;
       }
 
       // === 创建/更新交易记录 ===
@@ -2739,9 +2712,12 @@
         if (carSid) {
           const updatedCar = carAppData.cars.find(c => c.sid === carSid);
           if (updatedCar) {
-            const isNew = !txnId;
             addOperationLog('car_buy', `买小车 ${esc(updatedCar.brand)} ${esc(updatedCar.name)} ${fmt(amount)}`, { name: updatedCar.name, brand: updatedCar.brand, amount, account: accountId });
-            alert(`✅ 已同步更新车库小车: ${updatedCar.brand} ${updatedCar.name}`);
+            if (txnId) {
+              alert(`✅ 已更新买入记录: ${updatedCar.brand} ${updatedCar.name}`);
+            } else {
+              alert(`✅ 已创建小车并记录买入: ${updatedCar.brand} ${updatedCar.name}`);
+            }
           }
         }
       } else if (category === 'car_sell' && carSid) {
@@ -2767,23 +2743,53 @@
 
       // 检查是否关联小车
       const linkedCar = txn.carSid ? carAppData.cars.find(c => c.sid === txn.carSid) : null;
-      let msg = `确定删除此交易记录？\n\n  ${txn.date}  ${txn.category}  ${fmt(txn.amount)}`;
-      if (linkedCar) {
-        msg += `\n\n⚠ 此记录关联小车: ${esc(linkedCar.brand)} ${esc(linkedCar.name)}`;
-        msg += `\n   该小车及其其它关联收支也将被删除。`;
+      
+      // 删除卖车交易：恢复小车状态为"未卖出"
+      if (txn.category === 'car_sell' && linkedCar) {
+        let msg = `确定删除此卖出记录？\n\n  ${txn.date}  卖出 ${esc(linkedCar.brand)} ${esc(linkedCar.name)}  ${fmt(txn.amount)}`;
+        msg += `\n\n✅ 将恢复小车状态为"未卖出"`;
+        if (!confirm(msg)) return;
+        
+        // 恢复小车状态
+        linkedCar.isSold = false;
+        linkedCar.sellPrice = null;
+        linkedCar.soldDate = null;
+        
+        // 删除该交易记录
+        account.transactions = account.transactions.filter(t => t.id !== txnId);
+        addOperationLog('txn_delete', `删除卖出记录 ${esc(linkedCar.brand)} ${esc(linkedCar.name)}（已恢复未卖出）`, { name: linkedCar.name, brand: linkedCar.brand });
       }
-
-      if (!confirm(msg)) return;
-
-      // 如果关联小车，删除小车及其全部关联交易
-      if (linkedCar) {
+      // 删除买车交易：删除小车及所有关联交易
+      else if (txn.category === 'car_buy' && linkedCar) {
+        let msg = `确定删除此买入记录？\n\n  ${txn.date}  买入 ${esc(linkedCar.brand)} ${esc(linkedCar.name)}  ${fmt(txn.amount)}`;
+        msg += `\n\n⚠ 该小车及其其它关联收支也将被删除。`;
+        if (!confirm(msg)) return;
+        
         ['pocket', 'invest'].forEach(accId => {
           carAppData.accounts[accId].transactions =
             carAppData.accounts[accId].transactions.filter(t => t.carSid !== linkedCar.sid);
         });
         carAppData.cars = carAppData.cars.filter(c => c.sid !== linkedCar.sid);
         addOperationLog('car_delete', `删除小车 ${esc(linkedCar.brand)} ${esc(linkedCar.name)}（含关联收支）`, { name: linkedCar.name, brand: linkedCar.brand });
-      } else {
+      }
+      // 删除其他关联交易
+      else if (linkedCar) {
+        let msg = `确定删除此交易记录？\n\n  ${txn.date}  ${txn.category}  ${fmt(txn.amount)}`;
+        msg += `\n\n⚠ 此记录关联小车: ${esc(linkedCar.brand)} ${esc(linkedCar.name)}`;
+        msg += `\n   该小车及其其它关联收支也将被删除。`;
+        if (!confirm(msg)) return;
+        
+        ['pocket', 'invest'].forEach(accId => {
+          carAppData.accounts[accId].transactions =
+            carAppData.accounts[accId].transactions.filter(t => t.carSid !== linkedCar.sid);
+        });
+        carAppData.cars = carAppData.cars.filter(c => c.sid !== linkedCar.sid);
+        addOperationLog('car_delete', `删除小车 ${esc(linkedCar.brand)} ${esc(linkedCar.name)}（含关联收支）`, { name: linkedCar.name, brand: linkedCar.brand });
+      }
+      // 删除普通交易
+      else {
+        let msg = `确定删除此交易记录？\n\n  ${txn.date}  ${txn.category}  ${fmt(txn.amount)}`;
+        if (!confirm(msg)) return;
         account.transactions = account.transactions.filter(t => t.id !== txnId);
         addOperationLog('txn_delete', `删除${txn.type === 'income' ? '收入' : '支出'} ${txn.category} ${fmt(txn.amount)}`, { type: txn.type, category: txn.category, amount: txn.amount });
       }
