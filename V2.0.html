@@ -2377,6 +2377,10 @@
               </div>
               `}
               ${isCarBuy || isCarSell ? `<input type="hidden" id="txnCategory" value="${isCarBuy ? 'car_buy' : 'car_sell'}">` : ''}
+              ${(isCarBuy && !txn) || isCarSell ? `
+              <input type="hidden" id="txnAmount" value="${txn ? txn.amount : ''}">
+              <input type="hidden" id="txnDate" value="${txn ? txn.date : getToday()}">
+              ` : `
               <div>
                 <label class="block text-sm text-gray-600 mb-1">金额</label>
                 <input type="number" id="txnAmount" oninput="onTxnAmountChange()" value="${txn ? txn.amount : ''}" step="0.01" class="w-full glass-input p-2.5 text-sm">
@@ -2385,6 +2389,7 @@
                 <label class="block text-sm text-gray-600 mb-1">日期</label>
                 <input type="date" id="txnDate" onchange="onTxnDateChange()" value="${txn ? txn.date : getToday()}" class="w-full glass-input p-2.5 text-sm">
               </div>
+              `}
               ${isCarBuy && !txn ? `
               <!-- === 新建买小车：完整小车属性 === -->
               <div id="carFields" class="space-y-3 border-t border-dashed border-gray-200 pt-4 mt-2">
@@ -2618,13 +2623,17 @@
           const carNote = document.getElementById('carNote').value.trim();
           const subCategory = document.getElementById('carSubCategory')?.value || '';
 
+          // 用购买价格/日期作为交易金额/日期
+          amount = buyPrice;
+          date = buyDate;
+
           const newCar = {
             sid, brand, name: carName,
             buyDate, buyPrice, subCategory,
             category: carCat,
             sellPrice: null, soldDate: null,
             isSold: false, note: carNote,
-            expectedHistory: [{ date: date, value: expectedValue }],
+            expectedHistory: [{ date: buyDate, value: expectedValue }],
             expectedValue
           };
           carAppData.cars.push(newCar);
@@ -2640,6 +2649,10 @@
         
         const sellPrice = parseFloat(document.getElementById('sellCarPriceInput').value) || 0;
         const sellDate = document.getElementById('sellCarDateInput').value || date;
+        
+        // 卖车交易：用卖出价格/日期作为交易金额/日期
+        amount = sellPrice;
+        date = sellDate;
         
         // 编辑卖车交易时，如果更改了选中的小车，需要恢复原来小车的状态
         if (txnId) {
