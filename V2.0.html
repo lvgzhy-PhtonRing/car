@@ -2599,13 +2599,17 @@
 
       if (category === 'car_buy') {
         if (txnId) {
-          // 编辑已有买入记录：从下拉框选择小车
+          // 编辑已有买入记录：从下拉框选择小车，同步更新小车价格
           const carSelect = document.getElementById('carSelect');
           const selectedSid = carSelect ? carSelect.value : '';
           if (!selectedSid) return alert('请选择小车');
           
           const car = carAppData.cars.find(c => c.sid === selectedSid);
           if (!car) return alert('未找到选中的小车');
+          
+          // 同步更新小车的购买价格和购买日期
+          car.buyPrice = amount;
+          car.buyDate = date;
           
           carSid = selectedSid;
           note = (car.brand ? car.brand + ' ' : '') + car.name;
