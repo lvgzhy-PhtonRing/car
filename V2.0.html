@@ -2582,14 +2582,22 @@
       const txnId = document.getElementById('txnId').value;
       const type = document.getElementById('txnType').value;
       const category = document.getElementById('txnCategory').value;
-      const amount = parseFloat(document.getElementById('txnAmount').value) || 0;
-      const date = document.getElementById('txnDate').value;
+      let amount = parseFloat(document.getElementById('txnAmount').value) || 0;
+      let date = document.getElementById('txnDate').value;
       const noteEl = document.getElementById('txnNote');
       let note = noteEl ? noteEl.value.trim() : '';
       // 买车/卖车时备注输入框不存在，编辑已有记录时保留原备注
       if (!noteEl && txnId) {
         const oldTxn = carAppData.accounts[accountId].transactions.find(t => t.id === txnId);
         if (oldTxn) note = oldTxn.note || '';
+      }
+
+      // 卖车交易：从卖出价格和卖出日期获取值
+      if (category === 'car_sell') {
+        const sellPriceInput = document.getElementById('sellCarPriceInput');
+        const sellDateInput = document.getElementById('sellCarDateInput');
+        if (sellPriceInput) amount = parseFloat(sellPriceInput.value) || 0;
+        if (sellDateInput) date = sellDateInput.value || date;
       }
 
       if (!amount) return alert('请输入金额');
@@ -2651,13 +2659,6 @@
         const selectedSid = carSelect ? carSelect.value : '';
         if (!selectedSid) return alert('请选择要卖出的小车');
         
-        const sellPrice = parseFloat(document.getElementById('sellCarPriceInput').value) || 0;
-        const sellDate = document.getElementById('sellCarDateInput').value || date;
-        
-        // 卖车交易：用卖出价格/日期作为交易金额/日期
-        amount = sellPrice;
-        date = sellDate;
-        
         // 编辑卖车交易时，如果更改了选中的小车，需要恢复原来小车的状态
         if (txnId) {
           const oldTxn = carAppData.accounts[accountId].transactions.find(t => t.id === txnId);
@@ -2674,8 +2675,8 @@
         const car = carAppData.cars.find(c => c.sid === selectedSid);
         if (car) {
           car.isSold = true;
-          car.sellPrice = sellPrice;
-          car.soldDate = sellDate;
+          car.sellPrice = amount;
+          car.soldDate = date;
         }
         carSid = selectedSid;
         note = '卖出: ' + (car.brand ? car.brand + ' ' : '') + car.name;
