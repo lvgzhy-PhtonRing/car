@@ -474,7 +474,7 @@
     // 默认空数据结构
     function getDefaultData() {
       return {
-        version: '2.2.1',
+        version: '2.2.2',
         accounts: {
           pocket: {
             id: 'pocket', name: '零花钱账户', monthlyAllowance: 200, allowanceDay: 1,
@@ -2598,6 +2598,15 @@
         const sellDateInput = document.getElementById('sellCarDateInput');
         if (sellPriceInput) amount = parseFloat(sellPriceInput.value) || 0;
         if (sellDateInput) date = sellDateInput.value || date;
+      }
+
+      // 新建买小车：txnAmount 是 hidden（值为空），从可见的购买价格输入框取值
+      if (category === 'car_buy' && !txnId) {
+        const buyPriceEl = document.getElementById('carBuyPrice');
+        if (buyPriceEl) {
+          const buyPrice = parseFloat(buyPriceEl.value) || 0;
+          if (buyPrice > 0) amount = buyPrice;
+        }
       }
 
       if (!amount) return alert('请输入金额');
