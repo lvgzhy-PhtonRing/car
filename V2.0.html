@@ -1644,9 +1644,14 @@
             <div class="stat-label"><i data-lucide="landmark" class="w-4 h-4 inline-block align-middle mr-1"></i> Payton's基金值
               <span class="text-[10px] text-gray-400 ml-1">→ ysp-app</span>
             </div>
-            <div class="stat-value ${stats.fundBalance >= 0 ? 'text-positive' : 'text-negative'}">${fmt(stats.fundBalance)}</div>
-            <div class="text-[11px] text-gray-500 mt-1 leading-relaxed">
-              输出至PhtonRing在哪儿程序 Payton's基金值 = ${fmt(stats.pocketBalance)} + ${fmt(stats.investBalance)} - ${fmt(stats.loanRemaining)} = ${fmt(stats.fundBalance)}
+            <div class="flex items-start justify-between">
+              <div class="stat-value ${stats.fundBalance >= 0 ? 'text-positive' : 'text-negative'}">${fmt(stats.fundBalance)}</div>
+              <div class="text-[11px] text-gray-500 text-right leading-relaxed whitespace-nowrap">
+                零钱余额 ${fmt(stats.pocketBalance)}<br>
+                + 投资余额 ${fmt(stats.investBalance)}<br>
+                - 贷款剩余 ${fmt(stats.loanRemaining)}<br>
+                = Payton's基金 ${fmt(stats.fundBalance)}
+              </div>
             </div>
           </div>
 
