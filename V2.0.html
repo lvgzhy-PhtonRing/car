@@ -474,7 +474,7 @@
     // 默认空数据结构
     function getDefaultData() {
       return {
-        version: '2.2.2',
+        version: '2.2.3',
         accounts: {
           pocket: {
             id: 'pocket', name: '零花钱账户', monthlyAllowance: 200, allowanceDay: 1,
@@ -1226,7 +1226,10 @@
       const keepCars = allCars.filter(c => c.category === 'keep' && !c.isSold);
       const keepExpectedTotal = keepCars.reduce((s, c) => s + (c.expectedValue || c.buyPrice), 0);
 
-      return { pocketBalance, investBalance, loanTotal, sellIncome, carBuySpent, investTotal, investCount, expectedTotal, unsoldCount: investCount, keepExpectedTotal };
+      const loanRemaining = invest.loans.filter(l => l.status === 'active').reduce((s, l) => s + (l.remaining || 0), 0);
+      const fundBalance = pocketBalance + investBalance - loanRemaining;
+
+      return { pocketBalance, investBalance, loanTotal, loanRemaining, fundBalance, sellIncome, carBuySpent, investTotal, investCount, expectedTotal, unsoldCount: investCount, keepExpectedTotal };
     }
 
     function getActiveLoans() {
@@ -1633,6 +1636,17 @@
               <div class="stat-label"><i data-lucide="heart" class="w-4 h-4 inline-block align-middle mr-1"></i> 自留车库预计总价值</div>
               <div class="stat-value text-gray-800">${fmt(stats.keepExpectedTotal)}</div>
               <div class="stat-sub">共 ${carAppData.cars.filter(c => c.category === 'keep' && !c.isSold).length} 辆 · 未包括2025年买入的文化和普卡</div>
+            </div>
+          </div>
+
+          <!-- Payton's基金值（同步至ysp-app） -->
+          <div class="stat-card">
+            <div class="stat-label"><i data-lucide="landmark" class="w-4 h-4 inline-block align-middle mr-1"></i> Payton's基金值
+              <span class="text-[10px] text-gray-400 ml-1">→ ysp-app</span>
+            </div>
+            <div class="stat-value ${stats.fundBalance >= 0 ? 'text-positive' : 'text-negative'}">${fmt(stats.fundBalance)}</div>
+            <div class="text-[11px] text-gray-500 mt-1 leading-relaxed">
+              输出至PhtonRing在哪儿程序 Payton's基金值 = ${fmt(stats.pocketBalance)} + ${fmt(stats.investBalance)} - ${fmt(stats.loanRemaining)} = ${fmt(stats.fundBalance)}
             </div>
           </div>
 
