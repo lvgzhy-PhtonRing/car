@@ -2680,8 +2680,8 @@
           car.buyDate = date;
 
           carSid = selectedSid;
-          // 交易备注：优先使用用户填写的，为空时默认车名
-          if (!note) note = (car.brand ? car.brand + ' ' : '') + car.name;
+          // 交易备注：用车名作为明细显示
+          note = car.name;
         } else {
           // 新建买入记录：创建新小车
           const carNameEl = document.getElementById('carName');
