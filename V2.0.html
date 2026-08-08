@@ -474,7 +474,7 @@
     // 默认空数据结构
     function getDefaultData() {
       return {
-        version: '2.2.3',
+        version: '2.2.4',
         accounts: {
           pocket: {
             id: 'pocket', name: '零花钱账户', monthlyAllowance: 200, allowanceDay: 1,
@@ -2460,21 +2460,34 @@
               </div>
               ` : ''}
               ${(isCarBuy && txn) || isCarSell ? `
-              <!-- === 编辑买卖交易：只选择小车 === -->
+              <!-- === 编辑买卖交易：选择小车并编辑属性 === -->
               <div id="carSelectSection" class="border-t border-dashed border-gray-200 pt-4 mt-2">
                 <div class="flex items-center gap-2 text-sm font-semibold text-accent mb-3">
-                  <i data-lucide="car" class="w-4 h-4"></i> 选择小车
+                  <i data-lucide="car" class="w-4 h-4"></i> 小车属性
                 </div>
                 <div>
                   <label class="block text-sm text-gray-600 mb-1">小车</label>
-                  <select id="carSelect" class="w-full glass-input p-2 text-sm">
+                  <select id="carSelect" onchange="onEditCarSelect()" class="w-full glass-input p-2 text-sm">
                     <option value="">选择小车</option>
                     ${carAppData.cars
                       .filter(c => (isCarSell && txn ? c.isSold : !c.isSold) && c.category === (accountId === 'invest' ? 'invest' : 'keep'))
-                      .map(c => `<option value="${c.sid}" ${txn && txn.carSid === c.sid ? 'selected' : ''}>${esc(c.brand)} ${esc(c.name)} - ${fmt(c.buyPrice)}</option>`)
+                      .map(c => `<option value="${c.sid}" data-name="${esc(c.name)}" data-brand="${esc(c.brand)}" data-note="${esc(c.note || '')}" data-buyprice="${c.buyPrice}" ${txn && txn.carSid === c.sid ? 'selected' : ''}>${esc(c.brand)} ${esc(c.name)} - ${fmt(c.buyPrice)}</option>`)
                       .join('')}
                   </select>
                 </div>
+                ${isCarBuy ? `
+                <div class="grid grid-cols-2 gap-3 mt-3">
+                  <div class="brand-wrap">
+                    <label class="block text-sm text-gray-600 mb-1">品牌</label>
+                    ${renderBrandSelect('carBrand', car ? car.brand : '', 'onCarBrandChange()')}
+                  </div>
+                  <div>
+                    <label class="block text-sm text-gray-600 mb-1">颜色/车型 <span class="text-invest">*</span></label>
+                    <input type="text" id="carName" list="carNameList" value="${esc(car ? car.name : '')}" class="w-full glass-input p-2 text-sm">
+                    <datalist id="carNameList"></datalist>
+                  </div>
+                </div>
+                ` : ''}
                 ${isCarSell ? `
                 <div class="mt-3">
                   <label class="block text-sm text-gray-600 mb-1">卖出价格</label>
@@ -2485,17 +2498,18 @@
                   <input type="date" id="sellCarDateInput" value="${txn ? txn.date : getToday()}" class="w-full glass-input p-2 text-sm">
                 </div>
                 ` : ''}
-                <div class="mt-3 text-xs text-gray-400">
-                  💡 小车属性（品牌、名称、价格等）请在车库中修改
+                ${isCarBuy ? `
+                <div class="mt-3">
+                  <label class="block text-sm text-gray-600 mb-1">小车备注</label>
+                  <input type="text" id="carNote" value="${esc(car ? car.note : '')}" class="w-full glass-input p-2 text-sm">
                 </div>
+                ` : ''}
               </div>
               ` : ''}
-              ${isCarBuy || isCarSell ? '' : `
               <div class="mt-3">
-                <label class="block text-sm text-gray-600 mb-1">备注</label>
+                <label class="block text-sm text-gray-600 mb-1">交易备注</label>
                 <input type="text" id="txnNote" value="${esc(txn ? txn.note : '')}" class="w-full glass-input p-2.5 text-sm">
               </div>
-              `}
             </div>
             <div class="mt-6 flex justify-end space-x-2">
               <button onclick="hideModal()" class="px-4 py-2 glass-light rounded-xl-apple hover:bg-white/60 text-sm btn-glass">取消</button>
@@ -2507,7 +2521,8 @@
 
       // 初始化
       if (isCarBuy || isCarSell) {
-        // 买卖小车：使用统一的选择小车下拉框，无需额外初始化
+        // 编辑买车交易：初始化车名联想列表
+        if (isCarBuy && txn) onCarBrandChange();
       } else {
         // 普通交易：填充类别下拉，默认取列表第一个
         let initType = 'expense';
@@ -2592,8 +2607,19 @@
       ).join('');
     }
 
-    function onTxnCategoryChange() {
-      // placeholder for future category-specific logic
+    function onEditCarSelect() {
+      // 编辑买车交易时，切换小车后自动填充名称、品牌、备注
+      const sel = document.getElementById('carSelect');
+      if (!sel) return;
+      const opt = sel.options[sel.selectedIndex];
+      if (!opt || !opt.dataset.name) return;
+      const nameEl = document.getElementById('carName');
+      if (nameEl) nameEl.value = opt.dataset.name || '';
+      const brandEl = document.getElementById('carBrand');
+      if (brandEl) brandEl.value = opt.dataset.brand || '';
+      const noteEl = document.getElementById('carNote');
+      if (noteEl) noteEl.value = opt.dataset.note || '';
+      onCarBrandChange();
     }
 
     function saveTransaction() {
@@ -2605,11 +2631,6 @@
       let date = document.getElementById('txnDate').value;
       const noteEl = document.getElementById('txnNote');
       let note = noteEl ? noteEl.value.trim() : '';
-      // 买车/卖车时备注输入框不存在，编辑已有记录时保留原备注
-      if (!noteEl && txnId) {
-        const oldTxn = carAppData.accounts[accountId].transactions.find(t => t.id === txnId);
-        if (oldTxn) note = oldTxn.note || '';
-      }
 
       // 卖车交易：从卖出价格和卖出日期获取值
       if (category === 'car_sell') {
@@ -2635,20 +2656,30 @@
 
       if (category === 'car_buy') {
         if (txnId) {
-          // 编辑已有买入记录：从下拉框选择小车，同步更新小车价格
+          // 编辑已有买入记录：读取小车属性并双向联动更新车库
           const carSelect = document.getElementById('carSelect');
           const selectedSid = carSelect ? carSelect.value : '';
           if (!selectedSid) return alert('请选择小车');
-          
+
           const car = carAppData.cars.find(c => c.sid === selectedSid);
           if (!car) return alert('未找到选中的小车');
-          
+
+          // 读取可编辑的小车属性
+          const carNameEl = document.getElementById('carName');
+          const carName = carNameEl ? carNameEl.value.trim() : '';
+          if (carName) car.name = carName;
+          const brandEl = document.getElementById('carBrand');
+          if (brandEl) car.brand = brandEl.value.trim();
+          const carNoteEl = document.getElementById('carNote');
+          if (carNoteEl) car.note = carNoteEl.value.trim();
+
           // 同步更新小车的购买价格和购买日期
           car.buyPrice = amount;
           car.buyDate = date;
-          
+
           carSid = selectedSid;
-          note = (car.brand ? car.brand + ' ' : '') + car.name;
+          // 交易备注：优先使用用户填写的，为空时默认车名
+          if (!note) note = (car.brand ? car.brand + ' ' : '') + car.name;
         } else {
           // 新建买入记录：创建新小车
           const carNameEl = document.getElementById('carName');
@@ -3045,6 +3076,7 @@
       const oldExpected = car.expectedValue;
       car.brand = document.getElementById('editCarBrand').value.trim();
       const editCarName = document.getElementById('editCarName').value.trim();
+      const oldName = car.name;
       if (editCarName) car.name = editCarName;
       car.subCategory = document.getElementById('editCarSubCategory').value || '';
       const newExpected = parseFloat(document.getElementById('editCarExpected').value) || 0;
@@ -3052,6 +3084,19 @@
         appendExpectedHistory(car, newExpected, getToday());
       }
       car.note = document.getElementById('editCarNote').value.trim();
+
+      // 双向联动：车名变更时同步更新关联交易备注
+      if (editCarName && oldName !== editCarName) {
+        const linkedTxns = [
+          ...carAppData.accounts.pocket.transactions,
+          ...carAppData.accounts.invest.transactions
+        ].filter(t => t.carSid === car.sid);
+        linkedTxns.forEach(t => {
+          if (!t.note || t.note === oldName || t.note.startsWith(oldName)) {
+            t.note = editCarName + (t.note && t.note.length > oldName.length ? t.note.slice(oldName.length) : '');
+          }
+        });
+      }
 
       if (car.manual) {
         const newBuyDate = document.getElementById('editCarBuyDate').value;
