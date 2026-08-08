@@ -2506,10 +2506,12 @@
                 ` : ''}
               </div>
               ` : ''}
+              ${isCarBuy || isCarSell ? '' : `
               <div class="mt-3">
-                <label class="block text-sm text-gray-600 mb-1">交易备注</label>
+                <label class="block text-sm text-gray-600 mb-1">备注</label>
                 <input type="text" id="txnNote" value="${esc(txn ? txn.note : '')}" class="w-full glass-input p-2.5 text-sm">
               </div>
+              `}
             </div>
             <div class="mt-6 flex justify-end space-x-2">
               <button onclick="hideModal()" class="px-4 py-2 glass-light rounded-xl-apple hover:bg-white/60 text-sm btn-glass">取消</button>
