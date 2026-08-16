@@ -519,12 +519,39 @@
 
     // ==================== 关键词系统 ====================
     // 主题词词典：对 car.name / car.note 做子串匹配；品牌恒命中，无需列入
-    const KEYWORD_DICT = ['保时捷', '法拉利', '道奇', '野马', '赛道传奇', 'R34'];
+    const KEYWORD_DICT = [
+      // 常见真实车厂（出现在车名中的品牌）
+      '保时捷', '法拉利', '兰博基尼', '迈凯伦', '布加迪', '宝马', '奔驰', '奥迪', '梅赛德斯',
+      '日产', '丰田', '本田', '斯巴鲁', '三菱', '马自达', '福特', '雪佛兰', '特斯拉', '大众',
+      '道奇', '野马', '科尔维特', '路虎', '捷豹', '雷克萨斯', '沃尔沃',
+      // 主题/车型词
+      '赛道传奇', 'R34', 'GTR', '911',
+    ];
     // 子类 → 展示关键词 映射
     const SUBCAT_KEYWORDS = { '超宝': '超宝', 'RLC': 'RLC', 'ELITE': 'ELITE', '礼盒': '礼盒', '文化': '娱乐文化', '普卡': '普卡' };
 
-    // 提取一辆车的关键词：品牌恒命中 + 词典子串匹配(name/note) + 子类映射
-    function extractKeywords(car) {
+    // 动态高频词：车名中重复出现 ≥ 此次数的独立词，自动成为关键词（如「花园大道」）
+    const MIN_AUTO_KEYWORD_COUNT = 3;
+    // 停用词：无意义短词/常见后缀，不作为动态关键词
+    const AUTO_KEYWORD_STOPWORDS = new Set(['GT', 'RS', 'RX', 'LP', 'SR', 'SP', 'ST', 'TS', '限定', '限量', '纪念', '特别', '普通', '经典', '终极', '赛道', '系列', '版']);
+
+    // 扫描车名，返回重复出现 ≥MIN_AUTO_KEYWORD_COUNT 次的词集合（动态关键词）
+    function buildAutoKeywords(cars) {
+      const freq = {};
+      cars.forEach(c => {
+        (c.name || '').split(/\s+/).forEach(tok => {
+          const t = tok.trim();
+          if (t.length < 2) return;                 // 过短（单字符）
+          if (/^[0-9]+$/.test(t)) return;           // 纯数字
+          if (AUTO_KEYWORD_STOPWORDS.has(t)) return;
+          freq[t] = (freq[t] || 0) + 1;
+        });
+      });
+      return new Set(Object.keys(freq).filter(k => freq[k] >= MIN_AUTO_KEYWORD_COUNT));
+    }
+
+    // 提取一辆车的关键词：品牌恒命中 + 词典子串匹配(name/note) + 子类映射 + 动态高频词
+    function extractKeywords(car, autoSet) {
       const kw = new Set();
       if (car.brand) kw.add(car.brand);
       const text = ((car.name || '') + ' ' + (car.note || '')).toLowerCase();
@@ -532,6 +559,7 @@
         if (w && text.includes(w.toLowerCase())) kw.add(w);
       });
       if (car.subCategory && SUBCAT_KEYWORDS[car.subCategory]) kw.add(SUBCAT_KEYWORDS[car.subCategory]);
+      (autoSet || []).forEach(w => { if (text.includes(w.toLowerCase())) kw.add(w); });
       return [...kw];
     }
 
@@ -3520,7 +3548,7 @@
     }
 
     // 四维度分桶；关键词维度一辆车可进多桶（N:N）
-    function buildDimensionBuckets(cars, dimension) {
+    function buildDimensionBuckets(cars, dimension, autoSet) {
       const map = new Map();
       cars.forEach(car => {
         if (dimension === 'account') {
@@ -3531,7 +3559,7 @@
           const key = car.brand === 'Hotwheels' ? (car.subCategory || '普卡') : (car.brand || '其它');
           bucketPush(map, key, car);
         } else if (dimension === 'keyword') {
-          extractKeywords(car).forEach(k => bucketPush(map, k, car));
+          extractKeywords(car, autoSet).forEach(k => bucketPush(map, k, car));
         }
       });
       return map;
@@ -3590,7 +3618,7 @@
     }
 
     // Level3 单车明细行（从旧 renderInventory 内联逻辑抽出，卖出/转库/编辑/删除按钮原样复用）
-    function renderCarRow(c) {
+    function renderCarRow(c, autoSet) {
       return `
         <div class="flex items-center justify-between px-4 py-2.5 hover:bg-white/30 text-sm gap-2">
           <div class="flex items-center gap-4 flex-1 min-w-0">
@@ -3603,7 +3631,7 @@
             ${c.manual ? '<span class="text-xs font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded-md border border-orange-300">手动入库</span>' : ''}
           </div>
           <div class="flex items-center gap-2 flex-wrap justify-end">
-            ${renderKeywordChips(extractKeywords(c))}
+            ${renderKeywordChips(extractKeywords(c, autoSet))}
             <div class="flex gap-1">
               <button onclick="sellCar('${c.sid}')" class="btn-sell text-xs">卖出</button>
               <button onclick="convertCar('${c.sid}')" class="btn-convert ${c.category === 'invest' ? 'btn-to-keep' : 'btn-to-invest'} text-xs">→ ${c.category === 'invest' ? '自留' : '投资'}</button>
@@ -3642,8 +3670,8 @@
     }
 
     // Level1：维度气泡卡片
-    function renderLevel1(cars) {
-      const cards = sortBuckets(buildDimensionBuckets(cars, invState.dimension), invState.dimension).map(([key, list]) => {
+    function renderLevel1(cars, autoSet) {
+      const cards = sortBuckets(buildDimensionBuckets(cars, invState.dimension, autoSet), invState.dimension).map(([key, list]) => {
         const invest = list.filter(c => c.category === 'invest').length;
         const keep = list.filter(c => c.category === 'keep').length;
         return `
@@ -3656,14 +3684,14 @@
     }
 
     // Level2：同名分组列表（均价 + ×N + 关键词chip），点击手风琴展开 Level3
-    function renderLevel2(cars) {
+    function renderLevel2(cars, autoSet) {
       const groups = groupByBrandName(cars);
       const html = Object.entries(groups).map(([key, list]) => {
         list.sort((a, b) => b.buyDate.localeCompare(a.buyDate));
         const label = (list[0].brand || '未知品牌') + ' ' + list[0].name;
         const withPrice = list.filter(c => c.buyPrice != null);
         const avgPrice = withPrice.length ? withPrice.reduce((s, c) => s + c.buyPrice, 0) / withPrice.length : 0;
-        const kws = [...new Set(list.flatMap(c => extractKeywords(c)))];
+        const kws = [...new Set(list.flatMap(c => extractKeywords(c, autoSet)))];
         const groupId = 'g' + key.replace(/[^a-zA-Z0-9一-鿿]/g, '_');
         return `
           <div class="glass rounded-2xl-apple overflow-hidden">
@@ -3678,7 +3706,7 @@
             </div>
             <div id="${groupId}_body" class="accordion-body collapsed">
               <div class="divide-y divide-black/5 border-t border-black/5">
-                ${list.map(renderCarRow).join('')}
+                ${list.map(c => renderCarRow(c, autoSet)).join('')}
               </div>
             </div>
           </div>`;
@@ -3691,6 +3719,7 @@
       const unsoldCars = carAppData.cars.filter(c => !c.isSold);
       const q = invSearchText.trim().toLowerCase();
       const searchMode = q.length > 0;
+      const autoKw = buildAutoKeywords(unsoldCars);   // 动态高频词：车名重复≥3次的词自动成关键词
 
       let body;
       if (searchMode) {
@@ -3699,16 +3728,16 @@
           c.brand.toLowerCase().includes(q) ||
           c.sid.toLowerCase().includes(q) ||
           (c.subCategory || '').toLowerCase().includes(q) ||
-          extractKeywords(c).some(k => k.toLowerCase().includes(q))
+          extractKeywords(c, autoKw).some(k => k.toLowerCase().includes(q))
         );
         body = `<div class="glass rounded-2xl-apple overflow-hidden divide-y divide-black/5">
-          ${filtered.map(renderCarRow).join('') || '<div class="text-center py-10 text-gray-400">无匹配的小车</div>'}
+          ${filtered.map(c => renderCarRow(c, autoKw)).join('') || '<div class="text-center py-10 text-gray-400">无匹配的小车</div>'}
         </div>`;
       } else if (invState.selectedBucket === null) {
-        body = renderLevel1(unsoldCars);
+        body = renderLevel1(unsoldCars, autoKw);
       } else {
-        const bucketCars = buildDimensionBuckets(unsoldCars, invState.dimension).get(invState.selectedBucket) || [];
-        body = renderLevel2(bucketCars);
+        const bucketCars = buildDimensionBuckets(unsoldCars, invState.dimension, autoKw).get(invState.selectedBucket) || [];
+        body = renderLevel2(bucketCars, autoKw);
       }
 
       document.getElementById('moduleInventory').innerHTML = `
