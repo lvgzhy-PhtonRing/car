@@ -3535,8 +3535,10 @@
     }
 
     // ==================== 小车库存 · 三层下钻 ====================
+    const INV_DIMS = ['account', 'category', 'keyword'];  // 有效维度（已移除「品牌」视图）
+    const savedDim = localStorage.getItem('carInvDimension');
     let invState = {
-      dimension: localStorage.getItem('carInvDimension') || 'account', // account|brand|category|keyword
+      dimension: INV_DIMS.includes(savedDim) ? savedDim : 'keyword',  // 默认进入关键词视图；旧 brand 记忆自动回退
       selectedBucket: null,  // 桶 key；null = Level1
       breadcrumb: [],        // [{ dimension, bucket, label }]
     };
@@ -3553,8 +3555,6 @@
       cars.forEach(car => {
         if (dimension === 'account') {
           bucketPush(map, car.category || 'keep', car);
-        } else if (dimension === 'brand') {
-          bucketPush(map, car.brand || '未知品牌', car);
         } else if (dimension === 'category') {
           const key = car.brand === 'Hotwheels' ? (car.subCategory || '普卡') : (car.brand || '其它');
           bucketPush(map, key, car);
@@ -3646,7 +3646,7 @@
     function renderInventoryToolbar(unsoldCars) {
       const investCount = unsoldCars.filter(c => c.category === 'invest').length;
       const keepCount = unsoldCars.filter(c => c.category === 'keep').length;
-      const tabs = [['account', '车库'], ['brand', '品牌'], ['category', '分类'], ['keyword', '关键词']];
+      const tabs = [['account', '车库'], ['category', '分类'], ['keyword', '关键词']];
       return `
         <div class="glass rounded-2xl-apple p-3 flex flex-wrap gap-3 items-center">
           <div class="flex gap-1">
