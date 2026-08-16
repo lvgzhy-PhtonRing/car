@@ -212,6 +212,12 @@
         .btn-to-keep:hover { background: rgba(91, 140, 90, 0.18); box-shadow: 0 2px 8px rgba(91, 140, 90, 0.12); }
         .btn-to-invest { color: var(--c-invest); border-color: var(--c-invest-border); background: var(--c-invest-bg); }
         .btn-to-invest:hover { background: rgba(196, 75, 61, 0.18); box-shadow: 0 2px 8px rgba(196, 75, 61, 0.12); }
+        .keyword-chip {
+            font-size: 11px; line-height: 1.7; padding: 0 8px; border-radius: 9999px;
+            background: var(--c-accent-bg); color: var(--c-accent);
+            border: 1px solid transparent; white-space: nowrap; cursor: pointer;
+        }
+        .keyword-chip:hover { border-color: var(--c-accent); }
         .btn-sell {
             font-size: 12px; padding: 3px 12px; border-radius: 10px;
             cursor: pointer; border: 1px solid var(--c-sell-border);
@@ -3501,151 +3507,268 @@
     }
 
     // ==================== 小车库存 ====================
-    let invSortMode = 'brand';
+    // ==================== 小车库存 · 三层下钻 ====================
+    let invState = {
+      dimension: localStorage.getItem('carInvDimension') || 'account', // account|brand|category|keyword
+      selectedBucket: null,  // 桶 key；null = Level1
+      expandedGroup: null,
+      breadcrumb: [],        // [{ dimension, bucket, label }]
+    };
     let invSearchText = '';
-    let invSubCatFilter = '';
 
-    function onInvSubCatFilter() {
-      invSubCatFilter = document.getElementById('invSubCatFilter')?.value || '';
-      renderInventory();
+    function bucketPush(map, key, car) {
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push(car);
     }
 
+    // 四维度分桶；关键词维度一辆车可进多桶（N:N）
+    function buildDimensionBuckets(cars, dimension) {
+      const map = new Map();
+      cars.forEach(car => {
+        if (dimension === 'account') {
+          bucketPush(map, car.category || 'keep', car);
+        } else if (dimension === 'brand') {
+          bucketPush(map, car.brand || '未知品牌', car);
+        } else if (dimension === 'category') {
+          const key = car.brand === 'Hotwheels' ? (car.subCategory || '普卡') : (car.brand || '其它');
+          bucketPush(map, key, car);
+        } else if (dimension === 'keyword') {
+          extractKeywords(car).forEach(k => bucketPush(map, k, car));
+        }
+      });
+      return map;
+    }
+
+    function bucketLabel(dimension, key) {
+      if (dimension === 'account') return key === 'invest' ? '投资车库' : '自留车库';
+      return key;
+    }
+
+    // Level1 气泡排序：account 固定 invest/keep；其余按数量降序
+    function sortBuckets(buckets, dimension) {
+      const arr = [...buckets.entries()];
+      if (dimension === 'account') {
+        const order = { invest: 0, keep: 1 };
+        arr.sort(([a], [b]) => (order[a] ?? 9) - (order[b] ?? 9));
+      } else {
+        arr.sort(([, a], [, b]) => b.length - a.length);
+      }
+      return arr;
+    }
+
+    // 现有「品牌|名称」分组 + 排序逻辑（从旧 renderInventory 抽出，行为不变）
+    function groupByBrandName(cars) {
+      const groups = groupBy(cars, c => (c.brand || '未知品牌') + '|' + c.name);
+      const hwGroups = [], otherGroups = [];
+      Object.entries(groups).forEach(([key, list]) => {
+        (list[0].brand === 'Hotwheels' ? hwGroups : otherGroups).push([key, list]);
+      });
+      hwGroups.sort(([, a], [, b]) => {
+        const ia = HW_SUBCAT_ORDER.indexOf(a[0].subCategory || '');
+        const ib = HW_SUBCAT_ORDER.indexOf(b[0].subCategory || '');
+        return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+      });
+      otherGroups.sort(([, a], [, b]) => {
+        const ia = ALL_BRANDS.indexOf(a[0].brand || '');
+        const ib = ALL_BRANDS.indexOf(b[0].brand || '');
+        return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+      });
+      const sorted = {};
+      [...hwGroups, ...otherGroups].forEach(([key, list]) => { sorted[key] = list; });
+      return sorted;
+    }
+
+    function subCatBadge(subCat) {
+      const map = { '超宝': 'bg-green-100 text-green-700', 'RLC': 'bg-yellow-100 text-yellow-700', 'ELITE': 'bg-red-100 text-red-700', '礼盒': 'bg-blue-100 text-blue-700', '文化': 'bg-purple-100 text-purple-700' };
+      return `<span class="text-xs px-1 py-0.5 rounded ${map[subCat] || 'bg-gray-100 text-gray-600'}">${esc(subCat)}</span>`;
+    }
+
+    // 关键词 chip：小号 pill，点击跳转到该词的 Level2
+    function renderKeywordChips(keywords) {
+      if (!keywords || keywords.length === 0) return '';
+      return `<span class="flex flex-wrap gap-1">
+        ${keywords.map(k => `<button onclick="clickKeywordChip('${esc(k)}')" class="keyword-chip">🏷${esc(k)}</button>`).join('')}
+      </span>`;
+    }
+
+    // Level3 单车明细行（从旧 renderInventory 内联逻辑抽出，卖出/转库/编辑/删除按钮原样复用）
+    function renderCarRow(c) {
+      return `
+        <div class="flex items-center justify-between px-4 py-2.5 hover:bg-white/30 text-sm gap-2">
+          <div class="flex items-center gap-4 flex-1 min-w-0">
+            <span class="font-semibold text-xs truncate">${esc(c.brand || '?')}</span>
+            ${c.subCategory ? subCatBadge(c.subCategory) : ''}
+            <span class="text-gray-600 text-xs truncate">${esc(c.name)}</span>
+            <span class="text-xs text-gray-400">${c.buyDate}</span>
+            <span class="text-xs font-mono text-gray-500">${fmt(c.buyPrice)}</span>
+            <span class="text-xs text-gray-400">预期 ${fmt(c.expectedValue || c.buyPrice)}</span>
+            ${c.manual ? '<span class="text-xs font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded-md border border-orange-300">手动入库</span>' : ''}
+          </div>
+          <div class="flex items-center gap-2 flex-wrap justify-end">
+            ${renderKeywordChips(extractKeywords(c))}
+            <div class="flex gap-1">
+              <button onclick="sellCar('${c.sid}')" class="btn-sell text-xs">卖出</button>
+              <button onclick="convertCar('${c.sid}')" class="btn-convert ${c.category === 'invest' ? 'btn-to-keep' : 'btn-to-invest'} text-xs">→ ${c.category === 'invest' ? '自留' : '投资'}</button>
+              <button onclick="openCarEditModal('${c.sid}')" class="text-accent hover:underline text-xs mr-1"><i data-lucide="pencil-line" class="w-3 h-3 inline-block"></i></button>
+              <button onclick="deleteCar('${c.sid}')" class="text-invest hover:underline text-xs"><i data-lucide="trash-2" class="w-3 h-3 inline-block"></i></button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    // 工具栏：四维度 tab + 搜索框 + 总数
+    function renderInventoryToolbar(unsoldCars) {
+      const investCount = unsoldCars.filter(c => c.category === 'invest').length;
+      const keepCount = unsoldCars.filter(c => c.category === 'keep').length;
+      const tabs = [['account', '车库'], ['brand', '品牌'], ['category', '分类'], ['keyword', '关键词']];
+      return `
+        <div class="glass rounded-2xl-apple p-3 flex flex-wrap gap-3 items-center">
+          <div class="flex gap-1">
+            ${tabs.map(([d, t]) => `<button onclick="setInvDimension('${d}')" class="px-3 py-1.5 rounded-lg text-xs font-medium ${invState.dimension === d ? 'bg-blue-100 text-accent' : 'glass-light'} btn-glass">${t}</button>`).join('')}
+          </div>
+          <input type="text" id="invSearch" placeholder="搜索品牌/名称/SID/关键词..." value="${esc(invSearchText)}" oninput="onInvSearch()" class="flex-1 glass-input p-2 text-sm max-w-xs">
+          <div class="text-xs text-gray-500 ml-auto">总投资 ${investCount} + 自留 ${keepCount} = 共 ${unsoldCars.length} 辆</div>
+        </div>`;
+    }
+
+    // 面包屑：可点击回溯；点「全部」回 Level1
+    function renderBreadcrumb() {
+      if (invState.selectedBucket === null) return '';
+      const items = invState.breadcrumb.map((cr, i) =>
+        `<button onclick="clickBreadcrumb(${i})" class="text-accent hover:underline text-sm whitespace-nowrap">${esc(cr.label)}</button>`
+      ).join('<span class="text-gray-400 mx-1">›</span>');
+      return `<div class="flex items-center overflow-x-auto whitespace-nowrap text-sm">
+        <button onclick="clickBreadcrumb(-1)" class="text-gray-500 hover:text-accent whitespace-nowrap">全部</button>
+        <span class="text-gray-400 mx-1">›</span>${items}
+      </div>`;
+    }
+
+    // Level1：维度气泡卡片
+    function renderLevel1(cars) {
+      const cards = sortBuckets(buildDimensionBuckets(cars, invState.dimension), invState.dimension).map(([key, list]) => {
+        const invest = list.filter(c => c.category === 'invest').length;
+        const keep = list.filter(c => c.category === 'keep').length;
+        return `
+          <button onclick="clickBucket('${esc(key)}')" class="glass-light rounded-2xl-apple p-4 text-left hover:bg-white/60 btn-glass min-h-[44px] flex flex-col gap-1">
+            <span class="font-bold truncate">${esc(bucketLabel(invState.dimension, key))}</span>
+            <span class="text-sm text-gray-500">${list.length} 辆${invState.dimension === 'account' ? '' : ` <span class="text-xs"><span class="text-invest">投资${invest}</span>·<span class="text-keep">自留${keep}</span></span>`}</span>
+          </button>`;
+      }).join('');
+      return `<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">${cards}</div>`;
+    }
+
+    // Level2：同名分组列表（均价 + ×N + 关键词chip），点击手风琴展开 Level3
+    function renderLevel2(cars) {
+      const groups = groupByBrandName(cars);
+      const html = Object.entries(groups).map(([key, list]) => {
+        list.sort((a, b) => b.buyDate.localeCompare(a.buyDate));
+        const label = (list[0].brand || '未知品牌') + ' ' + list[0].name;
+        const withPrice = list.filter(c => c.buyPrice != null);
+        const avgPrice = withPrice.length ? withPrice.reduce((s, c) => s + c.buyPrice, 0) / withPrice.length : 0;
+        const kws = [...new Set(list.flatMap(c => extractKeywords(c)))];
+        const groupId = 'g' + key.replace(/[^a-zA-Z0-9一-鿿]/g, '_');
+        return `
+          <div class="glass rounded-2xl-apple overflow-hidden">
+            <div class="glass-light p-4 flex items-center justify-between gap-3 accordion-toggle" onclick="toggleAccordion('${groupId}')">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="font-bold text-sm">${esc(label)}</span>
+                <span class="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full font-medium">×${list.length}</span>
+                <span class="text-sm text-gray-500">均价 ${fmt(avgPrice)}</span>
+                ${renderKeywordChips(kws)}
+              </div>
+              <span class="text-gray-400 text-sm" id="${groupId}_icon">▶</span>
+            </div>
+            <div id="${groupId}_body" class="accordion-body collapsed">
+              <div class="divide-y divide-black/5 border-t border-black/5">
+                ${list.map(renderCarRow).join('')}
+              </div>
+            </div>
+          </div>`;
+      }).join('');
+      return html || '<div class="text-center py-10 text-gray-400">该桶内暂无小车</div>';
+    }
+
+    // 渲染分发器：搜索模式扁平 Level3 / Level1 气泡 / Level2 分组
     function renderInventory() {
       const unsoldCars = carAppData.cars.filter(c => !c.isSold);
+      const q = invSearchText.trim().toLowerCase();
+      const searchMode = q.length > 0;
 
-      let filtered = unsoldCars;
-      if (invSearchText) {
-        const q = invSearchText.toLowerCase();
-        filtered = unsoldCars.filter(c =>
+      let body;
+      if (searchMode) {
+        const filtered = unsoldCars.filter(c =>
           c.name.toLowerCase().includes(q) ||
           c.brand.toLowerCase().includes(q) ||
           c.sid.toLowerCase().includes(q) ||
-          (c.subCategory || '').toLowerCase().includes(q)
+          (c.subCategory || '').toLowerCase().includes(q) ||
+          extractKeywords(c).some(k => k.toLowerCase().includes(q))
         );
-      }
-      if (invSubCatFilter) {
-        filtered = filtered.filter(c => c.subCategory === invSubCatFilter);
-      }
-
-      let groups;
-      if (invSortMode === 'brand') {
-        groups = groupBy(filtered, c => (c.brand || '未知品牌') + '|' + c.name);
-        // 对分组进行排序
-        const sortedGroups = {};
-        const hwGroups = [];
-        const otherGroups = [];
-        
-        // 分离Hotwheels和其他品牌
-        Object.entries(groups).forEach(([key, cars]) => {
-          if (cars[0].brand === 'Hotwheels') {
-            hwGroups.push([key, cars]);
-          } else {
-            otherGroups.push([key, cars]);
-          }
-        });
-        
-        // Hotwheels内部按子类别排序
-        hwGroups.sort(([keyA, carsA], [keyB, carsB]) => {
-          const subCatA = carsA[0].subCategory || '';
-          const subCatB = carsB[0].subCategory || '';
-          const indexA = HW_SUBCAT_ORDER.indexOf(subCatA);
-          const indexB = HW_SUBCAT_ORDER.indexOf(subCatB);
-          // 处理不在列表中的子类别，放到最后
-          return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
-        });
-        
-        // 其他品牌按ALL_BRANDS顺序排序
-        otherGroups.sort(([keyA, carsA], [keyB, carsB]) => {
-          const brandA = carsA[0].brand || '';
-          const brandB = carsB[0].brand || '';
-          const indexA = ALL_BRANDS.indexOf(brandA);
-          const indexB = ALL_BRANDS.indexOf(brandB);
-          // 处理不在列表中的品牌，放到最后
-          return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
-        });
-        
-        // 合并排序结果
-        [...hwGroups, ...otherGroups].forEach(([key, cars]) => {
-          sortedGroups[key] = cars;
-        });
-        groups = sortedGroups;
-      } else {
-        groups = groupBy(filtered, c => c.buyDate.slice(0, 7));
-      }
-
-      const investCount = unsoldCars.filter(c => c.category === 'invest').length;
-      const keepCount = unsoldCars.filter(c => c.category === 'keep').length;
-
-      const html = `
-        <div class="max-w-6xl mx-auto space-y-4">
-
-          <div class="glass rounded-2xl-apple p-3 flex flex-wrap gap-3 items-center">
-            <div class="flex gap-1">
-              <button onclick="setInvSort('brand')" class="px-3 py-1.5 rounded-lg text-xs font-medium ${invSortMode === 'brand' ? 'bg-blue-100 text-accent' : 'glass-light'} btn-glass">按品牌</button>
-              <button onclick="setInvSort('month')" class="px-3 py-1.5 rounded-lg text-xs font-medium ${invSortMode === 'month' ? 'bg-blue-100 text-accent' : 'glass-light'} btn-glass">按月</button>
-            </div>
-            <input type="text" id="invSearch" placeholder="搜索品牌/名称/SID..." value="${esc(invSearchText)}"
-                   oninput="onInvSearch()" class="flex-1 glass-input p-2 text-sm max-w-xs">
-            <select id="invSubCatFilter" onchange="onInvSubCatFilter()" class="glass-input p-1.5 text-xs max-w-[100px]">
-              <option value="">全部分类</option>
-              ${HW_SUBCATS.filter(s => s).map(s => `<option value="${s}">${s}</option>`).join('')}
-            </select>
-            <div class="text-xs text-gray-500 ml-auto">
-              总投资 ${investCount} + 自留 ${keepCount} = 共 ${unsoldCars.length} 辆
-            </div>
-          </div>
-
-          <div class="space-y-4">
-            ${Object.entries(groups).map(([key, cars]) => {
-              sortCarsByBuyDateNewest(cars);
-              const label = invSortMode === 'brand'
-                ? (cars[0].brand || '未知品牌') + ' ' + cars[0].name
-                : key;
-              const avgPrice = cars.reduce((s, c) => s + c.buyPrice, 0) / cars.length;
-              const groupId = 'group_' + key.replace(/[^a-zA-Z0-9\\u4e00-\\u9fff]/g, '_');
-
-              return `
-                <div class="glass rounded-2xl-apple overflow-hidden">
-                  <div class="glass-light p-4 flex justify-between items-center accordion-toggle" onclick="toggleAccordion('${groupId}')">
-                    <div>
-                      <span class="font-bold">${esc(label)}</span>
-                      <span class="text-sm text-gray-500 ml-2">${cars.length} 辆 · 均价 ${fmt(avgPrice)}</span>
-                      <span class="text-xs ml-2 ${cars[0].category === 'invest' ? 'text-invest' : 'text-keep'}">
-                        ${cars[0].category === 'invest' ? '投资' : '自留'}
-                      </span>
-                    </div>
-                    <span class="text-gray-400 text-sm" id="${groupId}_icon">▶</span>
-                  </div>
-                  <div id="${groupId}_body" class="accordion-body collapsed">
-                    <div class="divide-y divide-black/5 border-t border-black/5">
-                      ${cars.map(c => `
-                        <div class="flex items-center justify-between px-4 py-2.5 hover:bg-white/30 text-sm">
-                          <div class="flex items-center gap-4 flex-1 min-w-0">
-                            <span class="font-semibold text-xs truncate">${esc(c.brand || '?')}</span>
-                            ${c.subCategory ? `<span class="text-xs px-1 py-0.5 rounded ${c.subCategory === '超宝' ? 'bg-green-100 text-green-700' : c.subCategory === 'RLC' ? 'bg-yellow-100 text-yellow-700' : c.subCategory === 'ELITE' ? 'bg-red-100 text-red-700' : c.subCategory === '礼盒' ? 'bg-blue-100 text-blue-700' : c.subCategory === '文化' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'}">${c.subCategory}</span>` : ''}
-                            <span class="text-gray-600 text-xs truncate">${esc(c.name)}</span>
-                            <span class="text-xs text-gray-400">${c.buyDate}</span>
-                            <span class="text-xs font-mono text-gray-500">${fmt(c.buyPrice)}</span>
-                            <span class="text-xs text-gray-400">预期 ${fmt(c.expectedValue || c.buyPrice)}</span>
-                            ${c.manual ? '<span class="text-xs font-bold text-orange-600 bg-orange-100 px-1.5 py-0.5 rounded-md border border-orange-300">手动入库</span>' : ''}
-                          </div>
-                          <div class="flex gap-1">
-                            <button onclick="sellCar('${c.sid}')" class="btn-sell text-xs">卖出</button>
-                            <button onclick="convertCar('${c.sid}')" class="btn-convert ${c.category === 'invest' ? 'btn-to-keep' : 'btn-to-invest'} text-xs">
-                              → ${c.category === 'invest' ? '自留' : '投资'}
-                            </button>
-                            <button onclick="openCarEditModal('${c.sid}')" class="text-accent hover:underline text-xs mr-1"><i data-lucide="pencil-line" class="w-3 h-3 inline-block"></i></button>
-                            <button onclick="deleteCar('${c.sid}')" class="text-invest hover:underline text-xs"><i data-lucide="trash-2" class="w-3 h-3 inline-block"></i></button>
-                          </div>
-                        </div>`).join('')}
-                    </div>
-                  </div>
-                </div>`;
-            }).join('')}
-            ${Object.keys(groups).length === 0 ? '<div class="text-center py-10 text-gray-400">无匹配的小车</div>' : ''}
-          </div>
+        body = `<div class="glass rounded-2xl-apple overflow-hidden divide-y divide-black/5">
+          ${filtered.map(renderCarRow).join('') || '<div class="text-center py-10 text-gray-400">无匹配的小车</div>'}
         </div>`;
-      document.getElementById('moduleInventory').innerHTML = html;
+      } else if (invState.selectedBucket === null) {
+        body = renderLevel1(unsoldCars);
+      } else {
+        const bucketCars = buildDimensionBuckets(unsoldCars, invState.dimension).get(invState.selectedBucket) || [];
+        body = renderLevel2(bucketCars);
+      }
+
+      document.getElementById('moduleInventory').innerHTML = `
+        <div class="max-w-6xl mx-auto space-y-4">
+          ${renderInventoryToolbar(unsoldCars)}
+          ${searchMode ? '' : renderBreadcrumb()}
+          ${body}
+        </div>`;
+    }
+
+    // ===== 交互 =====
+    function setInvDimension(dim) {
+      invSearchText = '';
+      invState.dimension = dim;
+      invState.selectedBucket = null;
+      invState.expandedGroup = null;
+      invState.breadcrumb = [];
+      localStorage.setItem('carInvDimension', dim);
+      renderCurrentModule();
+    }
+
+    function clickBucket(key) {
+      invState.selectedBucket = key;
+      invState.breadcrumb = [{ dimension: invState.dimension, bucket: key, label: bucketLabel(invState.dimension, key) }];
+      invState.expandedGroup = null;
+      renderCurrentModule();
+    }
+
+    function clickBreadcrumb(index) {
+      if (index === -1) {
+        invState.selectedBucket = null;
+        invState.breadcrumb = [];
+      } else {
+        const crumb = invState.breadcrumb[index];
+        invState.breadcrumb = invState.breadcrumb.slice(0, index + 1);
+        invState.dimension = crumb.dimension;
+        invState.selectedBucket = crumb.bucket;
+      }
+      invState.expandedGroup = null;
+      renderCurrentModule();
+    }
+
+    // 点 chip：切到「关键词」维度并跳转该词；保留原路径、去重后 push 面包屑
+    function clickKeywordChip(word) {
+      invState.dimension = 'keyword';
+      invState.selectedBucket = word;
+      invState.breadcrumb = [
+        ...invState.breadcrumb.filter(cr => cr.dimension !== 'keyword'),
+        { dimension: 'keyword', bucket: word, label: word },
+      ];
+      invState.expandedGroup = null;
+      localStorage.setItem('carInvDimension', 'keyword');
+      renderCurrentModule();
+    }
+
+    function onInvSearch() {
+      invSearchText = document.getElementById('invSearch') ? document.getElementById('invSearch').value.trim().toLowerCase() : '';
+      renderCurrentModule();
     }
 
     function groupBy(arr, fn) {
@@ -3666,16 +3789,6 @@
       body.classList.toggle('collapsed', !isCollapsed);
       body.classList.toggle('expanded', isCollapsed);
       icon.textContent = isCollapsed ? '▼' : '▶';
-    }
-
-    function setInvSort(mode) {
-      invSortMode = mode;
-      renderCurrentModule();
-    }
-
-    function onInvSearch() {
-      invSearchText = document.getElementById('invSearch') ? document.getElementById('invSearch').value.trim().toLowerCase() : '';
-      renderCurrentModule();
     }
 
     // ==================== 预期价格更新器 ====================
