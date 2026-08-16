@@ -511,6 +511,24 @@
     // Hotwheels子类别排序顺序
     const HW_SUBCAT_ORDER = ['超宝', 'RLC', 'ELITE', '礼盒', '文化', '普卡'];
 
+    // ==================== 关键词系统 ====================
+    // 主题词词典：对 car.name / car.note 做子串匹配；品牌恒命中，无需列入
+    const KEYWORD_DICT = ['保时捷', '法拉利', '道奇', '野马', '赛道传奇', 'R34'];
+    // 子类 → 展示关键词 映射
+    const SUBCAT_KEYWORDS = { '超宝': '超宝', 'RLC': 'RLC', 'ELITE': 'ELITE', '礼盒': '礼盒', '文化': '娱乐文化', '普卡': '普卡' };
+
+    // 提取一辆车的关键词：品牌恒命中 + 词典子串匹配(name/note) + 子类映射
+    function extractKeywords(car) {
+      const kw = new Set();
+      if (car.brand) kw.add(car.brand);
+      const text = ((car.name || '') + ' ' + (car.note || '')).toLowerCase();
+      KEYWORD_DICT.forEach(w => {
+        if (w && text.includes(w.toLowerCase())) kw.add(w);
+      });
+      if (car.subCategory && SUBCAT_KEYWORDS[car.subCategory]) kw.add(SUBCAT_KEYWORDS[car.subCategory]);
+      return [...kw];
+    }
+
     function renderBrandSelect(id, selected, onChange) {
       const handler = onChange ? ` onchange="${onChange}"` : '';
       return `<select id="${id}" class="w-full glass-input p-2 text-sm"${handler}>
