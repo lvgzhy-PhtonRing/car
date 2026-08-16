@@ -3506,12 +3506,10 @@
       saveData();
     }
 
-    // ==================== 小车库存 ====================
     // ==================== 小车库存 · 三层下钻 ====================
     let invState = {
       dimension: localStorage.getItem('carInvDimension') || 'account', // account|brand|category|keyword
       selectedBucket: null,  // 桶 key；null = Level1
-      expandedGroup: null,
       breadcrumb: [],        // [{ dimension, bucket, label }]
     };
     let invSearchText = '';
@@ -3726,7 +3724,6 @@
       invSearchText = '';
       invState.dimension = dim;
       invState.selectedBucket = null;
-      invState.expandedGroup = null;
       invState.breadcrumb = [];
       localStorage.setItem('carInvDimension', dim);
       renderCurrentModule();
@@ -3735,7 +3732,6 @@
     function clickBucket(key) {
       invState.selectedBucket = key;
       invState.breadcrumb = [{ dimension: invState.dimension, bucket: key, label: bucketLabel(invState.dimension, key) }];
-      invState.expandedGroup = null;
       renderCurrentModule();
     }
 
@@ -3749,19 +3745,18 @@
         invState.dimension = crumb.dimension;
         invState.selectedBucket = crumb.bucket;
       }
-      invState.expandedGroup = null;
       renderCurrentModule();
     }
 
     // 点 chip：切到「关键词」维度并跳转该词；保留原路径、去重后 push 面包屑
     function clickKeywordChip(word) {
+      invSearchText = '';
       invState.dimension = 'keyword';
       invState.selectedBucket = word;
       invState.breadcrumb = [
         ...invState.breadcrumb.filter(cr => cr.dimension !== 'keyword'),
         { dimension: 'keyword', bucket: word, label: word },
       ];
-      invState.expandedGroup = null;
       localStorage.setItem('carInvDimension', 'keyword');
       renderCurrentModule();
     }
