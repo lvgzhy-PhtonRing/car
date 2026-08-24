@@ -816,8 +816,8 @@
     function saveData() {
       localStorage.setItem('carAppData', JSON.stringify(carAppData));
       if (typeof renderCurrentModule === 'function') renderCurrentModule();
-      if (window.CarCloudSync) CarCloudSync.scheduleSync(() => carAppData);
       syncFundBalance();
+      scheduleAutoSync();
     }
 
     // 同步基金余额到 ysp_state 供 ysp-app 支付宝计算器读取
@@ -1024,6 +1024,163 @@
       setTimeout(() => toast.remove(), duration);
     }
 
+    // ==================== 云端差异对比 ====================
+
+    // 交易分类中文标签（供收支列表与差异摘要共用）
+    const TXN_LABELS = {
+      car_buy: '买车', car_sell: '卖车', allowance: '零花钱',
+      loan_new: '新贷款', loan_repay: '还贷',
+      transfer_in: '转入', transfer_out: '转出', daily: '日常消费', other: '其它'
+    };
+
+    // 把数据展平成实体列表，每项 { type, id, sub, item }
+    function getEntityLists(data) {
+      const d = data || {};
+      const acc = d.accounts || {};
+      const list = [];
+      (d.cars || []).forEach(c => list.push({ type: 'car', id: c.sid, item: c }));
+      (acc.pocket?.transactions || []).forEach(t => list.push({ type: 'txn', id: t.id, sub: '零花钱', item: t }));
+      (acc.invest?.transactions || []).forEach(t => list.push({ type: 'txn', id: t.id, sub: '投资', item: t }));
+      (acc.invest?.loans || []).forEach(l => list.push({ type: 'loan', id: l.id, item: l }));
+      (d.transferPairs || []).forEach(t => list.push({ type: 'transfer', id: t.id, item: t }));
+      // 预期价格联动表（品牌|名称 → {value,date,history}）作为整体实体参与对比，避免静默互相覆盖
+      if (d.expectedPrices && Object.keys(d.expectedPrices).length) {
+        list.push({ type: 'expected', id: '__expected__', item: d.expectedPrices });
+      }
+      return list;
+    }
+
+    // 按实体 id 对比本地与云端，产出差异数组
+    function diffData(local, remote) {
+      const L = getEntityLists(local);
+      const R = getEntityLists(remote);
+      const lmap = new Map(L.map(e => [e.type + '|' + (e.sub || '') + '|' + e.id, e]));
+      const rmap = new Map(R.map(e => [e.type + '|' + (e.sub || '') + '|' + e.id, e]));
+      const keys = new Set([...lmap.keys(), ...rmap.keys()]);
+      const diffs = [];
+      keys.forEach(k => {
+        const le = lmap.get(k);
+        const re = rmap.get(k);
+        if (!re) diffs.push({ kind: 'localOnly', type: le.type, id: le.id, sub: le.sub, local: le.item, remote: null });
+        else if (!le) diffs.push({ kind: 'remoteOnly', type: re.type, id: re.id, sub: re.sub, local: null, remote: re.item });
+        else if (JSON.stringify(le.item) !== JSON.stringify(re.item)) diffs.push({ kind: 'both', type: le.type, id: le.id, sub: le.sub, local: le.item, remote: re.item });
+      });
+      return diffs;
+    }
+
+    // 把实体转成一行中文摘要
+    function summarizeEntity(type, item, sub) {
+      if (!item) return '';
+      if (type === 'txn') {
+        const label = TXN_LABELS[item.category] || item.category || '';
+        return `${item.date || ''} ${item.type === 'income' ? '收入' : '支出'} ${label} ${fmt(item.amount)}${item.note ? ' · ' + item.note : ''}${sub ? '（' + sub + '）' : ''}`;
+      }
+      if (type === 'car') {
+        let s = `${item.brand || '?'} ${item.name || ''} ${item.buyDate || ''} ${fmt(item.buyPrice)}`;
+        if (item.isSold) s += '（已售 ' + fmt(item.sellPrice) + '）';
+        return s;
+      }
+      if (type === 'loan') {
+        return `${item.name || ''} 剩余 ${fmt(item.remaining)} / 总额 ${fmt(item.amount)} · 到期 ${item.dueDate || ''}`;
+      }
+      if (type === 'transfer') {
+        return `${item.fromAccount || ''} → ${item.toAccount || ''} ${fmt(item.amount)} · ${item.date || ''}`;
+      }
+      if (type === 'expected') {
+        const keys = Object.keys(item);
+        const sample = keys.slice(0, 3).join('、');
+        return '预期价格表 ' + keys.length + ' 条' + (sample ? '：' + sample : '');
+      }
+      return JSON.stringify(item);
+    }
+
+    function countEntities(data) {
+      const d = data || {};
+      const acc = d.accounts || {};
+      const txns = (acc.pocket?.transactions || []).length + (acc.invest?.transactions || []).length;
+      return { cars: (d.cars || []).length, txns };
+    }
+
+    // 差异面板：列出本地/云端不一致的条目，整体选边
+    function openSyncDiffModal(diffs, cloudPayload, cloudUpdatedAt) {
+      if (!diffs || diffs.length === 0) return;
+      window._pendingCloudPayload = cloudPayload;
+
+      const localCount = countEntities(carAppData);
+      const cloudCount = countEntities(cloudPayload);
+      const rows = diffs.map(d => {
+        const badge = d.kind === 'localOnly' ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-keep/20 text-keep font-bold">仅本地</span>'
+          : d.kind === 'remoteOnly' ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-invest/20 text-invest font-bold">仅云端</span>'
+          : '<span class="text-[10px] px-1.5 py-0.5 rounded bg-orange-100 text-orange-600 font-bold">两边不同</span>';
+        const line = d.kind === 'localOnly' ? summarizeEntity(d.type, d.local, d.sub)
+          : d.kind === 'remoteOnly' ? summarizeEntity(d.type, d.remote, d.sub)
+          : `<div>本地: ${summarizeEntity(d.type, d.local, d.sub)}</div><div>云端: ${summarizeEntity(d.type, d.remote, d.sub)}</div>`;
+        return `<div class="flex items-start gap-2 px-3 py-2 border-b border-black/5 text-xs">
+          ${badge}<div class="flex-1 min-w-0 text-gray-700">${line}</div>
+        </div>`;
+      }).join('');
+
+      const html = `
+        <div class="fixed inset-0 bg-black/30 flex items-center justify-center z-50" onclick="if(event.target===this) hideModal()">
+          <div class="glass-strong rounded-2xl-apple p-5 w-[560px] max-w-[92vw] max-h-[85vh] flex flex-col">
+            <h3 class="text-base font-bold mb-1"><i data-lucide="git-compare" class="w-4 h-4 inline-block align-middle mr-1"></i> 云端数据差异</h3>
+            <div class="text-xs text-gray-500 mb-3">本地 ${localCount.cars}辆/${localCount.txns}笔 · 云端 ${cloudCount.cars}辆/${cloudCount.txns}笔 · 差异 ${diffs.length} 条${cloudUpdatedAt ? '（云端更新于 ' + esc(cloudUpdatedAt.slice(0, 16).replace('T', ' ')) + '）' : ''}</div>
+            <div class="flex-1 overflow-y-auto max-h-64 border border-black/5 rounded-xl divide-y divide-black/5">
+              ${rows}
+            </div>
+            <div class="text-xs text-gray-400 mt-3 mb-2">请选择以哪边为准，选后整包覆盖另一边：</div>
+            <div class="flex justify-end gap-2">
+              <button onclick="resolveSyncConflict('cloud')" class="px-3 py-2 bg-green-600/90 text-white rounded-xl-apple text-sm btn-glass">⬇️ 用云端覆盖本地</button>
+              <button onclick="resolveSyncConflict('local')" class="px-3 py-2 bg-blue-600/90 text-white rounded-xl-apple text-sm btn-glass">⬆️ 用本地覆盖云端</button>
+              <button onclick="cancelSyncConflict()" class="px-3 py-2 glass-light rounded-xl-apple text-sm btn-glass">取消</button>
+            </div>
+          </div>
+        </div>`;
+      showModal(html);
+    }
+
+    function cancelSyncConflict() {
+      window._pendingCloudPayload = null;
+      hideModal();
+    }
+
+    async function resolveSyncConflict(choice) {
+      hideModal();
+      const cloudPayload = window._pendingCloudPayload;
+      window._pendingCloudPayload = null;
+      try {
+        if (choice === 'local') {
+          await CarCloudSync.syncNow(() => carAppData);
+          localStorage.setItem('car_last_sync', new Date().toLocaleString('zh-CN'));
+          showSyncToast('✅ 已用本地覆盖云端');
+        } else if (choice === 'cloud' && cloudPayload) {
+          carAppData = cloudPayload;
+          saveData();
+          localStorage.setItem('car_last_sync', new Date().toLocaleString('zh-CN'));
+          showSyncToast('✅ 已用云端覆盖本地');
+        }
+      } catch (err) {
+        showSyncToast('❌ 同步失败: ' + err.message);
+      }
+      updateCloudStatusUI();
+    }
+
+    // 启动时检查：拉云端对比，有差异则弹面板
+    async function checkCloudOnStart() {
+      const config = CarCloudSync.loadConfig();
+      if (!config.enabled || !config.supabaseAnonKey) return;
+      const session = CarCloudSync.loadSession();
+      if (!session.accessToken) return;
+      try {
+        const res = await CarCloudSync.loadFromCloud();
+        if (!res || !res.payload) return; // 云端无数据，保持静默（首次备份靠手动）
+        const diffs = diffData(carAppData, res.payload);
+        if (diffs.length > 0) openSyncDiffModal(diffs, res.payload, res.updatedAt);
+      } catch (err) {
+        console.error('Cloud start check failed:', err);
+      }
+    }
+
     async function updateCloudStatusUI() {
       const config = CarCloudSync.loadConfig();
       let session = CarCloudSync.loadSession();
@@ -1146,37 +1303,74 @@
       hideModal();
     }
 
-    async function cloudSyncNow() {
+    // 手动/自动同步共用：先对比云端，有差异弹面板让用户选边，一致或云端空才直接上传
+    async function syncWithConflictCheck(opts = {}) {
       const statusEl = document.getElementById('syncStatus');
-      if (statusEl) statusEl.textContent = '同步中..';
       try {
+        const res = await CarCloudSync.loadFromCloud();
+        if (res && res.payload) {
+          const diffs = diffData(carAppData, res.payload);
+          if (diffs.length > 0) {
+            // 自动同步时若正开着别的弹窗，不打断用户操作，跳过本次（下次改动会再触发）
+            if (opts.auto && isModalOpen()) return;
+            if (statusEl) statusEl.textContent = '发现 ' + diffs.length + ' 条差异，请选择处置';
+            openSyncDiffModal(diffs, res.payload, res.updatedAt);
+            return;
+          }
+        }
         await CarCloudSync.syncNow(() => carAppData);
         const now = new Date().toLocaleString('zh-CN');
         localStorage.setItem('car_last_sync', now);
-        if (statusEl) statusEl.textContent = '✅ 同步成功: ' + now;
+        if (statusEl) statusEl.textContent = (opts.auto ? '✅ 已自动同步: ' : '✅ 同步成功: ') + now;
         updateCloudStatusUI();
       } catch (err) {
         if (statusEl) statusEl.textContent = '❌ 同步失败: ' + err.message;
       }
     }
 
+    async function cloudSyncNow() {
+      const statusEl = document.getElementById('syncStatus');
+      if (statusEl) statusEl.textContent = '同步中..';
+      await syncWithConflictCheck();
+    }
+
+    // 轻量自动同步：数据改动后防抖触发，先对比再决定上传或弹冲突面板
+    let autoSyncTimer = null;
+    function scheduleAutoSync() {
+      clearTimeout(autoSyncTimer);
+      autoSyncTimer = setTimeout(() => {
+        if (!window.CarCloudSync) return;
+        const config = CarCloudSync.loadConfig();
+        if (!config || !config.enabled || !config.supabaseAnonKey) return;
+        const session = CarCloudSync.loadSession();
+        if (!session || !session.accessToken) return;
+        syncWithConflictCheck({ auto: true });
+      }, 3000);
+    }
+
+    function isModalOpen() {
+      const el = document.getElementById('modalContainer');
+      return !!(el && el.innerHTML.trim() !== '');
+    }
+
     async function cloudLoadFromServer() {
-      if (!confirm('从云端加载将覆盖本地数据，确定？')) return;
       const statusEl = document.getElementById('syncStatus');
       if (statusEl) statusEl.textContent = '加载中..';
       try {
-        const data = await CarCloudSync.loadFromCloud();
-        if (data) {
-          carAppData = data;
-          saveData();
-          renderCurrentModule();
+        const res = await CarCloudSync.loadFromCloud();
+        if (!res || !res.payload) {
+          if (statusEl) statusEl.textContent = '云端无数据';
+          return;
+        }
+        const diffs = diffData(carAppData, res.payload);
+        if (diffs.length === 0) {
           const now = new Date().toLocaleString('zh-CN');
           localStorage.setItem('car_last_sync', now);
-          if (statusEl) statusEl.textContent = '✅ 加载成功: ' + now;
-          updateCloudStatusUI();
-        } else {
-          if (statusEl) statusEl.textContent = '云端无数据';
+          if (statusEl) statusEl.textContent = '✅ 与云端一致: ' + now;
+          return;
         }
+        if (statusEl) statusEl.textContent = '发现 ' + diffs.length + ' 条差异，请选择处置';
+        openSyncDiffModal(diffs, res.payload, res.updatedAt);
       } catch (err) {
         if (statusEl) statusEl.textContent = '❌ 加载失败: ' + err.message;
       }
@@ -3969,6 +4163,8 @@
       document.title = `记账管理系统 v${version}`;
       updateCloudStatusUI();
       renderCurrentModule();
+      // 启动后拉云端对比，有差异时弹面板让用户选择
+      if (window.CarCloudSync) checkCloudOnStart();
     };
     </script>
 </body>

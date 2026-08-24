@@ -213,7 +213,7 @@ window.CarCloudSync = {
     try {
       const result = await fetchCloudData(config, session);
       if (result.session) saveSession(result.session);
-      return result.payload;
+      return { payload: result.payload, updatedAt: result.updatedAt || '' };
     } catch (err) {
       console.error('Cloud load failed:', err);
       return null;
