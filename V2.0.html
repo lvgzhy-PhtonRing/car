@@ -1942,20 +1942,41 @@
       initIcons();
     }
 
+    // ==================== 同日排序辅助 ====================
+    // 原则：日期新的在上；同一日期内，越新（后创建/后入库）越靠上
+    // 收支 id 形如 txn_<创建时间戳>_<随机>，取时间戳判断创建先后
+    function txnCreatedAt(t) {
+      const m = /_(\d+)_/.exec((t && t.id) || '');
+      return m ? +m[1] : 0;
+    }
+    function sortTxnsByDateNewest(txns) {
+      return txns.slice().sort((a, b) => {
+        const d = (b.date || '').localeCompare(a.date || '');
+        return d !== 0 ? d : txnCreatedAt(b) - txnCreatedAt(a);
+      });
+    }
+    // 小车入库序号：carAppData.cars 数组只追加/删除、从不重排，越靠后=入库越晚
+    function buildCarOrderMap() {
+      const map = new Map();
+      carAppData.cars.forEach((c, i) => map.set(c.sid, i));
+      return map;
+    }
+    function sortCarsByBuyDateNewest(cars, order) {
+      const carOrder = order || buildCarOrderMap();
+      return cars.sort((a, b) => {
+        const d = (b.buyDate || '').localeCompare(a.buyDate || '');
+        return d !== 0 ? d : (carOrder.get(b.sid) ?? 0) - (carOrder.get(a.sid) ?? 0);
+      });
+    }
+
     // ==================== 日常消费 ====================
     function renderTransactionTable(transactions, accountId) {
       if (transactions.length === 0) {
         return '<div class="text-center py-6 text-gray-400">暂无交易记录</div>';
       }
 
-      const categoryLabels = {
-        car_buy: '买车', car_sell: '卖车', allowance: '零花钱',
-        loan_new: '新贷款', loan_repay: '还贷',
-        transfer_in: '转入', transfer_out: '转出', daily: '日常消费', other: '其它'
-      };
-
-      // 按月分组
-      const sorted = transactions.slice().sort((a, b) => b.date.localeCompare(a.date));
+      // 按月分组（日期新的在上，同日内后创建的靠上）
+      const sorted = sortTxnsByDateNewest(transactions);
       const groups = {};
       sorted.forEach(t => {
         const month = t.date.slice(0, 7); // YYYY-MM
@@ -1995,7 +2016,7 @@
                   <tr class="hover:bg-white/50">
                     <td class="px-3 py-1.5 text-gray-500 text-xs">${t.date.slice(5)}</td>
                     <td class="px-3 py-1.5">
-                      <span class="${t.type === 'income' ? 'badge-income' : 'badge-expense'}">${categoryLabels[t.category] || t.category}</span>
+                      <span class="${t.type === 'income' ? 'badge-income' : 'badge-expense'}">${TXN_LABELS[t.category] || t.category}</span>
                     </td>
                     <td class="px-3 py-1.5 font-semibold text-xs ${t.type === 'income' ? 'text-negative' : 'text-positive'} text-right">${fmt(t.amount)}</td>
                     <td class="px-3 py-1.5 text-xs text-gray-600 truncate">${esc(t.note || '')}</td>
@@ -2018,6 +2039,7 @@
       }
 
       const sortMode = accountType === 'keep' ? garageSortKeep : garageSortInvest;
+      const carOrder = buildCarOrderMap(); // 同日排序用：越后入库越靠上
 
       // 根据视图模式分组
       function getGroupKey(c) {
@@ -2112,16 +2134,22 @@
             <span class="text-xs text-gray-400 ml-3">成本 ${fmt(labelCost)} / 预期 ${fmt(labelExpected)}</span>
           </div>
           <div id="${labelId}_body" class="accordion-body expanded">
-            ${entries.sort((a, b) => b.items[0].buyDate.localeCompare(a.items[0].buyDate)).map(({ key, items }) => renderCarGroup(items, key, accountType)).join('')}
+            ${entries.sort((a, b) => {
+              const d = (b.items[0].buyDate || '').localeCompare(a.items[0].buyDate || '');
+              return d !== 0 ? d : (carOrder.get(b.items[0].sid) ?? 0) - (carOrder.get(a.items[0].sid) ?? 0);
+            }).map(({ key, items }) => renderCarGroup(items, key, accountType, carOrder)).join('')}
           </div>
         </div>`;
       }).join('') :
-      sortedEntries.sort(([, a], [, b]) => b[0].buyDate.localeCompare(a[0].buyDate)).map(([key, items]) => renderCarGroup(items, key, accountType)).join(''))
+      sortedEntries.sort(([, a], [, b]) => {
+        const d = (b[0].buyDate || '').localeCompare(a[0].buyDate || '');
+        return d !== 0 ? d : (carOrder.get(b[0].sid) ?? 0) - (carOrder.get(a[0].sid) ?? 0);
+      }).map(([key, items]) => renderCarGroup(items, key, accountType, carOrder)).join(''))
       ;
     }
 
-    function renderCarGroup(items, groupKey, accountType) {
-      items.sort((a, b) => b.buyDate.localeCompare(a.buyDate));
+    function renderCarGroup(items, groupKey, accountType, carOrder) {
+      sortCarsByBuyDateNewest(items, carOrder);
       const first = items[0];
       const count = items.length;
       const avgPrice = items.reduce((s, c) => s + c.buyPrice, 0) / count;
@@ -2172,7 +2200,7 @@
     function openCarGroupDetail(groupName, accountType) {
       const cars = carAppData.cars.filter(c => c.name === groupName && c.category === accountType && !c.isSold);
       if (cars.length === 0) return;
-      cars.sort((a, b) => b.buyDate.localeCompare(a.buyDate));
+      sortCarsByBuyDateNewest(cars);
       const totalCost = cars.reduce((s, c) => s + c.buyPrice, 0);
       const avgPrice = totalCost / cars.length;
       const totalExpected = cars.reduce((s, c) => s + (c.expectedValue || c.buyPrice), 0);
@@ -3528,7 +3556,7 @@
 
           <div class="space-y-4">
             ${Object.entries(groups).map(([key, cars]) => {
-              cars.sort((a, b) => b.buyDate.localeCompare(a.buyDate));
+              sortCarsByBuyDateNewest(cars);
               const label = invSortMode === 'brand'
                 ? (cars[0].brand || '未知品牌') + ' ' + cars[0].name
                 : key;
