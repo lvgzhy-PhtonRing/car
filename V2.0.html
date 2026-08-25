@@ -474,7 +474,7 @@
     // 默认空数据结构
     function getDefaultData() {
       return {
-        version: '2.3.0',
+        version: '2.3.1',
         accounts: {
           pocket: {
             id: 'pocket', name: '零花钱账户', monthlyAllowance: 200, allowanceDay: 1,
@@ -1050,6 +1050,29 @@
       return list;
     }
 
+    // 深度比较两实体内容是否一致：
+    //  - 忽略对象键顺序（不同版本写入的键序可能不同，但内容相同）
+    //  - null/undefined/缺失字段视为相同（如未售车的 soldDate/sellPrice 为 null 或缺失）
+    //  - 数字与数字字符串视为相同（如 21.9 与 "21.9"）
+    function deepEqual(a, b) {
+      if (a === b) return true;
+      if (typeof a === 'number' && typeof b === 'string' && b !== '' && String(a) === b) return true;
+      if (typeof b === 'number' && typeof a === 'string' && a !== '' && String(b) === a) return true;
+      if (a === null || a === undefined) return b === null || b === undefined;
+      if (b === null || b === undefined) return false;
+      if (Array.isArray(a)) {
+        if (!Array.isArray(b) || a.length !== b.length) return false;
+        for (let i = 0; i < a.length; i++) if (!deepEqual(a[i], b[i])) return false;
+        return true;
+      }
+      if (typeof a === 'object' && typeof b === 'object') {
+        const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+        for (const k of keys) if (!deepEqual(a[k], b[k])) return false;
+        return true;
+      }
+      return false;
+    }
+
     // 按实体 id 对比本地与云端，产出差异数组
     function diffData(local, remote) {
       const L = getEntityLists(local);
@@ -1063,7 +1086,7 @@
         const re = rmap.get(k);
         if (!re) diffs.push({ kind: 'localOnly', type: le.type, id: le.id, sub: le.sub, local: le.item, remote: null });
         else if (!le) diffs.push({ kind: 'remoteOnly', type: re.type, id: re.id, sub: re.sub, local: null, remote: re.item });
-        else if (JSON.stringify(le.item) !== JSON.stringify(re.item)) diffs.push({ kind: 'both', type: le.type, id: le.id, sub: le.sub, local: le.item, remote: re.item });
+        else if (!deepEqual(le.item, re.item)) diffs.push({ kind: 'both', type: le.type, id: le.id, sub: le.sub, local: le.item, remote: re.item });
       });
       return diffs;
     }
