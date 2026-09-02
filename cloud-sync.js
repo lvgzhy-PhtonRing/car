@@ -232,13 +232,27 @@ window.CarCloudSync = {
     return this.syncUp(getDataFn);
   },
 
-  // ==================== 基金余额同步（写入 ysp_state 供 ysp-app 读取） ====================
+  // ==================== 基金余额同步（登录会话写入 ysp_state 供 ysp-app 读取） ====================
   async saveCarFundBalance(balance) {
-    const SUPABASE_URL = 'https://mqdxmbsaddebxlallgos.supabase.co';
-    const ANON_KEY = 'sb_publishable_pwZYqYeBwpJbj4Pt1vaQyQ_av4QZZ-U';
+    const config = loadConfig();
+    if (!config.supabaseAnonKey) return null;
+
+    let session = loadSession();
+    if (!session?.accessToken) return null; // 未登录则不同步，云端只允许登录账号写入
+
+    let validSession = session;
+    try {
+      validSession = await ensureSession(config, session);
+      if (validSession?.accessToken && validSession !== session) saveSession(validSession);
+    } catch (err) {
+      console.error('Fund balance session refresh failed:', err);
+      return null;
+    }
+    if (!validSession?.accessToken) return null;
+
     const headers = {
-      apikey: ANON_KEY,
-      Authorization: `Bearer ${ANON_KEY}`,
+      apikey: config.supabaseAnonKey,
+      Authorization: `Bearer ${validSession.accessToken}`,
       'Content-Type': 'application/json',
       Prefer: 'return=representation',
     };
@@ -248,16 +262,18 @@ window.CarCloudSync = {
     };
     try {
       const patchResp = await fetch(
-        `${SUPABASE_URL}/rest/v1/ysp_state?id=eq.car`,
+        `${config.supabaseUrl}/rest/v1/ysp_state?id=eq.car`,
         { method: 'PATCH', headers, body: JSON.stringify({ payload, is_public: true, updated_at: payload.updatedAt }) }
       );
-      const patchData = await patchResp.json();
+      const patchData = await parseResp(patchResp);
+      if (!patchResp.ok) console.error('Fund balance patch failed:', patchData);
       if (Array.isArray(patchData) && patchData.length > 0) return patchData[0];
       const insertResp = await fetch(
-        `${SUPABASE_URL}/rest/v1/ysp_state`,
-        { method: 'POST', headers, body: JSON.stringify([{ id: 'car', payload, is_public: true }]) }
+        `${config.supabaseUrl}/rest/v1/ysp_state`,
+        { method: 'POST', headers, body: JSON.stringify([{ id: 'car', payload, is_public: true, owner_id: validSession.user.id }]) }
       );
-      const insertData = await insertResp.json();
+      const insertData = await parseResp(insertResp);
+      if (!insertResp.ok) console.error('Fund balance insert failed:', insertData);
       return Array.isArray(insertData) ? insertData[0] : null;
     } catch (err) {
       console.error('Fund balance sync failed:', err);
