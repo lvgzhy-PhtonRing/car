@@ -3714,12 +3714,12 @@
       return html || '<div class="text-center py-10 text-gray-400">该桶内暂无小车</div>';
     }
 
-    // 渲染分发器：搜索模式扁平 Level3 / Level1 气泡 / Level2 分组
-    function renderInventory() {
+    // 计算库存 body（搜索模式扁平 / Level1 气泡 / Level2 分组），供 renderInventory 与 updateInventoryBody 共用
+    function calcInventoryBody() {
       const unsoldCars = carAppData.cars.filter(c => !c.isSold);
       const q = invSearchText.trim().toLowerCase();
       const searchMode = q.length > 0;
-      const autoKw = buildAutoKeywords(unsoldCars);   // 动态高频词：车名重复≥3次的词自动成关键词
+      const autoKw = buildAutoKeywords(unsoldCars);
 
       let body;
       if (searchMode) {
@@ -3740,12 +3740,30 @@
         body = renderLevel2(bucketCars, autoKw);
       }
 
+      return { unsoldCars, searchMode, body };
+    }
+
+    function renderInventory() {
+      const { unsoldCars, searchMode, body } = calcInventoryBody();
+
       document.getElementById('moduleInventory').innerHTML = `
         <div class="max-w-6xl mx-auto space-y-4">
           ${renderInventoryToolbar(unsoldCars)}
-          ${searchMode ? '' : renderBreadcrumb()}
-          ${body}
+          <div id="invBodyWrapper">
+            ${searchMode ? '' : renderBreadcrumb()}
+            ${body}
+          </div>
         </div>`;
+    }
+
+    // 搜索时只更新 body，不重建 toolbar（避免输入框被销毁导致中文 IME 中断、光标丢失）
+    function updateInventoryBody() {
+      const { searchMode, body } = calcInventoryBody();
+      const wrapper = document.getElementById('invBodyWrapper');
+      if (wrapper) {
+        wrapper.innerHTML = `${searchMode ? '' : renderBreadcrumb()}${body}`;
+        initIcons();
+      }
     }
 
     // ===== 交互 =====
@@ -3791,8 +3809,11 @@
     }
 
     function onInvSearch() {
-      invSearchText = document.getElementById('invSearch') ? document.getElementById('invSearch').value.trim().toLowerCase() : '';
-      renderCurrentModule();
+      const input = document.getElementById('invSearch');
+      if (input) {
+        invSearchText = input.value.trim().toLowerCase();
+        updateInventoryBody();
+      }
     }
 
     function groupBy(arr, fn) {
